@@ -129,6 +129,24 @@ describe('SyncEngine', () => {
     await expect(changes.hasOperation(incoming.operationId)).resolves.toBe(false);
   });
 
+  it('rejects a valid checksummed package with a different schema version before changing records or the operation log', async () => {
+    const incoming = operation();
+    const mismatchedSchemaPackage = serializer.withChecksum({
+      format: 'app-sync',
+      formatVersion: 2,
+      appVersion: '1.0.0',
+      schemaVersion: 2,
+      sourceDeviceId,
+      exportedAt: '2026-08-24T10:10:00.000Z',
+      changes: [incoming],
+    });
+
+    expect(serializer.verify(mismatchedSchemaPackage)).toBe(true);
+    await expect(engine.import(mismatchedSchemaPackage)).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 1 });
+    await expect(records.findById(incoming.entityId)).resolves.toBeNull();
+    await expect(changes.hasOperation(incoming.operationId)).resolves.toBe(false);
+  });
+
   it('records an applied operation so the same package is skipped on reimport', async () => {
     const incoming = operation();
     const incomingPackage = pkg([incoming]);

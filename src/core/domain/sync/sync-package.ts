@@ -28,6 +28,15 @@ export function parseSyncPackage(value: unknown): SyncPackage {
 }
 
 export function parseSyncPackageWithoutAuth(value: unknown): SyncPackageWithoutAuth {
+  const content = parseSyncPackageContent(value);
+  if (!isRecord(value) || typeof value.checksum !== 'string' || value.checksum.trim() === '') {
+    throw new Error('Sync package checksum must not be empty');
+  }
+
+  return { ...content, checksum: value.checksum };
+}
+
+export function parseSyncPackageContent(value: unknown): SyncPackageContent {
   if (!isRecord(value)) {
     throw new Error('Sync package must be an object');
   }
@@ -49,11 +58,16 @@ export function parseSyncPackageWithoutAuth(value: unknown): SyncPackageWithoutA
   if (!Array.isArray(value.changes)) {
     throw new Error('Sync package changes must be an array');
   }
-  if (typeof value.checksum !== 'string' || value.checksum.trim() === '') {
-    throw new Error('Sync package checksum must not be empty');
-  }
   const changes = value.changes.map(parseSyncOperation);
-  return { ...value, sourceDeviceId: canonicalizeUuid(value.sourceDeviceId), changes } as SyncPackageWithoutAuth;
+  return {
+    format: value.format,
+    formatVersion: value.formatVersion,
+    appVersion: value.appVersion,
+    schemaVersion: value.schemaVersion,
+    sourceDeviceId: canonicalizeUuid(value.sourceDeviceId),
+    exportedAt: value.exportedAt,
+    changes,
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

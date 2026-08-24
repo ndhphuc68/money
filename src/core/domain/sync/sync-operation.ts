@@ -43,6 +43,9 @@ export function parseSyncOperation(value: unknown): SyncOperation {
   if (!Object.prototype.hasOwnProperty.call(value, 'payload')) {
     throw new Error('Sync operation payload is required');
   }
+  if (!isJsonValue(value.payload)) {
+    throw new Error('Sync operation payload must be valid JSON data');
+  }
   if (value.operation !== 'create' && value.operation !== 'update' && value.operation !== 'delete') {
     throw new Error('Sync operation kind is invalid');
   }
@@ -63,4 +66,45 @@ export function parseSyncOperation(value: unknown): SyncOperation {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function isJsonValue(value: unknown): boolean {
+  return isJsonValueWithin(value, new WeakSet<object>());
+}
+
+function isJsonValueWithin(value: unknown, ancestors: WeakSet<object>): boolean {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') {
+    return true;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value);
+  }
+  if (Array.isArray(value)) {
+    if (ancestors.has(value)) {
+      return false;
+    }
+    ancestors.add(value);
+    let isValid = true;
+    for (let index = 0; index < value.length; index += 1) {
+      if (!Object.prototype.hasOwnProperty.call(value, index) || !isJsonValueWithin(value[index], ancestors)) {
+        isValid = false;
+        break;
+      }
+    }
+    ancestors.delete(value);
+    return isValid;
+  }
+  if (!isRecord(value) || !isPlainObject(value) || Object.getOwnPropertySymbols(value).length > 0 || ancestors.has(value)) {
+    return false;
+  }
+
+  ancestors.add(value);
+  const isValid = Object.values(value).every((entry) => isJsonValueWithin(entry, ancestors));
+  ancestors.delete(value);
+  return isValid;
+}
+
+function isPlainObject(value: Record<string, unknown>): boolean {
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
 }

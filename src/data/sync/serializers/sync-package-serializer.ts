@@ -2,61 +2,43 @@ import {
   ChecksumCalculator,
   SyncPackageSerializer as SyncPackageSerializerPort,
 } from '@/core/application/ports/sync-package-serializer';
-import { SyncPackage, SyncPackageContent, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
-import { canonicalizeUuid, isUuid } from '@/core/domain/sync/sync-operation';
+import {
+  parseSyncPackage,
+  parseSyncPackageContent,
+  parseSyncPackageWithoutAuth,
+  SyncPackage,
+  SyncPackageContent,
+  SyncPackageWithoutAuth,
+} from '@/core/domain/sync/sync-package';
 
 export class StableSyncPackageSerializer implements SyncPackageSerializerPort {
   constructor(private readonly checksumCalculator: ChecksumCalculator = new Fnv1aChecksumCalculator()) {}
 
   serialize(pkg: SyncPackageWithoutAuth | SyncPackage): string {
-    return stableJson(canonicalizePackageIdentifiers(pkg));
+    return stableJson(hasAuthTag(pkg) ? parseSyncPackage(pkg) : parseSyncPackageWithoutAuth(pkg));
   }
 
   checksum(pkg: SyncPackageContent | SyncPackageWithoutAuth | SyncPackage): string {
-    const unsignedPackage = packageWithoutIntegrityTags(pkg);
-
-    return this.checksumCalculator.calculate(stableJson(unsignedPackage));
+    return this.checksumCalculator.calculate(stableJson(parseSyncPackageContent(pkg)));
   }
 
   authenticationInput(pkg: SyncPackageWithoutAuth | SyncPackage): string {
-    const authenticatedPackage: Record<string, unknown> = { ...canonicalizePackageIdentifiers(pkg) };
-    delete authenticatedPackage.authTag;
-
-    return stableJson(authenticatedPackage);
+    return stableJson(parseSyncPackageWithoutAuth(pkg));
   }
 
   withChecksum(pkg: SyncPackageContent): SyncPackageWithoutAuth {
-    return { ...pkg, checksum: this.checksum(pkg) };
+    const content = parseSyncPackageContent(pkg);
+    return { ...content, checksum: this.checksum(content) };
   }
 
   verify(pkg: SyncPackageWithoutAuth | SyncPackage): boolean {
-    return pkg.checksum === this.checksum(pkg);
+    const validatedPackage = parseSyncPackageWithoutAuth(pkg);
+    return validatedPackage.checksum === this.checksum(validatedPackage);
   }
 }
 
-function packageWithoutIntegrityTags(pkg: SyncPackageContent | SyncPackageWithoutAuth | SyncPackage): Record<string, unknown> {
-  const unsignedPackage: Record<string, unknown> = { ...canonicalizePackageIdentifiers(pkg) };
-  delete unsignedPackage.checksum;
-  delete unsignedPackage.authTag;
-
-  return unsignedPackage;
-}
-
-function canonicalizePackageIdentifiers<T extends SyncPackageContent | SyncPackageWithoutAuth | SyncPackage>(pkg: T): T {
-  return {
-    ...pkg,
-    sourceDeviceId: canonicalizeIdentifier(pkg.sourceDeviceId),
-    changes: pkg.changes.map((change) => ({
-      ...change,
-      operationId: canonicalizeIdentifier(change.operationId),
-      entityId: canonicalizeIdentifier(change.entityId),
-      originDeviceId: canonicalizeIdentifier(change.originDeviceId),
-    })),
-  } as T;
-}
-
-function canonicalizeIdentifier(value: string): string {
-  return isUuid(value) ? canonicalizeUuid(value) : value;
+function hasAuthTag(pkg: SyncPackageWithoutAuth | SyncPackage): pkg is SyncPackage {
+  return Object.prototype.hasOwnProperty.call(pkg, 'authTag');
 }
 
 export class Fnv1aChecksumCalculator implements ChecksumCalculator {

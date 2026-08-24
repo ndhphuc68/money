@@ -6,16 +6,16 @@
 - Added `SyncScreen` with import/export controls, busy feedback, result text, and an accessible visible error state.
 - Added `useSync`, which is the feature boundary between the screen and `ExportSyncPackage` / `ImportSyncPackage` use cases.
 - Added an Expo infrastructure composition adapter that instantiates the local repositories, sync engine, authenticated `FileSyncTransport`, picker, package-file, and sharing adapters. The screen has no SQLite, Drizzle, DocumentPicker, or Sharing imports.
-- Added smoke coverage for route actions, export success, import summary, and surfaced sync errors. The first navigation test was written and observed failing before the shell implementation.
+- Added UI smoke coverage for the `SyncScreen` title and the real `/` route's initial passphrase-setup state, including the two disabled sync controls. There is not yet UI coverage for enabled import/export actions, success summaries, or surfaced error states.
 - Added README instructions for Node LTS, installation, Android Expo Go QR usage, verification, migrations, and the SQLCipher development-build boundary.
 
 ## Verification
 
-Run on 2026-08-24:
+Task 6 handoff verification run on 2026-08-24:
 
 ```text
 npm test -- --runInBand
-11 suites passed, 62 tests passed
+12 suites passed, 61 tests passed
 
 npm run typecheck
 passed
@@ -25,6 +25,22 @@ passed: Everything's fine
 
 npx expo config --type public
 passed: Expo SDK 54 config resolves with Android and iOS only
+```
+
+## Final fix round: schema compatibility and JSON payloads
+
+- `SyncEngine.import` now rejects a valid, authenticated-package candidate whose `schemaVersion` differs from the configured engine version before record or change-log mutation.
+- `SyncOperation.payload` is now recursively constrained to JSON data: `null`, booleans, finite numbers, strings, dense arrays, and plain objects containing those values. Invalid values—including `undefined`, functions, symbols, bigint, non-finite numbers, and nested invalid values—are rejected before canonical serialization or SQLite persistence.
+- Added regression coverage for the schema-mismatch no-mutation boundary, nested JSON round-trip, serializer rejection, repository rejection, and sparse arrays.
+
+Final fix-round verification run on 2026-08-24:
+
+```text
+npm test -- --runInBand
+12 suites passed, 73 tests passed
+
+npm run typecheck
+passed
 ```
 
 ## Expo device-validation limitation

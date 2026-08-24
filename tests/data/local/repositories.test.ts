@@ -26,7 +26,7 @@ function operation(overrides: Partial<SyncOperation> = {}): SyncOperation {
     entityType: 'example-record',
     entityId: recordId,
     operation: 'create',
-    payload: { label: 'First local record' },
+    payload: { label: 'First local record', metadata: { flags: [true, null, 3] } },
     originDeviceId: deviceId,
     revision: 1,
     createdAt: '2026-08-24T10:00:00.000Z',
@@ -143,6 +143,14 @@ describe('local repositories', () => {
     ['operation origin device id', operation({ originDeviceId: 'not-a-uuid' })],
   ])('rejects an invalid %s before appending a change operation', async (_, invalidOperation) => {
     await expect(changes.append(invalidOperation)).rejects.toThrow();
+
+    await expect(changes.listPending()).resolves.toEqual([]);
+  });
+
+  it('rejects a nested undefined operation payload before writing to SQLite', async () => {
+    const invalidOperation = operation({ payload: { label: 'invalid', nested: undefined } });
+
+    await expect(changes.append(invalidOperation)).rejects.toThrow('Sync operation payload must be valid JSON data');
 
     await expect(changes.listPending()).resolves.toEqual([]);
   });

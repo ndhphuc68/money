@@ -58,6 +58,9 @@ export class SyncEngine {
       if (!this.options.serializer.verify(validatedPackage)) {
         throw new Error('Sync package checksum is invalid');
       }
+      if (validatedPackage.schemaVersion !== this.options.schemaVersion) {
+        throw new Error('Sync package schema version is incompatible');
+      }
       incomingRecords = validateIncomingRecords(validatedPackage.changes);
     } catch {
       return rejectedSummary(pkg);

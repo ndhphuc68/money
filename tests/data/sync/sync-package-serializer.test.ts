@@ -43,4 +43,14 @@ describe('StableSyncPackageSerializer', () => {
     expect(serializer.verify(checksummed)).toBe(true);
     expect(serializer.verify({ ...checksummed, appVersion: '2.0.0' })).toBe(false);
   });
+
+  it('rejects a nested undefined payload before calculating a package checksum', () => {
+    const { checksum: _checksum, ...unsignedPackage } = pkg;
+    const invalidPackage = {
+      ...unsignedPackage,
+      changes: [{ ...unsignedPackage.changes[0], payload: { valid: true, nested: undefined } }],
+    };
+
+    expect(() => serializer.withChecksum(invalidPackage)).toThrow('Sync operation payload must be valid JSON data');
+  });
 });

@@ -1,4 +1,4 @@
-import { canonicalizeUuid, isUuid, SyncOperation } from '@/core/domain/sync/sync-operation';
+import { canonicalizeUuid, isUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 
 export function assertValidSyncableRecordIdentifiers(record: SyncableRecord): void {
@@ -23,14 +23,7 @@ export function canonicalizeSyncableRecordIdentifiers(record: SyncableRecord): S
 }
 
 export function canonicalizeSyncOperationIdentifiers(operation: SyncOperation): SyncOperation {
-  assertValidSyncOperationIdentifiers(operation);
-
-  return {
-    ...operation,
-    operationId: canonicalizeUuid(operation.operationId),
-    entityId: canonicalizeUuid(operation.entityId),
-    originDeviceId: canonicalizeUuid(operation.originDeviceId),
-  };
+  return parseSyncOperation(operation);
 }
 
 function assertUuid(value: string, label: string): void {

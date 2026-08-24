@@ -5,7 +5,7 @@ const validOperation: SyncOperation = {
   entityType: 'note',
   entityId: '550e8400-e29b-41d4-a716-446655440001',
   operation: 'update',
-  payload: { title: 'Offline note' },
+  payload: { title: 'Offline note', metadata: { pinned: false, tags: ['sync', null, 2] } },
   originDeviceId: '550e8400-e29b-41d4-a716-446655440002',
   revision: 2,
   createdAt: '2026-08-24T10:00:00.000Z',
@@ -43,5 +43,19 @@ describe('SyncOperation', () => {
     const { payload: _payload, ...operationWithoutPayload } = validOperation;
 
     expect(() => parseSyncOperation(operationWithoutPayload)).toThrow();
+  });
+
+  it.each([
+    ['undefined', undefined],
+    ['function', () => undefined],
+    ['symbol', Symbol('payload')],
+    ['bigint', BigInt(1)],
+    ['NaN', Number.NaN],
+    ['infinity', Number.POSITIVE_INFINITY],
+    ['nested undefined object value', { nested: undefined }],
+    ['nested undefined array value', [undefined]],
+    ['sparse array value', new Array(1)],
+  ])('rejects a payload containing %s', (_, payload) => {
+    expect(() => parseSyncOperation({ ...validOperation, payload })).toThrow('Sync operation payload must be valid JSON data');
   });
 });
