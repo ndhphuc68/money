@@ -1,0 +1,70 @@
+import { eq, isNull } from 'drizzle-orm';
+
+import { Repository } from '@/core/application/ports/repository';
+import { canonicalizeUuid, SyncOperation } from '@/core/domain/sync/sync-operation';
+import { SyncableRecord } from '@/core/domain/sync/syncable-record';
+import { LocalDatabaseClient } from '@/data/local/db/client';
+import { changeLog, exampleRecords } from '@/data/local/schema';
+
+import { toChangeLogValues } from './change-log-repository';
+import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+
+export class ExampleRecordRepository implements Repository {
+  constructor(private readonly database: LocalDatabaseClient) {}
+
+  async save(record: SyncableRecord): Promise<void> {
+    const canonicalRecord = canonicalizeSyncableRecordIdentifiers(record);
+    this.database.db
+      .insert(exampleRecords)
+      .values(canonicalRecord)
+      .onConflictDoUpdate({
+        target: exampleRecords.id,
+        set: toUpdatedRecordValues(canonicalRecord),
+      })
+      .run();
+  }
+
+  async saveWithOperation(record: SyncableRecord, operation: SyncOperation): Promise<void> {
+    const canonicalRecord = canonicalizeSyncableRecordIdentifiers(record);
+    const canonicalOperation = canonicalizeSyncOperationIdentifiers(operation);
+    this.database.db.transaction((transaction) => {
+      transaction
+        .insert(exampleRecords)
+        .values(canonicalRecord)
+        .onConflictDoUpdate({
+          target: exampleRecords.id,
+          set: toUpdatedRecordValues(canonicalRecord),
+        })
+        .run();
+      transaction.insert(changeLog).values(toChangeLogValues(canonicalOperation)).run();
+    });
+  }
+
+  async findById(id: string): Promise<SyncableRecord | null> {
+    const record = this.database.db
+      .select()
+      .from(exampleRecords)
+      .where(eq(exampleRecords.id, canonicalizeUuid(id)))
+      .get();
+
+    return record ?? null;
+  }
+
+  async listActive(): Promise<SyncableRecord[]> {
+    return this.database.db
+      .select()
+      .from(exampleRecords)
+      .where(isNull(exampleRecords.deletedAt))
+      .all();
+  }
+}
+
+function toUpdatedRecordValues(record: SyncableRecord) {
+  return {
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
+    deletedAt: record.deletedAt,
+    revision: record.revision,
+    originDeviceId: record.originDeviceId,
+  };
+}
