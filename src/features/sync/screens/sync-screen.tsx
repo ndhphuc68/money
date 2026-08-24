@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { SyncViewModel } from '@/features/sync/view-models/use-sync';
+import { colors } from '@/theme/colors';
 
 export function SyncScreen({
   exportPackage,
@@ -23,6 +24,7 @@ export function SyncScreen({
         autoCorrect={false}
         onChangeText={setPassphrase}
         placeholder="Enter the passphrase used by the other device"
+        placeholderTextColor={colors.content.placeholder}
         secureTextEntry
         style={styles.passphraseInput}
         value={passphrase}
@@ -64,34 +66,36 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   container: {
+    backgroundColor: colors.surface.canvas,
     flex: 1,
     justifyContent: 'center',
     padding: 24,
   },
   description: {
-    color: '#475569',
+    color: colors.content.secondary,
     fontSize: 16,
     lineHeight: 24,
   },
   primaryAction: {
     alignItems: 'center',
-    backgroundColor: '#0f766e',
+    backgroundColor: colors.brand.primary,
     borderRadius: 8,
     justifyContent: 'center',
     minHeight: 48,
     paddingHorizontal: 16,
   },
   primaryActionText: {
-    color: '#ffffff',
+    color: colors.content.inverse,
     fontSize: 16,
     fontWeight: '600',
   },
   primaryActionPressed: {
-    opacity: 0.7,
+    backgroundColor: colors.brand.primaryPressed,
   },
   secondaryAction: {
     alignItems: 'center',
-    borderColor: '#0f766e',
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.brand.primary,
     borderRadius: 8,
     borderWidth: 1,
     justifyContent: 'center',
@@ -99,41 +103,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   secondaryActionText: {
-    color: '#115e59',
+    color: colors.brand.primaryPressed,
     fontSize: 16,
     fontWeight: '600',
   },
   secondaryActionPressed: {
-    backgroundColor: '#ccfbf1',
-    opacity: 0.7,
+    backgroundColor: colors.brand.soft,
   },
   status: {
-    color: '#134e4a',
+    color: colors.status.positive,
     fontSize: 16,
     lineHeight: 24,
     marginTop: 24,
   },
   error: {
-    color: '#b91c1c',
+    color: colors.status.negative,
     fontSize: 16,
     lineHeight: 24,
     marginTop: 24,
   },
   label: {
+    color: colors.content.primary,
     fontSize: 16,
     fontWeight: '600',
     marginTop: 24,
     marginBottom: 8,
   },
   passphraseInput: {
-    borderColor: '#64748b',
+    backgroundColor: colors.surface.input,
+    borderColor: colors.border.strong,
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 16,
     minHeight: 48,
     paddingHorizontal: 12,
+    color: colors.content.primary,
   },
   title: {
+    color: colors.content.primary,
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 8,
