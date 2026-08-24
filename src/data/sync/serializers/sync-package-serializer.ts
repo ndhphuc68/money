@@ -2,33 +2,47 @@ import {
   ChecksumCalculator,
   SyncPackageSerializer as SyncPackageSerializerPort,
 } from '@/core/application/ports/sync-package-serializer';
-import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { SyncPackage, SyncPackageContent, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 import { canonicalizeUuid, isUuid } from '@/core/domain/sync/sync-operation';
 
 export class StableSyncPackageSerializer implements SyncPackageSerializerPort {
   constructor(private readonly checksumCalculator: ChecksumCalculator = new Fnv1aChecksumCalculator()) {}
 
-  serialize(pkg: SyncPackage): string {
+  serialize(pkg: SyncPackageWithoutAuth | SyncPackage): string {
     return stableJson(canonicalizePackageIdentifiers(pkg));
   }
 
-  checksum(pkg: Omit<SyncPackage, 'checksum'> | SyncPackage): string {
-    const unsignedPackage: Record<string, unknown> = { ...canonicalizePackageIdentifiers(pkg) };
-    delete unsignedPackage.checksum;
+  checksum(pkg: SyncPackageContent | SyncPackageWithoutAuth | SyncPackage): string {
+    const unsignedPackage = packageWithoutIntegrityTags(pkg);
 
     return this.checksumCalculator.calculate(stableJson(unsignedPackage));
   }
 
-  withChecksum(pkg: Omit<SyncPackage, 'checksum'>): SyncPackage {
+  authenticationInput(pkg: SyncPackageWithoutAuth | SyncPackage): string {
+    const authenticatedPackage: Record<string, unknown> = { ...canonicalizePackageIdentifiers(pkg) };
+    delete authenticatedPackage.authTag;
+
+    return stableJson(authenticatedPackage);
+  }
+
+  withChecksum(pkg: SyncPackageContent): SyncPackageWithoutAuth {
     return { ...pkg, checksum: this.checksum(pkg) };
   }
 
-  verify(pkg: SyncPackage): boolean {
+  verify(pkg: SyncPackageWithoutAuth | SyncPackage): boolean {
     return pkg.checksum === this.checksum(pkg);
   }
 }
 
-function canonicalizePackageIdentifiers<T extends Omit<SyncPackage, 'checksum'> | SyncPackage>(pkg: T): T {
+function packageWithoutIntegrityTags(pkg: SyncPackageContent | SyncPackageWithoutAuth | SyncPackage): Record<string, unknown> {
+  const unsignedPackage: Record<string, unknown> = { ...canonicalizePackageIdentifiers(pkg) };
+  delete unsignedPackage.checksum;
+  delete unsignedPackage.authTag;
+
+  return unsignedPackage;
+}
+
+function canonicalizePackageIdentifiers<T extends SyncPackageContent | SyncPackageWithoutAuth | SyncPackage>(pkg: T): T {
   return {
     ...pkg,
     sourceDeviceId: canonicalizeIdentifier(pkg.sourceDeviceId),

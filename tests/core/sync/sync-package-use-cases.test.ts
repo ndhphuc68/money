@@ -1,11 +1,11 @@
 import { ExportSyncPackage } from '@/core/application/use-cases/export-sync-package';
 import { ImportSyncPackage } from '@/core/application/use-cases/import-sync-package';
 import { ImportSummary } from '@/core/application/ports/sync-transport';
-import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 
-const pkg: SyncPackage = {
+const pkg: SyncPackageWithoutAuth = {
   format: 'app-sync',
-  formatVersion: 1,
+  formatVersion: 2,
   appVersion: '1.0.0',
   schemaVersion: 1,
   sourceDeviceId: '550e8400-e29b-41d4-a716-446655440001',

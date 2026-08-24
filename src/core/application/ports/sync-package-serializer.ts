@@ -1,12 +1,13 @@
-import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { SyncPackage, SyncPackageContent, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 
 export interface ChecksumCalculator {
   calculate(content: string): string;
 }
 
 export interface SyncPackageSerializer {
-  serialize(pkg: SyncPackage): string;
-  checksum(pkg: Omit<SyncPackage, 'checksum'> | SyncPackage): string;
-  withChecksum(pkg: Omit<SyncPackage, 'checksum'>): SyncPackage;
-  verify(pkg: SyncPackage): boolean;
+  serialize(pkg: SyncPackageWithoutAuth | SyncPackage): string;
+  checksum(pkg: SyncPackageContent | SyncPackageWithoutAuth | SyncPackage): string;
+  authenticationInput(pkg: SyncPackageWithoutAuth | SyncPackage): string;
+  withChecksum(pkg: SyncPackageContent): SyncPackageWithoutAuth;
+  verify(pkg: SyncPackageWithoutAuth | SyncPackage): boolean;
 }

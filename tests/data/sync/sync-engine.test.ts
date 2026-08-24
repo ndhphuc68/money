@@ -6,7 +6,7 @@ import { openTestLocalDatabase } from '@/data/local/db/client';
 import { ChangeLogRepository } from '@/data/local/repositories/change-log-repository';
 import { ExampleRecordRepository } from '@/data/local/repositories/example-record-repository';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
-import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 
 const sourceDeviceId = '550e8400-e29b-41d4-a716-446655440001';
@@ -40,10 +40,10 @@ function operation(overrides: Partial<SyncOperation> = {}): SyncOperation {
   };
 }
 
-function pkg(changes: SyncOperation[]): SyncPackage {
+function pkg(changes: SyncOperation[]): SyncPackageWithoutAuth {
   return serializer.withChecksum({
     format: 'app-sync',
-    formatVersion: 1,
+    formatVersion: 2,
     appVersion: '1.0.0',
     schemaVersion: 1,
     sourceDeviceId,

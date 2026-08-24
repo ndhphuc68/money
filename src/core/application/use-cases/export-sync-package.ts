@@ -1,13 +1,13 @@
-import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 
 export interface PendingSyncPackageExporter {
-  exportPending(): Promise<SyncPackage>;
+  exportPending(): Promise<SyncPackageWithoutAuth>;
 }
 
 export class ExportSyncPackage {
   constructor(private readonly exporter: PendingSyncPackageExporter) {}
 
-  execute(): Promise<SyncPackage> {
+  execute(): Promise<SyncPackageWithoutAuth> {
     return this.exporter.exportPending();
   }
 }

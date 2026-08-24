@@ -1,11 +1,11 @@
 import { StableSyncPackageSerializer } from '@/data/sync/serializers/sync-package-serializer';
-import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 
 const serializer = new StableSyncPackageSerializer();
 
-const pkg: SyncPackage = {
+const pkg: SyncPackageWithoutAuth = {
   format: 'app-sync',
-  formatVersion: 1,
+  formatVersion: 2,
   appVersion: '1.0.0',
   schemaVersion: 1,
   sourceDeviceId: '550e8400-e29b-41d4-a716-446655440001',
@@ -27,7 +27,7 @@ const pkg: SyncPackage = {
 
 describe('StableSyncPackageSerializer', () => {
   it('serializes equivalent object keys identically and derives the same checksum', () => {
-    const reordered: SyncPackage = {
+    const reordered: SyncPackageWithoutAuth = {
       ...pkg,
       changes: [{ ...pkg.changes[0], payload: { a: { first: false, second: true }, z: 1 } }],
     };

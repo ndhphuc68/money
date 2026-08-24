@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm';
 
 import { Repository, ChangeLogRepository as ChangeLogRepositoryPort } from '@/core/application/ports/repository';
 import { SyncPackageSerializer } from '@/core/application/ports/sync-package-serializer';
-import { ImportSummary, SyncTransport } from '@/core/application/ports/sync-transport';
+import { ImportSummary } from '@/core/application/ports/sync-transport';
 import { canonicalizeUuid, isIsoTimestamp, isUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
-import { parseSyncPackage, SyncPackage } from '@/core/domain/sync/sync-package';
+import { parseSyncPackageWithoutAuth, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { toChangeLogValues } from '@/data/local/repositories/change-log-repository';
@@ -23,20 +23,20 @@ export type SyncEngineOptions = {
   conflictResolver?: ConflictResolver;
 };
 
-export class SyncEngine implements SyncTransport {
+export class SyncEngine {
   private readonly conflictResolver: ConflictResolver;
 
   constructor(private readonly options: SyncEngineOptions) {
     this.conflictResolver = options.conflictResolver ?? new LastWriteWinsConflictResolver();
   }
 
-  async exportPending(): Promise<SyncPackage> {
+  async exportPending(): Promise<SyncPackageWithoutAuth> {
     const changes = await this.options.changes.listPending();
     const sortedChanges = [...changes].sort(compareOperations);
 
     return this.options.serializer.withChecksum({
       format: 'app-sync',
-      formatVersion: 1,
+      formatVersion: 2,
       appVersion: this.options.appVersion,
       schemaVersion: this.options.schemaVersion,
       sourceDeviceId: canonicalizeUuid(this.options.sourceDeviceId),
@@ -45,16 +45,16 @@ export class SyncEngine implements SyncTransport {
     });
   }
 
-  async exportChanges(): Promise<SyncPackage> {
+  async exportChanges(): Promise<SyncPackageWithoutAuth> {
     return this.exportPending();
   }
 
-  async import(pkg: SyncPackage): Promise<ImportSummary> {
-    let validatedPackage: SyncPackage;
+  async import(pkg: SyncPackageWithoutAuth): Promise<ImportSummary> {
+    let validatedPackage: SyncPackageWithoutAuth;
     let incomingRecords: SyncableRecord[];
 
     try {
-      validatedPackage = parseSyncPackage(pkg);
+      validatedPackage = parseSyncPackageWithoutAuth(pkg);
       if (!this.options.serializer.verify(validatedPackage)) {
         throw new Error('Sync package checksum is invalid');
       }
@@ -110,7 +110,7 @@ export class SyncEngine implements SyncTransport {
     });
   }
 
-  async importChanges(pkg: SyncPackage): Promise<ImportSummary> {
+  async importChanges(pkg: SyncPackageWithoutAuth): Promise<ImportSummary> {
     return this.import(pkg);
   }
 }

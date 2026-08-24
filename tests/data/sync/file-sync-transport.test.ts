@@ -41,10 +41,11 @@ import * as Sharing from 'expo-sharing';
 import * as SecureStore from 'expo-secure-store';
 import { randomUUID } from 'expo-crypto';
 
-import { ImportSummary, SyncTransport } from '@/core/application/ports/sync-transport';
-import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { ImportSummary } from '@/core/application/ports/sync-transport';
+import { SyncPackage, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
+import { HmacSha256AuthenticationProvider } from '@/data/sync/authentication/hmac-sha256-authentication-provider';
 import { StableSyncPackageSerializer } from '@/data/sync/serializers/sync-package-serializer';
-import { FileSyncTransport } from '@/data/sync/transports/file-sync-transport';
+import { FileSyncTransport, SyncPackageEngine } from '@/data/sync/transports/file-sync-transport';
 import { DeviceIdentity } from '@/infrastructure/expo/device-identity/device-identity';
 import { SyncPackageFile } from '@/infrastructure/expo/file-system/sync-package-file';
 import { SystemFilePicker } from '@/infrastructure/expo/file-system/system-file-picker';
@@ -52,9 +53,9 @@ import { SecureStorage } from '@/infrastructure/expo/secure-store/secure-storage
 import { SystemShare } from '@/infrastructure/expo/sharing/system-share';
 
 const serializer = new StableSyncPackageSerializer();
-const packageFixture: SyncPackage = serializer.withChecksum({
+const packageFixture: SyncPackageWithoutAuth = serializer.withChecksum({
   format: 'app-sync',
-  formatVersion: 1,
+  formatVersion: 2,
   appVersion: '1.0.0',
   schemaVersion: 1,
   sourceDeviceId: '550e8400-e29b-41d4-a716-446655440000',
@@ -72,11 +73,12 @@ describe('SyncPackageFile', () => {
   it('writes a versioned package and preserves its checksum when read back', async () => {
     const files = new SyncPackageFile(serializer, () => 'export.app-sync.json');
 
-    const uri = await files.write(packageFixture);
+    const authenticated = await authenticatedPackage();
+    const uri = await files.write(authenticated);
 
     expect(uri).toBe('memory://documents/export.app-sync.json');
-    expect(JSON.parse(mockFiles.get(uri) ?? '')).toMatchObject({ checksum: packageFixture.checksum, formatVersion: 1 });
-    await expect(files.read(uri)).resolves.toEqual(packageFixture);
+    expect(JSON.parse(mockFiles.get(uri) ?? '')).toMatchObject({ checksum: authenticated.checksum, formatVersion: 2 });
+    await expect(files.read(uri)).resolves.toEqual(authenticated);
   });
 
   it.each(['not json', JSON.stringify({ format: 'not-sync' })])('rejects malformed package content: %s', async (content) => {
@@ -89,29 +91,86 @@ describe('SyncPackageFile', () => {
 });
 
 describe('FileSyncTransport', () => {
+  it('exports an authenticated package that round-trips with the shared passphrase', async () => {
+    const engine: SyncPackageEngine = {
+      exportChanges: async () => packageFixture,
+      importChanges: async () => emptySummary(),
+    };
+    const files = new SyncPackageFile(serializer, () => 'authenticated.app-sync.json');
+    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+
+    const uri = await transport.exportToFile();
+
+    await expect(files.read(uri)).resolves.toMatchObject({ authTag: expect.stringMatching(/^hmac-sha256:/) });
+  });
+
+  it('does not call the sync engine when an imported package was tampered with', async () => {
+    const files = new SyncPackageFile(serializer);
+    const authenticated = await authenticatedPackage();
+    const uri = 'memory://documents/tampered.app-sync.json';
+    mockFiles.set(uri, serializer.serialize({ ...authenticated, appVersion: '2.0.0' }));
+    const engine: SyncPackageEngine = {
+      exportChanges: async () => packageFixture,
+      importChanges: jest.fn(async () => emptySummary()),
+    };
+    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+
+    await expect(transport.importFromFile(uri)).rejects.toThrow('authentication failed');
+    expect(engine.importChanges).not.toHaveBeenCalled();
+  });
+
+  it('does not call the sync engine when the shared passphrase is wrong', async () => {
+    const files = new SyncPackageFile(serializer);
+    const uri = 'memory://documents/wrong-passphrase.app-sync.json';
+    mockFiles.set(uri, serializer.serialize(await authenticatedPackage()));
+    const engine: SyncPackageEngine = {
+      exportChanges: async () => packageFixture,
+      importChanges: jest.fn(async () => emptySummary()),
+    };
+    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('incorrect passphrase'));
+
+    await expect(transport.importFromFile(uri)).rejects.toThrow('authentication failed');
+    expect(engine.importChanges).not.toHaveBeenCalled();
+  });
+
+  it('rejects an imported package without an auth tag before calling the sync engine', async () => {
+    const files = new SyncPackageFile(serializer);
+    const uri = 'memory://documents/missing-auth-tag.app-sync.json';
+    mockFiles.set(uri, serializer.serialize(packageFixture));
+    const engine: SyncPackageEngine = {
+      exportChanges: async () => packageFixture,
+      importChanges: jest.fn(async () => emptySummary()),
+    };
+    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+
+    await expect(transport.importFromFile(uri)).rejects.toThrow('auth tag');
+    expect(engine.importChanges).not.toHaveBeenCalled();
+  });
+
   it('writes the engine export without changing its checksum', async () => {
-    const engine: SyncTransport = {
+    const engine: SyncPackageEngine = {
       exportChanges: async () => packageFixture,
       importChanges: async () => emptySummary(),
     };
     const files = new SyncPackageFile(serializer, () => 'transport.app-sync.json');
-    const transport = new FileSyncTransport(engine, files);
+    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
 
     const uri = await transport.exportToFile();
 
-    expect(await files.read(uri)).toEqual(packageFixture);
+    await expect(files.read(uri)).resolves.toMatchObject({ checksum: packageFixture.checksum, authTag: expect.stringMatching(/^hmac-sha256:/) });
   });
 
   it('passes an imported package directly to the sync engine for validation and merging', async () => {
     const files = new SyncPackageFile(serializer);
     const uri = 'memory://documents/import.app-sync.json';
-    mockFiles.set(uri, serializer.serialize(packageFixture));
+    const authenticated = await authenticatedPackage();
+    mockFiles.set(uri, serializer.serialize(authenticated));
     const summary: ImportSummary = { applied: 2, skipped: 1, conflicted: 0, rejected: 0 };
-    const engine: SyncTransport = {
+    const engine: SyncPackageEngine = {
       exportChanges: async () => packageFixture,
       importChanges: jest.fn(async () => summary),
     };
-    const transport = new FileSyncTransport(engine, files);
+    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
 
     await expect(transport.importFromFile(uri)).resolves.toEqual(summary);
     expect(engine.importChanges).toHaveBeenCalledWith(packageFixture);
@@ -165,4 +224,9 @@ describe('system Expo adapters', () => {
 
 function emptySummary(): ImportSummary {
   return { applied: 0, skipped: 0, conflicted: 0, rejected: 0 };
+}
+
+async function authenticatedPackage(): Promise<SyncPackage> {
+  const provider = new HmacSha256AuthenticationProvider('correct horse battery staple');
+  return { ...packageFixture, authTag: provider.authenticate(serializer.authenticationInput(packageFixture)) };
 }

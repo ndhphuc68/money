@@ -14,13 +14,14 @@ const change: SyncOperation = {
 
 const validPackage: SyncPackage = {
   format: 'app-sync',
-  formatVersion: 1,
+  formatVersion: 2,
   appVersion: '1.0.0',
   schemaVersion: 1,
   sourceDeviceId: '550e8400-e29b-41d4-a716-446655440003',
   exportedAt: '2026-08-24T10:01:00.000Z',
   changes: [change],
   checksum: 'checksum',
+  authTag: 'hmac-sha256:placeholder',
 };
 
 describe('SyncPackage', () => {
@@ -30,7 +31,7 @@ describe('SyncPackage', () => {
 
   it.each([
     ['format', { format: 'wrong-format' }],
-    ['formatVersion', { formatVersion: 2 }],
+    ['formatVersion', { formatVersion: 1 }],
   ])('rejects a package with the wrong %s', (_, invalidFields) => {
     expect(() => parseSyncPackage({ ...validPackage, ...invalidFields })).toThrow();
   });

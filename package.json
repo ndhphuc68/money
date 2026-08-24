@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@noble/hashes": "^2.3.0",
     "babel-plugin-inline-import": "^3.0.0",
     "drizzle-orm": "^0.45.2",
     "expo": "~54.0.0",
