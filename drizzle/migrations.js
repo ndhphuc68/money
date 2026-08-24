@@ -9,4 +9,3 @@ import m0000 from './0000_open_zarda.sql';
       m0000
     }
   }
-  
