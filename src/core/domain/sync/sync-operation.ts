@@ -18,7 +18,11 @@ export function isUuid(value: unknown): value is string {
 }
 
 export function isIsoTimestamp(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && !Number.isNaN(Date.parse(value));
+  return (
+    typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) &&
+    !Number.isNaN(Date.parse(value))
+  );
 }
 
 export function parseSyncOperation(value: unknown): SyncOperation {
@@ -31,6 +35,9 @@ export function parseSyncOperation(value: unknown): SyncOperation {
   }
   if (typeof value.entityType !== 'string' || value.entityType.trim() === '') {
     throw new Error('Sync operation entityType must not be empty');
+  }
+  if (!Object.prototype.hasOwnProperty.call(value, 'payload')) {
+    throw new Error('Sync operation payload is required');
   }
   if (value.operation !== 'create' && value.operation !== 'update' && value.operation !== 'delete') {
     throw new Error('Sync operation kind is invalid');

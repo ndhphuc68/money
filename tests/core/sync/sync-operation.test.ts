@@ -22,8 +22,15 @@ describe('SyncOperation', () => {
     ['originDeviceId', { originDeviceId: '' }],
     ['revision', { revision: -1 }],
     ['createdAt', { createdAt: '' }],
+    ['non-ISO createdAt', { createdAt: 'August 24, 2026' }],
     ['operationId UUID', { operationId: 'not-a-uuid' }],
   ])('rejects an invalid %s', (_, invalidFields) => {
     expect(() => parseSyncOperation({ ...validOperation, ...invalidFields })).toThrow();
+  });
+
+  it('rejects an operation missing the payload property', () => {
+    const { payload: _payload, ...operationWithoutPayload } = validOperation;
+
+    expect(() => parseSyncOperation(operationWithoutPayload)).toThrow();
   });
 });
