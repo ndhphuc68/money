@@ -44,4 +44,13 @@ describe('LastWriteWinsConflictResolver', () => {
 
     expect(resolver.resolve(local, incoming)).toEqual({ winner: 'incoming', record: incoming });
   });
+
+  it('uses canonical record content to choose the same winner for tied live and tombstone records', () => {
+    const resolver = new LastWriteWinsConflictResolver();
+    const live = record();
+    const tombstone = record({ deletedAt: '2026-08-24T10:00:00.000Z' });
+
+    expect(resolver.resolve(live, tombstone)).toEqual({ winner: 'local', record: live });
+    expect(resolver.resolve(tombstone, live)).toEqual({ winner: 'incoming', record: live });
+  });
 });

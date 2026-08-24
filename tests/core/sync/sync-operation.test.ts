@@ -16,6 +16,17 @@ describe('SyncOperation', () => {
     expect(parseSyncOperation(validOperation)).toEqual(validOperation);
   });
 
+  it('canonicalizes UUID identifiers to lowercase at the contract boundary', () => {
+    const uppercaseIdentifiers = {
+      ...validOperation,
+      operationId: validOperation.operationId.toUpperCase(),
+      entityId: validOperation.entityId.toUpperCase(),
+      originDeviceId: validOperation.originDeviceId.toUpperCase(),
+    };
+
+    expect(parseSyncOperation(uppercaseIdentifiers)).toEqual(validOperation);
+  });
+
   it.each([
     ['operationId', { operationId: '' }],
     ['entityId', { entityId: '' }],

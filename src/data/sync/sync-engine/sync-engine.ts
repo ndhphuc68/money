@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { Repository, ChangeLogRepository as ChangeLogRepositoryPort } from '@/core/application/ports/repository';
 import { SyncPackageSerializer } from '@/core/application/ports/sync-package-serializer';
 import { ImportSummary, SyncTransport } from '@/core/application/ports/sync-transport';
-import { isIsoTimestamp, isUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
+import { canonicalizeUuid, isIsoTimestamp, isUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
 import { parseSyncPackage, SyncPackage } from '@/core/domain/sync/sync-package';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 import { LocalDatabaseClient } from '@/data/local/db/client';
@@ -39,7 +39,7 @@ export class SyncEngine implements SyncTransport {
       formatVersion: 1,
       appVersion: this.options.appVersion,
       schemaVersion: this.options.schemaVersion,
-      sourceDeviceId: this.options.sourceDeviceId,
+      sourceDeviceId: canonicalizeUuid(this.options.sourceDeviceId),
       exportedAt: this.options.now(),
       changes: sortedChanges,
     });
@@ -119,7 +119,7 @@ function validateIncomingRecords(changes: SyncOperation[]): SyncableRecord[] {
   const operationIds = new Set<string>();
 
   return changes.map((operation) => {
-    parseSyncOperation(operation);
+    const canonicalOperation = parseSyncOperation(operation);
     if (operation.entityType !== 'example-record') {
       throw new Error('Unsupported sync entity type');
     }
@@ -130,11 +130,11 @@ function validateIncomingRecords(changes: SyncOperation[]): SyncableRecord[] {
 
     const record = parseSyncableRecord(operation.payload);
     if (
-      record.id !== operation.entityId ||
-      record.originDeviceId.toLowerCase() !== operation.originDeviceId.toLowerCase() ||
-      record.revision !== operation.revision ||
-      (operation.operation === 'delete' && record.deletedAt === null) ||
-      (operation.operation !== 'delete' && record.deletedAt !== null)
+      record.id !== canonicalOperation.entityId ||
+      record.originDeviceId !== canonicalOperation.originDeviceId ||
+      record.revision !== canonicalOperation.revision ||
+      (canonicalOperation.operation === 'delete' && record.deletedAt === null) ||
+      (canonicalOperation.operation !== 'delete' && record.deletedAt !== null)
     ) {
       throw new Error('Sync operation does not match its record payload');
     }
@@ -162,7 +162,11 @@ function parseSyncableRecord(value: unknown): SyncableRecord {
     throw new Error('Sync operation payload contains an invalid syncable record');
   }
 
-  return record as SyncableRecord;
+  return {
+    ...record,
+    id: canonicalizeUuid(record.id),
+    originDeviceId: canonicalizeUuid(record.originDeviceId),
+  } as SyncableRecord;
 }
 
 function compareOperations(left: SyncOperation, right: SyncOperation): number {

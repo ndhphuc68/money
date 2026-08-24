@@ -77,6 +77,22 @@ describe('local repositories', () => {
     await expect(changes.listPending()).resolves.toEqual([pending]);
   });
 
+  it('canonicalizes UUID identifiers before persisting records and operations', async () => {
+    const uppercaseRecord = record({ id: recordId.toUpperCase(), originDeviceId: deviceId.toUpperCase() });
+    const uppercaseOperation = operation({
+      operationId: '550e8400-e29b-41d4-a716-446655440012'.toUpperCase(),
+      entityId: recordId.toUpperCase(),
+      originDeviceId: deviceId.toUpperCase(),
+    });
+
+    await records.save(uppercaseRecord);
+    await changes.append(uppercaseOperation);
+
+    await expect(records.findById(recordId)).resolves.toEqual(record());
+    await expect(changes.hasOperation('550e8400-e29b-41d4-a716-446655440012')).resolves.toBe(true);
+    await expect(changes.listPending()).resolves.toEqual([operation()]);
+  });
+
   it('preserves a tombstone while excluding it from active records', async () => {
     const tombstone = record({ deletedAt: '2026-08-24T10:10:00.000Z', revision: 2 });
 

@@ -1,4 +1,4 @@
-import { isIsoTimestamp, isUuid, parseSyncOperation, SyncOperation } from './sync-operation';
+import { canonicalizeUuid, isIsoTimestamp, isUuid, parseSyncOperation, SyncOperation } from './sync-operation';
 
 export type SyncPackage = {
   format: 'app-sync';
@@ -38,7 +38,7 @@ export function parseSyncPackage(value: unknown): SyncPackage {
   }
 
   const changes = value.changes.map(parseSyncOperation);
-  return { ...value, changes } as SyncPackage;
+  return { ...value, sourceDeviceId: canonicalizeUuid(value.sourceDeviceId), changes } as SyncPackage;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

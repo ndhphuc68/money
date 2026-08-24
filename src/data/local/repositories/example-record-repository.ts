@@ -1,45 +1,42 @@
 import { eq, isNull } from 'drizzle-orm';
 
 import { Repository } from '@/core/application/ports/repository';
-import { SyncOperation } from '@/core/domain/sync/sync-operation';
+import { canonicalizeUuid, SyncOperation } from '@/core/domain/sync/sync-operation';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, exampleRecords } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
-import {
-  assertValidSyncableRecordIdentifiers,
-  assertValidSyncOperationIdentifiers,
-} from './sync-identifier-validation';
+import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
 
 export class ExampleRecordRepository implements Repository {
   constructor(private readonly database: LocalDatabaseClient) {}
 
   async save(record: SyncableRecord): Promise<void> {
-    assertValidSyncableRecordIdentifiers(record);
+    const canonicalRecord = canonicalizeSyncableRecordIdentifiers(record);
     this.database.db
       .insert(exampleRecords)
-      .values(record)
+      .values(canonicalRecord)
       .onConflictDoUpdate({
         target: exampleRecords.id,
-        set: toUpdatedRecordValues(record),
+        set: toUpdatedRecordValues(canonicalRecord),
       })
       .run();
   }
 
   async saveWithOperation(record: SyncableRecord, operation: SyncOperation): Promise<void> {
-    assertValidSyncableRecordIdentifiers(record);
-    assertValidSyncOperationIdentifiers(operation);
+    const canonicalRecord = canonicalizeSyncableRecordIdentifiers(record);
+    const canonicalOperation = canonicalizeSyncOperationIdentifiers(operation);
     this.database.db.transaction((transaction) => {
       transaction
         .insert(exampleRecords)
-        .values(record)
+        .values(canonicalRecord)
         .onConflictDoUpdate({
           target: exampleRecords.id,
-          set: toUpdatedRecordValues(record),
+          set: toUpdatedRecordValues(canonicalRecord),
         })
         .run();
-      transaction.insert(changeLog).values(toChangeLogValues(operation)).run();
+      transaction.insert(changeLog).values(toChangeLogValues(canonicalOperation)).run();
     });
   }
 
@@ -47,7 +44,7 @@ export class ExampleRecordRepository implements Repository {
     const record = this.database.db
       .select()
       .from(exampleRecords)
-      .where(eq(exampleRecords.id, id))
+      .where(eq(exampleRecords.id, canonicalizeUuid(id)))
       .get();
 
     return record ?? null;

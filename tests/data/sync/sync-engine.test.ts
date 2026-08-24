@@ -52,6 +52,22 @@ function pkg(changes: SyncOperation[]): SyncPackage {
   });
 }
 
+function uppercaseIdentifiers(change: SyncOperation): SyncOperation {
+  const payload = change.payload as SyncableRecord;
+
+  return {
+    ...change,
+    operationId: change.operationId.toUpperCase(),
+    entityId: change.entityId.toUpperCase(),
+    originDeviceId: change.originDeviceId.toUpperCase(),
+    payload: {
+      ...payload,
+      id: payload.id.toUpperCase(),
+      originDeviceId: payload.originDeviceId.toUpperCase(),
+    },
+  };
+}
+
 describe('SyncEngine', () => {
   let database: Awaited<ReturnType<typeof openTestLocalDatabase>>;
   let records: ExampleRecordRepository;
@@ -121,6 +137,15 @@ describe('SyncEngine', () => {
     await expect(engine.import(incomingPackage)).resolves.toEqual({ applied: 0, skipped: 1, conflicted: 0, rejected: 0 });
     await expect(records.findById(incoming.entityId)).resolves.toEqual(incoming.payload);
     await expect(engine.exportPending()).resolves.toMatchObject({ changes: [] });
+  });
+
+  it('skips an operation reimported with different UUID casing', async () => {
+    const lowerCaseOperation = operation();
+    const uppercaseOperation = uppercaseIdentifiers(lowerCaseOperation);
+
+    await expect(engine.import(pkg([uppercaseOperation]))).resolves.toEqual({ applied: 1, skipped: 0, conflicted: 0, rejected: 0 });
+    await expect(engine.import(pkg([lowerCaseOperation]))).resolves.toEqual({ applied: 0, skipped: 1, conflicted: 0, rejected: 0 });
+    await expect(records.findById(lowerCaseOperation.entityId)).resolves.toEqual(lowerCaseOperation.payload);
   });
 
   it('uses originDeviceId to retain the deterministic winner when timestamps are tied', async () => {

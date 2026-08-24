@@ -3,16 +3,17 @@ import {
   SyncPackageSerializer as SyncPackageSerializerPort,
 } from '@/core/application/ports/sync-package-serializer';
 import { SyncPackage } from '@/core/domain/sync/sync-package';
+import { canonicalizeUuid, isUuid } from '@/core/domain/sync/sync-operation';
 
 export class StableSyncPackageSerializer implements SyncPackageSerializerPort {
   constructor(private readonly checksumCalculator: ChecksumCalculator = new Fnv1aChecksumCalculator()) {}
 
   serialize(pkg: SyncPackage): string {
-    return stableJson(pkg);
+    return stableJson(canonicalizePackageIdentifiers(pkg));
   }
 
   checksum(pkg: Omit<SyncPackage, 'checksum'> | SyncPackage): string {
-    const unsignedPackage: Record<string, unknown> = { ...pkg };
+    const unsignedPackage: Record<string, unknown> = { ...canonicalizePackageIdentifiers(pkg) };
     delete unsignedPackage.checksum;
 
     return this.checksumCalculator.calculate(stableJson(unsignedPackage));
@@ -25,6 +26,23 @@ export class StableSyncPackageSerializer implements SyncPackageSerializerPort {
   verify(pkg: SyncPackage): boolean {
     return pkg.checksum === this.checksum(pkg);
   }
+}
+
+function canonicalizePackageIdentifiers<T extends Omit<SyncPackage, 'checksum'> | SyncPackage>(pkg: T): T {
+  return {
+    ...pkg,
+    sourceDeviceId: canonicalizeIdentifier(pkg.sourceDeviceId),
+    changes: pkg.changes.map((change) => ({
+      ...change,
+      operationId: canonicalizeIdentifier(change.operationId),
+      entityId: canonicalizeIdentifier(change.entityId),
+      originDeviceId: canonicalizeIdentifier(change.originDeviceId),
+    })),
+  } as T;
+}
+
+function canonicalizeIdentifier(value: string): string {
+  return isUuid(value) ? canonicalizeUuid(value) : value;
 }
 
 export class Fnv1aChecksumCalculator implements ChecksumCalculator {

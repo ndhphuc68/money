@@ -49,3 +49,36 @@ Implemented the Task 4 sync engine without adding file/share transport or UI beh
 - Native Expo SQLite execution is unavailable in this Windows Node/Jest environment. The local integration tests use the existing test-only `better-sqlite3` Expo SQLite compatibility adapter and exercise the real Drizzle queries, migrations, uniqueness constraint, and transaction rollback. Validate on Android or iOS before release.
 - The default FNV-1a adapter is a deterministic corruption checksum, not an authenticated or cryptographic integrity mechanism. If packages will cross an untrusted boundary, provide a cryptographic checksum or signature adapter through the new core port.
 - Existing Task 3 pending operations must use a complete `SyncableRecord` payload for the Task 4 `example-record` importer. This is enforced to make LWW and tombstone merging unambiguous.
+
+## Fix Round 1: deterministic exact ties and canonical UUID identifiers
+
+### Status
+
+Implemented the reviewer findings without expanding the checksum into an authentication or transport-security feature.
+
+### Delivered
+
+- Extended last-write-wins with a final, stable comparison of canonical record content after `updatedAt` and normalized `originDeviceId` tie. This makes a live-record versus tombstone tie select the same content regardless of import direction.
+- Canonicalized UUID identifiers to lowercase at the sync-operation and sync-package contract boundaries.
+- Canonicalized record and operation identifiers before repository writes, change-log duplicate lookups, record reads, exported package construction, package serialization, and checksum calculation.
+- Kept FNV-1a as the existing deterministic package checksum only; it remains neither an authenticity mechanism nor a security boundary.
+
+### Regression coverage
+
+- Exact timestamp/device ties between a live record and a tombstone now converge on the same winner in both resolver call orders.
+- Contract parsing converts uppercase `operationId`, `entityId`, and `originDeviceId` values to lowercase.
+- Repository reads and writes use canonical UUID values.
+- Importing an uppercase UUID version of an operation then its lowercase equivalent skips the second import rather than applying it again.
+
+### TDD evidence
+
+Added the four focused regressions before changing production code and ran them against the previous implementation. They failed for the intended reasons: direction-dependent LWW ties, uppercase contract values returned unchanged, case-sensitive repository lookup failure, and casing-based duplicate import reapplication. The same focused suite passed after the minimal fixes.
+
+### Validation
+
+| Command | Result |
+| --- | --- |
+| `npm test -- --runInBand tests/data/sync/last-write-wins.test.ts tests/core/sync/sync-operation.test.ts tests/data/local/repositories.test.ts tests/data/sync/sync-engine.test.ts` | PASS: 4 suites, 35 tests |
+| `npm test -- --runInBand` | PASS: 8 suites, 43 tests |
+| `npm run typecheck` | PASS: `tsc --noEmit` |
+| `npx drizzle-kit generate` | PASS: no schema changes, no migration generated |

@@ -17,6 +17,10 @@ export function isUuid(value: unknown): value is string {
   return typeof value === 'string' && UUID_PATTERN.test(value);
 }
 
+export function canonicalizeUuid(value: string): string {
+  return value.toLowerCase();
+}
+
 export function isIsoTimestamp(value: unknown): value is string {
   return (
     typeof value === 'string' &&
@@ -49,7 +53,12 @@ export function parseSyncOperation(value: unknown): SyncOperation {
     throw new Error('Sync operation createdAt must be an ISO timestamp');
   }
 
-  return value as SyncOperation;
+  return {
+    ...value,
+    operationId: canonicalizeUuid(value.operationId),
+    entityId: canonicalizeUuid(value.entityId),
+    originDeviceId: canonicalizeUuid(value.originDeviceId),
+  } as SyncOperation;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

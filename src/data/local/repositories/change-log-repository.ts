@@ -1,25 +1,24 @@
 import { asc, eq, isNull } from 'drizzle-orm';
 
 import { ChangeLogRepository as ChangeLogPort } from '@/core/application/ports/repository';
-import { SyncOperation } from '@/core/domain/sync/sync-operation';
+import { canonicalizeUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog } from '@/data/local/schema';
 
-import { assertValidSyncOperationIdentifiers } from './sync-identifier-validation';
+import { canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
 
 export class ChangeLogRepository implements ChangeLogPort {
   constructor(private readonly database: LocalDatabaseClient) {}
 
   async append(operation: SyncOperation): Promise<void> {
-    assertValidSyncOperationIdentifiers(operation);
-    this.database.db.insert(changeLog).values(toChangeLogValues(operation)).run();
+    this.database.db.insert(changeLog).values(toChangeLogValues(canonicalizeSyncOperationIdentifiers(operation))).run();
   }
 
   async hasOperation(operationId: string): Promise<boolean> {
     const operation = this.database.db
       .select({ operationId: changeLog.operationId })
       .from(changeLog)
-      .where(eq(changeLog.operationId, operationId))
+      .where(eq(changeLog.operationId, canonicalizeUuid(operationId)))
       .get();
 
     return operation !== undefined;
@@ -33,7 +32,7 @@ export class ChangeLogRepository implements ChangeLogPort {
       .orderBy(asc(changeLog.createdAt))
       .all();
 
-    return rows.map((row) => ({
+    return rows.map((row) => parseSyncOperation({
       operationId: row.operationId,
       entityType: row.entityType,
       entityId: row.entityId,
@@ -47,14 +46,16 @@ export class ChangeLogRepository implements ChangeLogPort {
 }
 
 export function toChangeLogValues(operation: SyncOperation) {
+  const canonicalOperation = canonicalizeSyncOperationIdentifiers(operation);
+
   return {
-    operationId: operation.operationId,
-    entityType: operation.entityType,
-    entityId: operation.entityId,
-    operation: operation.operation,
-    payload: JSON.stringify(operation.payload),
-    originDeviceId: operation.originDeviceId,
-    revision: operation.revision,
-    createdAt: operation.createdAt,
+    operationId: canonicalOperation.operationId,
+    entityType: canonicalOperation.entityType,
+    entityId: canonicalOperation.entityId,
+    operation: canonicalOperation.operation,
+    payload: JSON.stringify(canonicalOperation.payload),
+    originDeviceId: canonicalOperation.originDeviceId,
+    revision: canonicalOperation.revision,
+    createdAt: canonicalOperation.createdAt,
   };
 }
