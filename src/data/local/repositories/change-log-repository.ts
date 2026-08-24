@@ -5,10 +5,13 @@ import { SyncOperation } from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog } from '@/data/local/schema';
 
+import { assertValidSyncOperationIdentifiers } from './sync-identifier-validation';
+
 export class ChangeLogRepository implements ChangeLogPort {
   constructor(private readonly database: LocalDatabaseClient) {}
 
   async append(operation: SyncOperation): Promise<void> {
+    assertValidSyncOperationIdentifiers(operation);
     this.database.db.insert(changeLog).values(toChangeLogValues(operation)).run();
   }
 

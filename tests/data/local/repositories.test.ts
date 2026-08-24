@@ -1,6 +1,7 @@
 import { openTestLocalDatabase } from '@/data/local/db/client';
 import { ChangeLogRepository } from '@/data/local/repositories/change-log-repository';
 import { ExampleRecordRepository } from '@/data/local/repositories/example-record-repository';
+import { Repository } from '@/core/application/ports/repository';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 
@@ -36,7 +37,7 @@ function operation(overrides: Partial<SyncOperation> = {}): SyncOperation {
 describe('local repositories', () => {
   let database: Awaited<ReturnType<typeof openTestLocalDatabase>>;
   let changes: ChangeLogRepository;
-  let records: ExampleRecordRepository;
+  let records: Repository;
 
   beforeEach(async () => {
     database = await openTestLocalDatabase();
@@ -99,5 +100,43 @@ describe('local repositories', () => {
 
     await expect(records.saveWithOperation(unsaved, pending)).rejects.toThrow();
     await expect(records.findById(unsaved.id)).resolves.toBeNull();
+  });
+
+  it('writes a record and its change operation through the repository port', async () => {
+    const saved = record();
+    const pending = operation();
+
+    await records.saveWithOperation(saved, pending);
+
+    await expect(records.findById(saved.id)).resolves.toEqual(saved);
+    await expect(changes.listPending()).resolves.toEqual([pending]);
+  });
+
+  it.each([
+    ['record id', record({ id: 'not-a-uuid' })],
+    ['record origin device id', record({ originDeviceId: 'not-a-uuid' })],
+  ])('rejects an invalid %s before writing a record', async (_, invalidRecord) => {
+    await expect(records.save(invalidRecord)).rejects.toThrow();
+
+    await expect(records.listActive()).resolves.toEqual([]);
+  });
+
+  it.each([
+    ['operation id', operation({ operationId: 'not-a-uuid' })],
+    ['operation entity id', operation({ entityId: 'not-a-uuid' })],
+    ['operation origin device id', operation({ originDeviceId: 'not-a-uuid' })],
+  ])('rejects an invalid %s before appending a change operation', async (_, invalidOperation) => {
+    await expect(changes.append(invalidOperation)).rejects.toThrow();
+
+    await expect(changes.listPending()).resolves.toEqual([]);
+  });
+
+  it('validates record and operation identifiers before an atomic write begins', async () => {
+    const invalidRecord = record({ id: 'not-a-uuid' });
+
+    await expect(records.saveWithOperation(invalidRecord, operation())).rejects.toThrow();
+
+    await expect(records.listActive()).resolves.toEqual([]);
+    await expect(changes.listPending()).resolves.toEqual([]);
   });
 });

@@ -7,11 +7,16 @@ import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, exampleRecords } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
+import {
+  assertValidSyncableRecordIdentifiers,
+  assertValidSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class ExampleRecordRepository implements Repository {
   constructor(private readonly database: LocalDatabaseClient) {}
 
   async save(record: SyncableRecord): Promise<void> {
+    assertValidSyncableRecordIdentifiers(record);
     this.database.db
       .insert(exampleRecords)
       .values(record)
@@ -23,6 +28,8 @@ export class ExampleRecordRepository implements Repository {
   }
 
   async saveWithOperation(record: SyncableRecord, operation: SyncOperation): Promise<void> {
+    assertValidSyncableRecordIdentifiers(record);
+    assertValidSyncOperationIdentifiers(operation);
     this.database.db.transaction((transaction) => {
       transaction
         .insert(exampleRecords)

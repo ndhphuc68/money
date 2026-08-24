@@ -51,3 +51,27 @@ Implemented Task 3 local persistence only. The change does not add a sync engine
 
 - No sync engine, file transport, or UI behavior was implemented.
 - Pre-existing untracked workspace files (`review-package.tmp`, `sdd-workspace`, and `sdd-workspace.tmp`) were not changed or included in the Task 3 commit.
+
+## Fix Round 1: repository port and UUID persistence validation
+
+### Reviewer rulings applied
+
+- Added `saveWithOperation(record, operation)` to the generic `Repository<T>` port while preserving `save(record)`. Application code can now request an atomic business-record and change-log write through the port instead of relying on `ExampleRecordRepository` directly.
+- Added local persistence-boundary validation for record `id` and `originDeviceId`, plus change-operation `operationId`, `entityId`, and `originDeviceId`.
+- `saveWithOperation` validates both arguments before starting its SQLite transaction; `save` and `append` validate before issuing database writes.
+
+### Regression coverage
+
+- The repository test now declares its example repository as the `Repository` port and invokes `saveWithOperation` through that port.
+- Added rejection/no-write regressions for invalid record IDs, invalid record device IDs, invalid operation IDs, invalid entity IDs, invalid operation device IDs, and invalid atomic-write inputs.
+- The new test set was run before the implementation: six identifier tests failed because invalid values were written, while TypeScript reported that `Repository` lacked `saveWithOperation`.
+
+### Fix validation
+
+| Command | Result |
+| --- | --- |
+| `npm test -- --runInBand tests/data/local/repositories.test.ts` | PASS: 1 suite, 13 tests |
+| `npx drizzle-kit generate` | PASS: no schema changes, no migration generated |
+| `npm test -- --runInBand` | PASS: 4 suites, 26 tests |
+| `npm run typecheck` | PASS: `tsc --noEmit` |
+| `git diff --check` | PASS: no whitespace errors |
