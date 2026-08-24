@@ -1,24 +1,27 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
 
-export default function RootScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Offline First Sync</Text>
-      <Text>Expo foundation ready.</Text>
-    </View>
-  );
+import { useLocalDatabase } from '@/data/local/db/provider';
+import { SyncScreen } from '@/features/sync/screens/sync-screen';
+import { SyncDependencies, useSync } from '@/features/sync/view-models/use-sync';
+import { createMobileSyncDependencies } from '@/infrastructure/expo/sync/create-mobile-sync-dependencies';
+
+type RootScreenProps = {
+  dependencies?: SyncDependencies;
+};
+
+export default function RootScreen({ dependencies }: RootScreenProps) {
+  return dependencies === undefined
+    ? <ConfiguredSyncScreen />
+    : <SyncScreenWithDependencies dependencies={dependencies} />;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-});
+function ConfiguredSyncScreen() {
+  const database = useLocalDatabase();
+  const dependencies = useMemo(() => createMobileSyncDependencies(database), [database]);
+
+  return <SyncScreenWithDependencies dependencies={dependencies} />;
+}
+
+function SyncScreenWithDependencies({ dependencies }: { dependencies: SyncDependencies }) {
+  return <SyncScreen {...useSync(dependencies)} />;
+}
