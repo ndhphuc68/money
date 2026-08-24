@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Offline First Sync",
+    "slug": "offline-first-sync",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "offline-first-sync",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "platforms": ["ios", "android"],
+    "ios": {},
+    "android": {},
+    "plugins": ["expo-router"]
+  }
+}
