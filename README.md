@@ -48,6 +48,6 @@ The app applies generated migrations through the Expo SQLite provider when the n
 
 The current SQLite workflow is compatible with Expo Go. SQLCipher is a later native change: it needs an Expo development build and cannot be validated in Expo Go. Do not add SQLCipher configuration to the Expo Go path. When encryption at rest becomes a requirement, create and run a development build (for example, with `npx expo run:android` or an EAS development build), then validate migrations and sync there.
 
-## Sync-package development note
+## Sync-package passphrase
 
-The Task 6 shell wires the existing authenticated file transport end to end. Its shared passphrase is deliberately a development-only placeholder; replace it with a user-configured, securely managed sharing secret before distributing sensitive data.
+Before importing or exporting, enter a non-empty shared passphrase in the app. Use the same passphrase on the device that exports and the device that imports the package. The app does not provide or persist a fallback passphrase; treat the value as a secret and exchange it through an appropriate secure channel.

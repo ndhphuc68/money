@@ -1,9 +1,9 @@
 import { ExportSyncPackage } from '@/core/application/use-cases/export-sync-package';
 import { ImportSyncPackage } from '@/core/application/use-cases/import-sync-package';
 import { ImportSummary } from '@/core/application/ports/sync-transport';
-import { SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
+import { SyncPackage } from '@/core/domain/sync/sync-package';
 
-const pkg: SyncPackageWithoutAuth = {
+const pkg: SyncPackage = {
   format: 'app-sync',
   formatVersion: 2,
   appVersion: '1.0.0',
@@ -12,6 +12,7 @@ const pkg: SyncPackageWithoutAuth = {
   exportedAt: '2026-08-24T10:00:00.000Z',
   changes: [],
   checksum: 'fnv1a-32:00000000',
+  authTag: 'hmac-sha256:deadbeef',
 };
 
 describe('sync package use cases', () => {

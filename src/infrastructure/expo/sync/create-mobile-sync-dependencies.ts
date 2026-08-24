@@ -1,6 +1,5 @@
 import { ExportSyncPackage } from '@/core/application/use-cases/export-sync-package';
 import { ImportSyncPackage } from '@/core/application/use-cases/import-sync-package';
-import { SyncPackage } from '@/core/domain/sync/sync-package';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { ChangeLogRepository } from '@/data/local/repositories/change-log-repository';
 import { ExampleRecordRepository } from '@/data/local/repositories/example-record-repository';
@@ -14,14 +13,16 @@ import { SyncPackageFile } from '@/infrastructure/expo/file-system/sync-package-
 import { SystemFilePicker } from '@/infrastructure/expo/file-system/system-file-picker';
 import { SystemShare } from '@/infrastructure/expo/sharing/system-share';
 
-const DEVELOPMENT_SHARED_PASSPHRASE = 'offline-first-sync-development';
-
-export function createMobileSyncDependencies(database: LocalDatabaseClient): SyncDependencies {
+export function createMobileSyncDependencies(
+  database: LocalDatabaseClient,
+  passphrase: string,
+): SyncDependencies {
   const serializer = new StableSyncPackageSerializer();
   const packageFile = new SyncPackageFile(serializer);
   const filePicker = new SystemFilePicker();
   const share = new SystemShare();
   const identity = new DeviceIdentity();
+  const authenticationProvider = new HmacSha256AuthenticationProvider(passphrase);
 
   const createTransport = async () => new FileSyncTransport(
     new SyncEngine({
@@ -36,7 +37,7 @@ export function createMobileSyncDependencies(database: LocalDatabaseClient): Syn
     }),
     packageFile,
     serializer,
-    new HmacSha256AuthenticationProvider(DEVELOPMENT_SHARED_PASSPHRASE),
+    authenticationProvider,
   );
 
   return {
@@ -44,10 +45,10 @@ export function createMobileSyncDependencies(database: LocalDatabaseClient): Syn
       exportPending: async () => (await createTransport()).exportChanges(),
     }),
     importSyncPackage: new ImportSyncPackage({
-      import: async (pkg) => (await createTransport()).importChanges(pkg as SyncPackage),
+      import: async (pkg) => (await createTransport()).importChanges(pkg),
     }),
     exportFile: async (pkg) => {
-      const uri = await packageFile.write(pkg as SyncPackage);
+      const uri = await packageFile.write(pkg);
       await share.shareFile(uri);
     },
     importFile: async () => {

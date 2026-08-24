@@ -31,6 +31,11 @@ passed: Expo SDK 54 config resolves with Android and iOS only
 
 No `npx expo start` server was left running, and no physical Android device/Expo Go QR scan was available in this environment. Expo configuration was validated non-interactively instead. The README contains the exact Android Expo Go QR workflow for a developer to perform that final device check.
 
-## Development security note
+## Fix Round 1: Explicit passphrase and SDK health
 
-The shell uses a fixed development-only shared passphrase to exercise the existing authenticated file transport. It must be replaced with a user-configured, securely managed sharing secret before sensitive-data distribution.
+- Removed the hard-coded development HMAC passphrase. Mobile sync dependencies now require a non-empty passphrase supplied by the user; no fallback secret is shipped or persisted.
+- Added a visible setup state with a masked passphrase input. Import and export remain disabled until the user supplies a non-empty shared passphrase.
+- Kept authenticated `SyncPackage` values typed through the export/import use cases and the feature boundary, removing composition-root casts.
+- Added composition coverage proving an empty passphrase is rejected, an exported package authenticates with the supplied passphrase rather than the prior fallback, and the same passphrase is accepted for import.
+- Replaced the injected-component navigation smoke test with Expo Router's route harness for `/`. It uses the real route/layout composition while mocking only the native SQLite provider boundary.
+- Installed SDK 54-compatible `expo-constants`, `expo-linking`, and React Native `0.81.5` through `npx expo install`; Expo Doctor reports no dependency-health issues.

@@ -1,18 +1,39 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { SyncViewModel } from '@/features/sync/view-models/use-sync';
 
-export function SyncScreen({ exportPackage, importPackage, isWorking, result, error }: SyncViewModel) {
+export function SyncScreen({
+  exportPackage,
+  importPackage,
+  isWorking,
+  result,
+  error,
+  passphrase,
+  setPassphrase,
+  isConfigured,
+}: SyncViewModel) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Offline First Sync</Text>
       <Text style={styles.description}>Transfer a signed sync package between devices.</Text>
+      <Text style={styles.label}>Shared passphrase</Text>
+      <TextInput
+        accessibilityLabel="Shared passphrase"
+        autoCapitalize="none"
+        autoCorrect={false}
+        onChangeText={setPassphrase}
+        placeholder="Enter the passphrase used by the other device"
+        secureTextEntry
+        style={styles.passphraseInput}
+        value={passphrase}
+      />
+      {!isConfigured ? <Text accessibilityRole="alert" style={styles.error}>Set a shared passphrase before importing or exporting.</Text> : null}
       <View style={styles.actions}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Export sync package"
-          accessibilityState={{ disabled: isWorking }}
-          disabled={isWorking}
+          accessibilityState={{ disabled: isWorking || !isConfigured }}
+          disabled={isWorking || !isConfigured}
           onPress={exportPackage}
           style={({ pressed }) => [styles.primaryAction, (pressed || isWorking) && styles.primaryActionPressed]}
         >
@@ -21,8 +42,8 @@ export function SyncScreen({ exportPackage, importPackage, isWorking, result, er
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Import sync package"
-          accessibilityState={{ disabled: isWorking }}
-          disabled={isWorking}
+          accessibilityState={{ disabled: isWorking || !isConfigured }}
+          disabled={isWorking || !isConfigured}
           onPress={importPackage}
           style={({ pressed }) => [styles.secondaryAction, (pressed || isWorking) && styles.secondaryActionPressed]}
         >
@@ -97,6 +118,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     marginTop: 24,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  passphraseInput: {
+    borderColor: '#64748b',
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 16,
+    minHeight: 48,
+    paddingHorizontal: 12,
   },
   title: {
     fontSize: 28,
