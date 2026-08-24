@@ -10,3 +10,4 @@ web-build/
 *.orig.*
 npm-debug.*
 expo-env.d.ts
+node_modules
