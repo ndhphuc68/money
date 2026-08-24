@@ -7,9 +7,16 @@
     "scheme": "offline-first-sync",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "ios": {},
     "android": {},
-    "plugins": ["expo-router", "expo-sqlite"]
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store"
+    ]
   }
 }
