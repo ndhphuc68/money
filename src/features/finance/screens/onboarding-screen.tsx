@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Easing, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
 
 import { AmountInput } from '@/components/finance';
 import type { AccountType } from '@/core/domain/finance/account';
@@ -24,6 +25,31 @@ const ACCOUNT_TYPE_KEYS: Record<AccountType, TranslationKey> = {
 
 export function OnboardingScreen(props: OnboardingScreenProps) {
   const { loading, step, t } = props;
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const logoProgress = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    let mounted = true;
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      if (mounted) setReduceMotion(enabled);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      logoProgress.setValue(1);
+      return;
+    }
+
+    logoProgress.setValue(0.94);
+    Animated.sequence([
+      Animated.timing(logoProgress, { duration: 220, easing: Easing.out(Easing.cubic), toValue: 1.1, useNativeDriver: true }),
+      Animated.timing(logoProgress, { duration: 180, easing: Easing.out(Easing.cubic), toValue: 1, useNativeDriver: true }),
+    ]).start();
+  }, [logoProgress, reduceMotion, step]);
 
   if (loading) {
     return (
@@ -34,36 +60,105 @@ export function OnboardingScreen(props: OnboardingScreenProps) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {step === 'display-name' ? <DisplayNameStep {...props} /> : null}
-      {step === 'first-account' ? <FirstAccountStep {...props} /> : null}
-      {step === 'confirm-categories' ? <ConfirmCategoriesStep {...props} /> : null}
-    </ScrollView>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.keyboardAvoiding}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <OnboardingHeader locale={props.locale} setLocale={props.setLocale} t={t} logoProgress={logoProgress} />
+        <Progress step={step} t={t} />
+        <Animated.View
+          key={step}
+          style={[
+            styles.stepTransition,
+            reduceMotion
+              ? null
+              : { opacity: logoProgress.interpolate({ inputRange: [0.94, 1], outputRange: [0, 1] }), transform: [{ translateX: logoProgress.interpolate({ inputRange: [0.94, 1], outputRange: [16, 0] }) }] },
+          ]}
+        >
+          {step === 'display-name' ? <DisplayNameStep {...props} /> : null}
+          {step === 'first-account' ? <FirstAccountStep {...props} /> : null}
+          {step === 'confirm-categories' ? <ConfirmCategoriesStep {...props} /> : null}
+        </Animated.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+function OnboardingHeader({ locale, setLocale, t, logoProgress }: Pick<OnboardingScreenProps, 'locale' | 'setLocale' | 't'> & { logoProgress: Animated.Value }) {
+  return (
+    <View style={styles.header}>
+      <Animated.Image
+        accessibilityLabel={t('appTitle')}
+        source={require('../../../../assets/branding/vimo-logo.png')}
+        style={[styles.brandLogo, { transform: [{ scale: logoProgress }] }]}
+        testID="onboarding-brand-logo"
+      />
+      <View accessibilityLabel={t('languageLabel')} style={styles.languagePicker}>
+        <Pressable
+          accessibilityLabel={t('vietnamese')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: locale === 'vi' }}
+          onPress={() => setLocale('vi')}
+          style={({ pressed }) => [styles.languageOption, locale === 'vi' && styles.languageOptionSelected, pressed && styles.languageOptionPressed]}
+        >
+          <Text style={[styles.languageOptionText, locale === 'vi' && styles.languageOptionTextSelected]}>VI</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={t('english')}
+          accessibilityRole="button"
+          accessibilityState={{ selected: locale === 'en' }}
+          onPress={() => setLocale('en')}
+          style={({ pressed }) => [styles.languageOption, locale === 'en' && styles.languageOptionSelected, pressed && styles.languageOptionPressed]}
+        >
+          <Text style={[styles.languageOptionText, locale === 'en' && styles.languageOptionTextSelected]}>EN</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function Progress({ step, t }: { step: OnboardingViewModel['step']; t: Translate }) {
+  const current = step === 'display-name' ? 1 : step === 'first-account' ? 2 : 3;
+  return (
+    <View accessibilityLabel={t('onboardingStepProgress', { current, total: 3 })} style={styles.progressBlock}>
+      <View style={styles.progressMeta}>
+        <Text style={styles.eyebrow}>{t('onboardingStepProgress', { current, total: 3 })}</Text>
+        <Text style={styles.progressPercent}>{Math.round((current / 3) * 100)}%</Text>
+      </View>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressValue, { width: `${(current / 3) * 100}%` }]} />
+      </View>
+    </View>
   );
 }
 
 function DisplayNameStep({ displayName, setDisplayName, continueDisplayName, skipDisplayName, submitting, t }: OnboardingScreenProps) {
   return (
-    <View style={styles.step}>
-      <Text style={styles.title}>{t('onboardingDisplayNameTitle')}</Text>
-      <Text style={styles.description}>{t('onboardingDisplayNameDescription')}</Text>
-      <Text style={styles.label}>{t('onboardingDisplayNameLabel')}</Text>
-      <TextInput
-        accessibilityLabel={t('onboardingDisplayNameLabel')}
-        onChangeText={setDisplayName}
-        placeholder={t('onboardingDisplayNamePlaceholder')}
-        placeholderTextColor={colors.content.placeholder}
-        style={styles.input}
-        value={displayName}
-      />
-      <View style={styles.actions}>
+    <View style={styles.displayNameStep}>
+      <View style={styles.displayNameCard}>
+        <Text style={styles.title}>{t('onboardingDisplayNameTitle')}</Text>
+        <Text style={styles.description}>{t('onboardingDisplayNameDescription')}</Text>
+        <Text style={styles.label}>{t('onboardingDisplayNameLabel')}</Text>
+        <TextInput
+          accessibilityLabel={t('onboardingDisplayNameLabel')}
+          autoCapitalize="words"
+          autoFocus
+          onChangeText={setDisplayName}
+          placeholder={t('onboardingDisplayNamePlaceholder')}
+          placeholderTextColor={colors.content.placeholder}
+          returnKeyType="next"
+          style={styles.input}
+          value={displayName}
+        />
+        <Text style={styles.helperText}>{t('onboardingDisplayNameHint')}</Text>
+      </View>
+
+      <View style={styles.displayNameActions}>
         <Pressable
           accessibilityLabel={t('onboardingSkip')}
           accessibilityRole="button"
           onPress={skipDisplayName}
-          style={({ pressed }) => [styles.secondaryAction, pressed && styles.secondaryActionPressed]}
+          style={({ pressed }) => [styles.skipAction, pressed && styles.skipActionPressed]}
         >
-          <Text style={styles.secondaryActionText}>{t('onboardingSkip')}</Text>
+          <Text style={styles.skipActionText}>{t('onboardingSkip')}</Text>
         </Pressable>
         <Pressable
           accessibilityLabel={t('onboardingContinue')}
@@ -71,9 +166,9 @@ function DisplayNameStep({ displayName, setDisplayName, continueDisplayName, ski
           accessibilityState={{ disabled: submitting }}
           disabled={submitting}
           onPress={continueDisplayName}
-          style={({ pressed }) => [styles.primaryAction, pressed && styles.primaryActionPressed]}
+          style={({ pressed }) => [styles.displayNamePrimaryAction, pressed && styles.primaryActionPressed]}
         >
-          <Text style={styles.primaryActionText}>{t('onboardingContinue')}</Text>
+          {submitting ? <ActivityIndicator color={colors.content.inverse} /> : <Text style={styles.primaryActionText}>{t('onboardingContinue')}</Text>}
         </Pressable>
       </View>
     </View>
@@ -272,6 +367,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.canvas,
     flexGrow: 1,
     padding: spacing[4],
+    paddingBottom: spacing[7],
+    paddingTop: spacing[5],
   },
   description: {
     color: colors.content.secondary,
@@ -294,6 +391,135 @@ const styles = StyleSheet.create({
     marginBottom: spacing[2],
     minHeight: 48,
     paddingHorizontal: spacing[3],
+  },
+  keyboardAvoiding: {
+    backgroundColor: colors.surface.canvas,
+    flex: 1,
+  },
+  displayNameStep: {
+    flex: 1,
+    gap: spacing[5],
+  },
+  header: {
+    alignItems: 'center',
+    minHeight: 112,
+    position: 'relative',
+  },
+  brandLogo: {
+    height: 96,
+    width: 176,
+  },
+  stepTransition: {
+    flex: 1,
+  },
+  languagePicker: {
+    alignItems: 'center',
+    backgroundColor: colors.surface.muted,
+    borderRadius: radius.pill,
+    flexDirection: 'row',
+    minHeight: 44,
+    padding: 3,
+    position: 'absolute',
+    right: 0,
+    top: spacing[4],
+  },
+  languageOption: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    justifyContent: 'center',
+    minHeight: 38,
+    minWidth: 42,
+    paddingHorizontal: spacing[2],
+  },
+  languageOptionPressed: {
+    opacity: 0.72,
+  },
+  languageOptionSelected: {
+    backgroundColor: colors.surface.primary,
+    shadowColor: colors.content.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+  },
+  languageOptionText: {
+    color: colors.content.muted,
+    fontSize: typography.sizes.small,
+    fontWeight: typography.weights.bold,
+  },
+  languageOptionTextSelected: {
+    color: colors.brand.primary,
+  },
+  progressBlock: {
+    gap: spacing[2],
+  },
+  progressMeta: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  eyebrow: {
+    color: colors.brand.primary,
+    fontSize: typography.sizes.small,
+    fontWeight: typography.weights.bold,
+  },
+  progressPercent: {
+    color: colors.content.muted,
+    fontSize: typography.sizes.small,
+    fontWeight: typography.weights.semibold,
+  },
+  progressTrack: {
+    backgroundColor: colors.brand.tint,
+    borderRadius: radius.pill,
+    height: 6,
+    overflow: 'hidden',
+  },
+  progressValue: {
+    backgroundColor: colors.brand.primary,
+    borderRadius: radius.pill,
+    height: '100%',
+    width: '33.333%',
+  },
+  displayNameCard: {
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.strong,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    padding: spacing[5],
+    shadowColor: colors.content.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+  },
+  helperText: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.caption,
+    lineHeight: typography.lineHeights.caption,
+    marginTop: spacing[1],
+  },
+  displayNameActions: {
+    gap: spacing[2],
+  },
+  displayNamePrimaryAction: {
+    alignItems: 'center',
+    backgroundColor: colors.brand.primary,
+    borderRadius: radius.sm,
+    justifyContent: 'center',
+    minHeight: 52,
+    paddingHorizontal: spacing[4],
+  },
+  skipAction: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: spacing[4],
+  },
+  skipActionPressed: {
+    opacity: 0.64,
+  },
+  skipActionText: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
   },
   label: {
     color: colors.content.secondary,

@@ -28,14 +28,14 @@ describe('root navigation', () => {
 
     expect(screen.getPathname()).toBe('/');
     await waitFor(() => expect(screen.getByLabelText('Tên hiển thị')).toBeTruthy());
-    expect(screen.queryByText('Đồng bộ ngoại tuyến')).toBeNull();
+    expect(screen.queryByText('Vimo')).toBeNull();
   });
 
   it('still renders the sync screen at /sync, in Vietnamese by default before sync actions are available', () => {
     const screen = renderRouter({ appDir: './src/app', overrides: {} }, { initialUrl: '/sync' });
 
     expect(screen.getPathname()).toBe('/sync');
-    expect(screen.getByText('Đồng bộ ngoại tuyến')).toBeTruthy();
+    expect(screen.getByText('Vimo')).toBeTruthy();
     expect(screen.getByText('Hãy đặt cụm mật khẩu chung trước khi nhập hoặc xuất.')).toBeTruthy();
     expect(screen.getByLabelText('Cụm mật khẩu chung')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Xuất gói đồng bộ' }).props.accessibilityState).toEqual({ disabled: true });
@@ -47,7 +47,7 @@ describe('root navigation', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'English' }));
 
-    expect(screen.getByText('Offline First Sync')).toBeTruthy();
+    expect(screen.getByText('Vimo')).toBeTruthy();
     expect(screen.getByText('Set a shared passphrase before importing or exporting.')).toBeTruthy();
     expect(screen.getByLabelText('Shared passphrase')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Export sync package' }).props.accessibilityState).toEqual({ disabled: true });

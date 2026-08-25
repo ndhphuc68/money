@@ -20,6 +20,6 @@ describe('Expo foundation', () => {
       t,
     }));
 
-    expect(screen.getByText('Đồng bộ ngoại tuyến')).toBeTruthy();
+    expect(screen.getByText('Vimo')).toBeTruthy();
   });
 });

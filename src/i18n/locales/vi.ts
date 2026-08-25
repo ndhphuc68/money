@@ -1,5 +1,5 @@
 export const vi = {
-  appTitle: 'Đồng bộ ngoại tuyến',
+  appTitle: 'Vimo',
   description: 'Chuyển gói đồng bộ đã ký giữa các thiết bị.',
   languageLabel: 'Ngôn ngữ',
   vietnamese: 'Tiếng Việt',
@@ -19,6 +19,8 @@ export const vi = {
   onboardingDisplayNameDescription: 'Cho chúng tôi biết tên bạn muốn hiển thị (không bắt buộc).',
   onboardingDisplayNameLabel: 'Tên hiển thị',
   onboardingDisplayNamePlaceholder: 'Nhập tên của bạn',
+  onboardingDisplayNameHint: 'Tên này giúp cá nhân hóa trải nghiệm của bạn. Bạn có thể đổi sau.',
+  onboardingStepProgress: 'Bước {current}/{total}',
   onboardingSkip: 'Bỏ qua',
   onboardingContinue: 'Tiếp tục',
   onboardingBack: 'Quay lại',

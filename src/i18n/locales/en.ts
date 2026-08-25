@@ -3,7 +3,7 @@ import type { vi } from './vi';
 type LocaleMessages = Record<keyof typeof vi, string>;
 
 export const en = {
-  appTitle: 'Offline First Sync',
+  appTitle: 'Vimo',
   description: 'Transfer a signed sync package between devices.',
   languageLabel: 'Language',
   vietnamese: 'Tieng Viet',
@@ -23,6 +23,8 @@ export const en = {
   onboardingDisplayNameDescription: 'Tell us what name you would like displayed (optional).',
   onboardingDisplayNameLabel: 'Display name',
   onboardingDisplayNamePlaceholder: 'Enter your name',
+  onboardingDisplayNameHint: 'This name personalizes your experience. You can change it later.',
+  onboardingStepProgress: 'Step {current} of {total}',
   onboardingSkip: 'Skip',
   onboardingContinue: 'Continue',
   onboardingBack: 'Back',

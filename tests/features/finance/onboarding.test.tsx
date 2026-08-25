@@ -164,6 +164,18 @@ function Harness({ onboarding, onComplete }: { onboarding: Onboarding; onComplet
 }
 
 describe('onboarding screen + view model', () => {
+  it('presents the display-name step with progress, helper copy, and a single primary action', async () => {
+    const { onboarding } = makeOnboarding();
+    const screen = render(<Harness onboarding={onboarding} />);
+
+    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+
+    expect(screen.getByText(t('onboardingStepProgress', { current: 1, total: 3 }))).toBeTruthy();
+    expect(screen.getByText(t('onboardingDisplayNameHint'))).toBeTruthy();
+    expect(screen.getByLabelText(t('languageLabel'))).toBeTruthy();
+    expect(screen.getByRole('button', { name: t('onboardingContinue') })).toBeTruthy();
+  });
+
   it('starts at the display-name step and allows skipping straight to the account step', async () => {
     const { onboarding } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
@@ -173,6 +185,7 @@ describe('onboarding screen + view model', () => {
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
 
     await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
+    expect(screen.getByTestId('onboarding-brand-logo')).toBeTruthy();
   });
 
   it('saving a display name advances to the account step and persists the trimmed name', async () => {
