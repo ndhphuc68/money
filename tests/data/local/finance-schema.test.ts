@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { openTestLocalDatabase } from '@/data/local/db/client';
 import { accounts } from '@/data/local/schema/accounts';
@@ -308,6 +308,12 @@ describe('finance database schema', () => {
         ...syncFields(),
       }),
     ).rejects.toThrow();
+  });
+
+  it('enables foreign key enforcement explicitly on the connection opened by openTestLocalDatabase', async () => {
+    const row = await database.db.get<{ foreign_keys: number }>(sql`PRAGMA foreign_keys`);
+
+    expect(row?.foreign_keys).toBe(1);
   });
 
   it('rejects a transaction row that references a non-existent account (foreign key)', async () => {
