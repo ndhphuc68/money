@@ -9,6 +9,7 @@ import { CreateCategory, HideCategory, ListCategories, UpdateCategory } from '@/
 import { Onboarding } from '@/core/application/finance/onboarding';
 import { RestoreTransaction } from '@/core/application/finance/restore-transaction';
 import { UpdateTransaction } from '@/core/application/finance/update-transaction';
+import { WriteContext } from '@/core/application/ports/finance-repositories';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { AccountRepository } from '@/data/local/repositories/account-repository';
 import { CategoryRepository } from '@/data/local/repositories/category-repository';
@@ -33,6 +34,15 @@ export type FinanceDependencies = {
   hideCategory: HideCategory;
   listCategories: ListCategories;
   onboarding: Onboarding;
+  /**
+   * Builds a fresh `WriteContext` (origin device id, a new operation id, and
+   * "now") for a syncable write that has no dedicated Task 4 use case of its
+   * own — currently only account hide/deactivate (Task 9), which calls
+   * `accountRepository.softDeleteOrHide` directly since no `manage-accounts`
+   * use case exists yet. Mirrors the private `writeContext()` helper in
+   * `manage-categories.ts`.
+   */
+  buildWriteContext(): WriteContext;
 };
 
 /**
@@ -74,5 +84,6 @@ export async function createFinanceDependencies(database: LocalDatabaseClient): 
     hideCategory: new HideCategory({ categoryRepository, ...shared }),
     listCategories: new ListCategories({ categoryRepository }),
     onboarding: new Onboarding({ accountRepository, categoryRepository, profileSettingsRepository, ...shared }),
+    buildWriteContext: (): WriteContext => ({ originDeviceId: deviceId, operationId: generateId(), now: now() }),
   };
 }

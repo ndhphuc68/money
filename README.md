@@ -28,6 +28,7 @@ If LAN discovery is blocked, start with `npx expo start --tunnel` and scan the n
 
 ```powershell
 npm test -- --runInBand
+npm test -- --runInBand tests/acceptance/income-expense-mvp.test.ts
 npm run typecheck
 npx drizzle-kit check
 npx expo config --type public
@@ -43,6 +44,8 @@ npx drizzle-kit check
 ```
 
 The app applies generated migrations through the Expo SQLite provider when the native app starts.
+
+The MVP deliberately excludes CSV/Excel import, bank connections, recurring transactions, budgets, goals, multi-currency, household collaboration, PIN/biometric protection, and sync UX. Sync remains available as a local package import/export tool.
 
 ## SQLCipher boundary
 

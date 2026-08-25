@@ -8,10 +8,16 @@ import { DashboardScreen } from '@/features/finance/screens/dashboard-screen';
 import { OnboardingScreen } from '@/features/finance/screens/onboarding-screen';
 import { TransactionFormScreen } from '@/features/finance/screens/transaction-form-screen';
 import { TransactionsScreen } from '@/features/finance/screens/transactions-screen';
+import { ReportsScreen } from '@/features/finance/screens/reports-screen';
+import { SettingsScreen } from '@/features/finance/screens/settings-screen';
+import { AccountsScreen } from '@/features/finance/screens/accounts-screen';
+import { CategoriesScreen } from '@/features/finance/screens/categories-screen';
 import { useDashboard } from '@/features/finance/view-models/use-dashboard';
 import { useOnboarding } from '@/features/finance/view-models/use-onboarding';
 import { useTransactionForm } from '@/features/finance/view-models/use-transaction-form';
 import { useTransactions } from '@/features/finance/view-models/use-transactions';
+import { useReports } from '@/features/finance/view-models/use-reports';
+import { useSettings } from '@/features/finance/view-models/use-settings';
 import { SyncScreen } from '@/features/sync/screens/sync-screen';
 import { useSync } from '@/features/sync/view-models/use-sync';
 import { createMobileSyncDependencies } from '@/infrastructure/expo/sync/create-mobile-sync-dependencies';
@@ -19,7 +25,7 @@ import { Locale, Translate, translate } from '@/i18n/translations';
 import { colors, spacing, typography } from '@/theme';
 
 /** Which finance screen the root route shows once onboarding is complete. */
-type FinanceView = { name: 'dashboard' } | { name: 'transactions' } | { name: 'form'; transactionId: string | null };
+type FinanceView = { name: 'dashboard' } | { name: 'transactions' } | { name: 'reports' } | { name: 'settings' } | { name: 'accounts' } | { name: 'categories' } | { name: 'form'; transactionId: string | null };
 
 export default function RootScreen() {
   const database = useLocalDatabase();
@@ -136,17 +142,33 @@ function ConfiguredFinanceScreen({
     );
   }
 
+  if (view.name === 'reports') return <ConfiguredReportsScreen dependencies={dependencies} onBack={() => setView({ name: 'dashboard' })} t={t} />;
+  if (view.name === 'settings') return <ConfiguredSettingsScreen dependencies={dependencies} onOpenAccounts={() => setView({ name: 'accounts' })} onOpenCategories={() => setView({ name: 'categories' })} onOpenSync={() => router.push('/sync')} onBack={() => setView({ name: 'dashboard' })} t={t} />;
+  if (view.name === 'accounts') return <ConfiguredAccountsScreen dependencies={dependencies} onBack={() => setView({ name: 'settings' })} t={t} />;
+  if (view.name === 'categories') return <ConfiguredCategoriesScreen dependencies={dependencies} onBack={() => setView({ name: 'settings' })} t={t} />;
+
   return (
     <ConfiguredDashboardScreen
       dependencies={dependencies}
       onAddTransaction={() => setView({ name: 'form', transactionId: null })}
       onOpenSync={() => router.push('/sync')}
+      onOpenReports={() => setView({ name: 'reports' })}
+      onOpenSettings={() => setView({ name: 'settings' })}
       onOpenTransactions={() => setView({ name: 'transactions' })}
       onSelectTransaction={(id) => setView({ name: 'form', transactionId: id })}
       t={t}
     />
   );
 }
+
+function ConfiguredReportsScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) {
+  return <View style={{ flex: 1 }}><ReportsScreen {...useReports({ dependencies, t })} t={t} /><Text onPress={onBack} style={{ padding: 16 }}>{t('settingsBack')}</Text></View>;
+}
+function ConfiguredSettingsScreen({ dependencies, t, onBack, onOpenAccounts, onOpenCategories, onOpenSync }: { dependencies: FinanceDependencies; t: Translate; onBack(): void; onOpenAccounts(): void; onOpenCategories(): void; onOpenSync(): void }) {
+  return <SettingsScreen {...useSettings({ dependencies, t })} onBack={onBack} onOpenAccounts={onOpenAccounts} onOpenCategories={onOpenCategories} onOpenSync={onOpenSync} t={t} />;
+}
+function ConfiguredAccountsScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) { return <AccountsScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />; }
+function ConfiguredCategoriesScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) { return <CategoriesScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />; }
 
 function ConfiguredDashboardScreen({
   dependencies,
@@ -155,6 +177,8 @@ function ConfiguredDashboardScreen({
   onAddTransaction,
   onSelectTransaction,
   onOpenSync,
+  onOpenReports,
+  onOpenSettings,
 }: {
   dependencies: FinanceDependencies;
   t: Translate;
@@ -162,6 +186,8 @@ function ConfiguredDashboardScreen({
   onAddTransaction(): void;
   onSelectTransaction(id: string): void;
   onOpenSync(): void;
+  onOpenReports(): void;
+  onOpenSettings(): void;
 }) {
   const viewModel = useDashboard({ dependencies, t });
   return (
@@ -169,6 +195,8 @@ function ConfiguredDashboardScreen({
       {...viewModel}
       onAddTransaction={onAddTransaction}
       onOpenSync={onOpenSync}
+      onOpenReports={onOpenReports}
+      onOpenSettings={onOpenSettings}
       onOpenTransactions={onOpenTransactions}
       onSelectTransaction={onSelectTransaction}
       t={t}

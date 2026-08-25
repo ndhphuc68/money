@@ -16,6 +16,8 @@ type DashboardScreenProps = DashboardViewModel & {
    * screen replaced it. Omit once Task 9 adds a proper Settings entry point.
    */
   onOpenSync?(): void;
+  onOpenReports?(): void;
+  onOpenSettings?(): void;
 };
 
 export function DashboardScreen(props: DashboardScreenProps) {
@@ -36,6 +38,8 @@ export function DashboardScreen(props: DashboardScreenProps) {
     onAddTransaction,
     onSelectTransaction,
     onOpenSync,
+    onOpenReports,
+    onOpenSettings,
     t,
   } = props;
 
@@ -118,6 +122,10 @@ export function DashboardScreen(props: DashboardScreenProps) {
           <Text style={styles.syncLinkText}>{t('dashboardSyncLink')}</Text>
         </Pressable>
       ) : null}
+      <View style={styles.quickLinks}>
+        {onOpenReports ? <Pressable accessibilityLabel={t('navReports')} onPress={onOpenReports}><Text style={styles.sectionAction}>{t('navReports')}</Text></Pressable> : null}
+        {onOpenSettings ? <Pressable accessibilityLabel={t('navSettings')} onPress={onOpenSettings}><Text style={styles.sectionAction}>{t('navSettings')}</Text></Pressable> : null}
+      </View>
     </ScrollView>
   );
 }
@@ -183,6 +191,11 @@ const styles = StyleSheet.create({
     color: colors.content.inverse,
     fontSize: typography.sizes.body,
     fontWeight: typography.weights.bold,
+  },
+  quickLinks: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: spacing[2],
   },
   section: {
     ...shadows.card,
