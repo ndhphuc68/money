@@ -7,14 +7,34 @@ jest.mock('@/data/local/db/provider', () => {
   };
 });
 
-import { fireEvent } from '@testing-library/react-native';
+jest.mock('@/features/finance/finance-dependencies', () => ({
+  createFinanceDependencies: async () => ({
+    onboarding: {
+      resume: async () => ({ step: 'display-name', displayName: '', hasAccount: false, onboardingCompleted: false }),
+      getState: async () => ({ step: 'display-name', displayName: '', hasAccount: false, onboardingCompleted: false }),
+      saveDisplayName: async () => undefined,
+      createFirstAccount: async () => ({}),
+      confirmDefaults: async () => [],
+    },
+  }),
+}));
+
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 
 describe('root navigation', () => {
-  it('renders the actual root route in Vietnamese by default before sync actions are available', () => {
+  it('starts a fresh database at the onboarding display-name step instead of the sync screen', async () => {
     const screen = renderRouter({ appDir: './src/app', overrides: {} }, { initialUrl: '/' });
 
     expect(screen.getPathname()).toBe('/');
+    await waitFor(() => expect(screen.getByLabelText('Ten hien thi')).toBeTruthy());
+    expect(screen.queryByText('Dong bo ngoai tuyen')).toBeNull();
+  });
+
+  it('still renders the sync screen at /sync, in Vietnamese by default before sync actions are available', () => {
+    const screen = renderRouter({ appDir: './src/app', overrides: {} }, { initialUrl: '/sync' });
+
+    expect(screen.getPathname()).toBe('/sync');
     expect(screen.getByText('Dong bo ngoai tuyen')).toBeTruthy();
     expect(screen.getByText('Hay dat cum mat khau chung truoc khi nhap hoac xuat.')).toBeTruthy();
     expect(screen.getByLabelText('Cum mat khau chung')).toBeTruthy();
@@ -23,7 +43,7 @@ describe('root navigation', () => {
   });
 
   it('switches visible sync labels to English when English is selected', () => {
-    const screen = renderRouter({ appDir: './src/app', overrides: {} }, { initialUrl: '/' });
+    const screen = renderRouter({ appDir: './src/app', overrides: {} }, { initialUrl: '/sync' });
 
     fireEvent.press(screen.getByRole('button', { name: 'English' }));
 
