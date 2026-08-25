@@ -1,19 +1,28 @@
 import { eq } from 'drizzle-orm';
 
-import { Repository, ChangeLogRepository as ChangeLogRepositoryPort } from '@/core/application/ports/repository';
+import { ChangeLogRepository as ChangeLogRepositoryPort } from '@/core/application/ports/repository';
 import { SyncPackageSerializer } from '@/core/application/ports/sync-package-serializer';
 import { ImportSummary } from '@/core/application/ports/sync-transport';
-import { canonicalizeUuid, isIsoTimestamp, isUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
+import { canonicalizeUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
 import { parseSyncPackageWithoutAuth, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { toChangeLogValues } from '@/data/local/repositories/change-log-repository';
-import { changeLog, exampleRecords } from '@/data/local/schema';
+import { changeLog } from '@/data/local/schema';
 import { ConflictResolver, LastWriteWinsConflictResolver } from '@/data/sync/conflict-resolution/last-write-wins';
+
+import { defaultSyncEntityAdapters, SyncEntityAdapter } from './entity-adapters';
 
 export type SyncEngineOptions = {
   database: LocalDatabaseClient;
-  records: Repository;
+  /**
+   * Maps a `SyncOperation.entityType` (e.g. `'account'`, `'transaction'`) to
+   * the adapter that validates and persists its payload. Defaults to the
+   * built-in adapters covering `example-record`, `account`, `category` and
+   * `transaction`; pass a custom map only to override or extend that set
+   * (e.g. in tests).
+   */
+  records?: Record<string, SyncEntityAdapter>;
   changes: ChangeLogRepositoryPort;
   serializer: SyncPackageSerializer;
   appVersion: string;
@@ -25,9 +34,11 @@ export type SyncEngineOptions = {
 
 export class SyncEngine {
   private readonly conflictResolver: ConflictResolver;
+  private readonly entityAdapters: Record<string, SyncEntityAdapter>;
 
   constructor(private readonly options: SyncEngineOptions) {
     this.conflictResolver = options.conflictResolver ?? new LastWriteWinsConflictResolver();
+    this.entityAdapters = options.records ?? defaultSyncEntityAdapters;
   }
 
   async exportPending(): Promise<SyncPackageWithoutAuth> {
@@ -61,7 +72,7 @@ export class SyncEngine {
       if (validatedPackage.schemaVersion !== this.options.schemaVersion) {
         throw new Error('Sync package schema version is incompatible');
       }
-      incomingRecords = validateIncomingRecords(validatedPackage.changes);
+      incomingRecords = this.validateIncomingRecords(validatedPackage.changes);
     } catch {
       return rejectedSummary(pkg);
     }
@@ -81,23 +92,13 @@ export class SyncEngine {
           continue;
         }
 
+        const adapter = this.entityAdapters[operation.entityType];
         const incoming = incomingRecords[index];
-        const local = transaction
-          .select()
-          .from(exampleRecords)
-          .where(eq(exampleRecords.id, incoming.id))
-          .get();
+        const local = adapter.readLocal(transaction, incoming.id);
         const resolution = local === undefined ? { winner: 'incoming' as const, record: incoming } : this.conflictResolver.resolve(local, incoming);
 
         if (resolution.winner === 'incoming') {
-          transaction
-            .insert(exampleRecords)
-            .values(incoming)
-            .onConflictDoUpdate({
-              target: exampleRecords.id,
-              set: toUpdatedRecordValues(incoming),
-            })
-            .run();
+          adapter.upsert(transaction, incoming);
           summary.applied += 1;
         } else {
           summary.conflicted += 1;
@@ -116,60 +117,35 @@ export class SyncEngine {
   async importChanges(pkg: SyncPackageWithoutAuth): Promise<ImportSummary> {
     return this.import(pkg);
   }
-}
 
-function validateIncomingRecords(changes: SyncOperation[]): SyncableRecord[] {
-  const operationIds = new Set<string>();
+  private validateIncomingRecords(changes: SyncOperation[]): SyncableRecord[] {
+    const operationIds = new Set<string>();
 
-  return changes.map((operation) => {
-    const canonicalOperation = parseSyncOperation(operation);
-    if (operation.entityType !== 'example-record') {
-      throw new Error('Unsupported sync entity type');
-    }
-    if (operationIds.has(operation.operationId)) {
-      throw new Error('Sync package contains duplicate operation IDs');
-    }
-    operationIds.add(operation.operationId);
+    return changes.map((operation) => {
+      const canonicalOperation = parseSyncOperation(operation);
+      const adapter = this.entityAdapters[operation.entityType];
+      if (adapter === undefined) {
+        throw new Error(`Unsupported sync entity type: ${operation.entityType}`);
+      }
+      if (operationIds.has(operation.operationId)) {
+        throw new Error('Sync package contains duplicate operation IDs');
+      }
+      operationIds.add(operation.operationId);
 
-    const record = parseSyncableRecord(operation.payload);
-    if (
-      record.id !== canonicalOperation.entityId ||
-      record.originDeviceId !== canonicalOperation.originDeviceId ||
-      record.revision !== canonicalOperation.revision ||
-      (canonicalOperation.operation === 'delete' && record.deletedAt === null) ||
-      (canonicalOperation.operation !== 'delete' && record.deletedAt !== null)
-    ) {
-      throw new Error('Sync operation does not match its record payload');
-    }
+      const record = adapter.parsePayload(operation.payload);
+      if (
+        record.id !== canonicalOperation.entityId ||
+        record.originDeviceId !== canonicalOperation.originDeviceId ||
+        record.revision !== canonicalOperation.revision ||
+        (canonicalOperation.operation === 'delete' && record.deletedAt === null) ||
+        (canonicalOperation.operation !== 'delete' && record.deletedAt !== null)
+      ) {
+        throw new Error('Sync operation does not match its record payload');
+      }
 
-    return record;
-  });
-}
-
-function parseSyncableRecord(value: unknown): SyncableRecord {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new Error('Sync operation payload must be a syncable record');
+      return record;
+    });
   }
-
-  const record = value as Record<string, unknown>;
-  if (
-    !isUuid(record.id) ||
-    !isUuid(record.originDeviceId) ||
-    !isIsoTimestamp(record.createdAt) ||
-    !isIsoTimestamp(record.updatedAt) ||
-    (record.deletedAt !== null && !isIsoTimestamp(record.deletedAt)) ||
-    typeof record.revision !== 'number' ||
-    !Number.isInteger(record.revision) ||
-    record.revision < 0
-  ) {
-    throw new Error('Sync operation payload contains an invalid syncable record');
-  }
-
-  return {
-    ...record,
-    id: canonicalizeUuid(record.id),
-    originDeviceId: canonicalizeUuid(record.originDeviceId),
-  } as SyncableRecord;
 }
 
 function compareOperations(left: SyncOperation, right: SyncOperation): number {
@@ -178,16 +154,6 @@ function compareOperations(left: SyncOperation, right: SyncOperation): number {
   }
 
   return left.operationId === right.operationId ? 0 : left.operationId > right.operationId ? 1 : -1;
-}
-
-function toUpdatedRecordValues(record: SyncableRecord) {
-  return {
-    createdAt: record.createdAt,
-    updatedAt: record.updatedAt,
-    deletedAt: record.deletedAt,
-    revision: record.revision,
-    originDeviceId: record.originDeviceId,
-  };
 }
 
 function rejectedSummary(value: unknown): ImportSummary {

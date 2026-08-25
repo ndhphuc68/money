@@ -1,0 +1,520 @@
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+
+import {
+  AccountRepository,
+  CategoryRepository,
+  CreateAccountInput,
+  CreateCategoryInput,
+  CreateTransactionInput,
+  ProfileSettingsRepository,
+  TransactionListFilter,
+  TransactionRepository,
+  UpdateAccountInput,
+  UpdateCategoryInput,
+  UpdateTransactionInput,
+  WriteContext,
+} from '@/core/application/ports/finance-repositories';
+import { CreateTransaction } from '@/core/application/finance/create-transaction';
+import { DeleteTransaction } from '@/core/application/finance/delete-transaction';
+import { RestoreTransaction } from '@/core/application/finance/restore-transaction';
+import { UpdateTransaction } from '@/core/application/finance/update-transaction';
+import { Account } from '@/core/domain/finance/account';
+import { Category } from '@/core/domain/finance/category';
+import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
+import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import { TransactionFormScreen } from '@/features/finance/screens/transaction-form-screen';
+import { TransactionsScreen } from '@/features/finance/screens/transactions-screen';
+import { useTransactionForm } from '@/features/finance/view-models/use-transaction-form';
+import { useTransactions } from '@/features/finance/view-models/use-transactions';
+import { Locale, translate } from '@/i18n/translations';
+
+// ---------------------------------------------------------------------------
+// Minimal in-memory fakes, matching the pattern in
+// tests/core/finance/finance-use-cases.test.ts.
+// ---------------------------------------------------------------------------
+
+const DEVICE_ID = '550e8400-e29b-41d4-a716-446655440099';
+const NOW = '2026-08-25T08:00:00.000Z';
+
+class FakeAccountRepository implements AccountRepository {
+  private readonly store = new Map<string, Account>();
+
+  async create(input: CreateAccountInput): Promise<Account> {
+    const account: Account = {
+      id: input.id,
+      name: input.name,
+      type: input.type,
+      openingBalance: input.openingBalance,
+      isArchived: false,
+      createdAt: input.now,
+      updatedAt: input.now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: input.originDeviceId,
+    };
+    this.store.set(account.id, account);
+    return account;
+  }
+
+  async update(_id: string, _changes: UpdateAccountInput, _context: WriteContext): Promise<Account> {
+    throw new Error('not implemented');
+  }
+
+  async softDeleteOrHide(_id: string, _context: WriteContext): Promise<Account> {
+    throw new Error('not implemented');
+  }
+
+  async findById(id: string): Promise<Account | null> {
+    return this.store.get(id) ?? null;
+  }
+
+  async listActive(): Promise<Account[]> {
+    return Array.from(this.store.values()).filter((account) => account.deletedAt === null);
+  }
+
+  async saveWithOperation(): Promise<void> {
+    throw new Error('not implemented');
+  }
+}
+
+class FakeCategoryRepository implements CategoryRepository {
+  private readonly store = new Map<string, Category>();
+
+  async create(input: CreateCategoryInput): Promise<Category> {
+    const category: Category = {
+      id: input.id,
+      name: input.name,
+      type: input.type,
+      isArchived: false,
+      createdAt: input.now,
+      updatedAt: input.now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: input.originDeviceId,
+    };
+    this.store.set(category.id, category);
+    return category;
+  }
+
+  async update(_id: string, _changes: UpdateCategoryInput, _context: WriteContext): Promise<Category> {
+    throw new Error('not implemented');
+  }
+
+  async hide(_id: string, _context: WriteContext): Promise<Category> {
+    throw new Error('not implemented');
+  }
+
+  async findById(id: string): Promise<Category | null> {
+    return this.store.get(id) ?? null;
+  }
+
+  async listActiveByType(type: Category['type']): Promise<Category[]> {
+    return Array.from(this.store.values()).filter((category) => category.type === type && category.deletedAt === null);
+  }
+
+  async isUsedByTransaction(): Promise<boolean> {
+    return false;
+  }
+
+  async saveWithOperation(): Promise<void> {
+    throw new Error('not implemented');
+  }
+}
+
+class FakeProfileSettingsRepository implements ProfileSettingsRepository {
+  private settings: ProfileSettings = createDefaultProfileSettings();
+
+  async get(): Promise<ProfileSettings> {
+    return this.settings;
+  }
+
+  async save(settings: ProfileSettings): Promise<void> {
+    this.settings = settings;
+  }
+}
+
+function mergeTransactionInput(existing: Transaction, changes: UpdateTransactionInput): TransactionInput {
+  const type = changes.type ?? existing.type;
+  const existingDestinationAccountId = existing.type === 'transfer' ? existing.destinationAccountId : null;
+  const existingCategoryId = existing.type === 'transfer' ? null : existing.categoryId;
+  const destinationAccountId =
+    changes.destinationAccountId !== undefined
+      ? changes.destinationAccountId
+      : type === 'transfer'
+        ? existingDestinationAccountId
+        : null;
+  const categoryId = changes.categoryId !== undefined ? changes.categoryId : type === 'transfer' ? null : existingCategoryId;
+
+  return {
+    type,
+    amount: changes.amount ?? existing.amount,
+    accountId: changes.accountId ?? existing.accountId,
+    destinationAccountId,
+    categoryId,
+    date: changes.date ?? existing.date,
+    name: changes.name ?? existing.name,
+    note: changes.note !== undefined ? changes.note : (existing.note ?? null),
+  };
+}
+
+type TransactionMeta = { createdAt: string; updatedAt: string; deletedAt: string | null; revision: number; originDeviceId: string };
+
+function buildTransaction(id: string, input: TransactionInput, meta: TransactionMeta): Transaction {
+  const base = { id, amount: input.amount, accountId: input.accountId, date: input.date, name: input.name, note: input.note ?? null, ...meta };
+  if (input.type === 'transfer') {
+    return { ...base, type: 'transfer', destinationAccountId: input.destinationAccountId as string, categoryId: null };
+  }
+  return { ...base, type: input.type, categoryId: input.categoryId as string, destinationAccountId: null };
+}
+
+function monthRange(month: string): { from: string; to: string } {
+  const [year, monthNumber] = month.split('-').map(Number);
+  const from = `${month}-01`;
+  const nextMonth = new Date(Date.UTC(year, monthNumber, 1));
+  const to = nextMonth.toISOString().slice(0, 10);
+  return { from, to };
+}
+
+class FakeTransactionRepository implements TransactionRepository {
+  private readonly store = new Map<string, Transaction>();
+
+  async create(input: CreateTransactionInput): Promise<Transaction> {
+    const { id, originDeviceId, operationId: _operationId, now, ...rest } = input;
+    validateTransactionInput(rest);
+    const transaction = buildTransaction(id, rest, { createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId });
+    this.store.set(id, transaction);
+    return transaction;
+  }
+
+  async update(id: string, changes: UpdateTransactionInput, context: WriteContext): Promise<Transaction> {
+    const existing = this.requireById(id);
+    const merged = mergeTransactionInput(existing, changes);
+    validateTransactionInput(merged);
+    const updated = buildTransaction(existing.id, merged, {
+      createdAt: existing.createdAt,
+      updatedAt: context.now,
+      deletedAt: existing.deletedAt,
+      revision: existing.revision + 1,
+      originDeviceId: context.originDeviceId,
+    });
+    this.store.set(id, updated);
+    return updated;
+  }
+
+  async softDelete(id: string, context: WriteContext): Promise<Transaction> {
+    const existing = this.requireById(id);
+    const updated = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    this.store.set(id, updated);
+    return updated;
+  }
+
+  async restore(id: string, context: WriteContext): Promise<Transaction> {
+    const existing = this.requireById(id);
+    const updated = { ...existing, deletedAt: null, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    this.store.set(id, updated);
+    return updated;
+  }
+
+  async findById(id: string): Promise<Transaction | null> {
+    return this.store.get(id) ?? null;
+  }
+
+  async list(filter: TransactionListFilter = {}): Promise<Transaction[]> {
+    let items = Array.from(this.store.values());
+
+    if (!filter.includeDeleted) {
+      items = items.filter((t) => t.deletedAt === null);
+    }
+    if (filter.type) {
+      items = items.filter((t) => t.type === filter.type);
+    }
+    if (filter.categoryId) {
+      items = items.filter((t) => t.categoryId === filter.categoryId);
+    }
+    if (filter.accountId) {
+      items = items.filter((t) => t.accountId === filter.accountId || t.destinationAccountId === filter.accountId);
+    }
+    if (filter.query) {
+      items = items.filter((t) => t.name.toLowerCase().includes(filter.query!.toLowerCase()));
+    }
+    if (filter.month) {
+      const { from, to } = monthRange(filter.month);
+      items = items.filter((t) => t.date >= from && t.date < to);
+    } else {
+      if (filter.from) {
+        items = items.filter((t) => t.date >= filter.from!);
+      }
+      if (filter.to) {
+        items = items.filter((t) => t.date <= filter.to!);
+      }
+    }
+
+    return items.sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)));
+  }
+
+  async saveWithOperation(record: Transaction): Promise<void> {
+    this.store.set(record.id, record);
+  }
+
+  private requireById(id: string): Transaction {
+    const existing = this.store.get(id);
+    if (!existing) {
+      throw new Error(`Transaction ${id} not found`);
+    }
+    return existing;
+  }
+}
+
+function makeIdFactory(prefix: string): () => string {
+  let counter = 0;
+  return () => {
+    counter += 1;
+    return `${prefix}-${counter}`;
+  };
+}
+
+const t = translate.bind(null, 'vi' as Locale);
+
+function makeRepos() {
+  const accountRepository = new FakeAccountRepository();
+  const categoryRepository = new FakeCategoryRepository();
+  const transactionRepository = new FakeTransactionRepository();
+  const profileSettingsRepository = new FakeProfileSettingsRepository();
+  const now = () => NOW;
+  const generateId = makeIdFactory('id');
+  const shared = { now, deviceId: DEVICE_ID, generateId };
+
+  return {
+    accountRepository,
+    categoryRepository,
+    transactionRepository,
+    profileSettingsRepository,
+    createTransaction: new CreateTransaction({ transactionRepository, ...shared }),
+    updateTransaction: new UpdateTransaction({ transactionRepository, ...shared }),
+    deleteTransaction: new DeleteTransaction({ transactionRepository, ...shared }),
+    restoreTransaction: new RestoreTransaction({ transactionRepository, ...shared }),
+    generateId,
+  };
+}
+
+type Repos = ReturnType<typeof makeRepos>;
+
+async function seedAccountAndCategories(repos: Repos) {
+  const account = await repos.accountRepository.create({
+    id: repos.generateId(),
+    name: 'Vi tien mat',
+    type: 'cash',
+    openingBalance: 1_000_000,
+    originDeviceId: DEVICE_ID,
+    operationId: repos.generateId(),
+    now: NOW,
+  });
+  const secondAccount = await repos.accountRepository.create({
+    id: repos.generateId(),
+    name: 'Ngan hang',
+    type: 'bank',
+    openingBalance: 2_000_000,
+    originDeviceId: DEVICE_ID,
+    operationId: repos.generateId(),
+    now: NOW,
+  });
+  const expenseCategory = await repos.categoryRepository.create({
+    id: repos.generateId(),
+    name: 'An uong',
+    type: 'expense',
+    originDeviceId: DEVICE_ID,
+    operationId: repos.generateId(),
+    now: NOW,
+  });
+  const incomeCategory = await repos.categoryRepository.create({
+    id: repos.generateId(),
+    name: 'Luong',
+    type: 'income',
+    originDeviceId: DEVICE_ID,
+    operationId: repos.generateId(),
+    now: NOW,
+  });
+  return { account, secondAccount, expenseCategory, incomeCategory };
+}
+
+function ListHarness({ dependencies, onSelectTransaction }: { dependencies: Repos; onSelectTransaction?: (id: string) => void }) {
+  const viewModel = useTransactions({ dependencies, now: () => new Date(NOW), t });
+  return (
+    <TransactionsScreen
+      {...viewModel}
+      onAddTransaction={() => {}}
+      onBack={() => {}}
+      onSelectTransaction={onSelectTransaction ?? (() => {})}
+      t={t}
+    />
+  );
+}
+
+function FormHarness({ dependencies, transactionId, onSaved }: { dependencies: Repos; transactionId?: string | null; onSaved: () => void }) {
+  const viewModel = useTransactionForm({ dependencies, now: () => new Date(NOW), onSaved, t, transactionId });
+  return <TransactionFormScreen {...viewModel} onCancel={() => {}} t={t} />;
+}
+
+describe('transactions list + view model', () => {
+  it('shows an empty state, then a created transaction after a successful create', async () => {
+    const repos = makeRepos();
+    const { account, expenseCategory } = await seedAccountAndCategories(repos);
+
+    const list = render(<ListHarness dependencies={repos} />);
+    await waitFor(() => expect(list.getByText(t('transactionsEmpty'))).toBeTruthy());
+
+    const onSaved = jest.fn();
+    const form = render(<FormHarness dependencies={repos} onSaved={onSaved} />);
+
+    await waitFor(() => expect(form.getByLabelText(t('transactionFormNameLabel'))).toBeTruthy());
+    fireEvent.changeText(form.getByLabelText(t('transactionFormNameLabel')), 'An trua');
+    fireEvent.changeText(form.getByLabelText(t('transactionFormAmountLabel')), '150.000');
+    fireEvent.press(form.getByLabelText(account.name));
+    fireEvent.press(form.getByLabelText(expenseCategory.name));
+    fireEvent.press(form.getByLabelText(t('transactionFormSave')));
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    const stored = await repos.transactionRepository.list({});
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({ name: 'An trua', amount: 150_000, type: 'expense' });
+  });
+
+  it('filters by type, category, account and free-text search', async () => {
+    const repos = makeRepos();
+    const { account, secondAccount, expenseCategory, incomeCategory } = await seedAccountAndCategories(repos);
+
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 100_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-05',
+      name: 'An sang',
+    });
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 200_000,
+      accountId: secondAccount.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-06',
+      name: 'Mua sam',
+    });
+    await repos.createTransaction.execute({
+      type: 'income',
+      amount: 5_000_000,
+      accountId: account.id,
+      categoryId: incomeCategory.id,
+      date: '2026-08-07',
+      name: 'Luong thang 8',
+    });
+
+    const screen = render(<ListHarness dependencies={repos} />);
+    await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
+    expect(screen.getByText('Mua sam')).toBeTruthy();
+    expect(screen.getByText('Luong thang 8')).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText('Thu nhap'));
+    await waitFor(() => expect(screen.queryByText('An sang')).toBeNull());
+    expect(screen.getByText('Luong thang 8')).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText('Chi tieu'));
+    await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText(secondAccount.name));
+    await waitFor(() => expect(screen.queryByText('An sang')).toBeNull());
+    expect(screen.getByText('Mua sam')).toBeTruthy();
+  });
+
+  it('filters by free-text search against the transaction name', async () => {
+    const repos = makeRepos();
+    const { account, expenseCategory } = await seedAccountAndCategories(repos);
+
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 100_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-05',
+      name: 'An sang',
+    });
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 200_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-06',
+      name: 'Mua sam',
+    });
+
+    const screen = render(<ListHarness dependencies={repos} />);
+    await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
+
+    fireEvent.changeText(screen.getByLabelText('Tim kiem giao dich'), 'sang');
+    await waitFor(() => expect(screen.queryByText('Mua sam')).toBeNull());
+    expect(screen.getByText('An sang')).toBeTruthy();
+  });
+
+  it('lets an existing transaction be edited, prefilling its current values', async () => {
+    const repos = makeRepos();
+    const { account, expenseCategory } = await seedAccountAndCategories(repos);
+    const created = await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 100_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-05',
+      name: 'An sang',
+    });
+
+    const onSaved = jest.fn();
+    const form = render(<FormHarness dependencies={repos} onSaved={onSaved} transactionId={created.id} />);
+
+    await waitFor(() => expect(form.getByDisplayValue('An sang')).toBeTruthy());
+    fireEvent.changeText(form.getByLabelText(t('transactionFormNameLabel')), 'An sang o quan moi');
+    fireEvent.press(form.getByLabelText(t('transactionFormSave')));
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    const updated = await repos.transactionRepository.findById(created.id);
+    expect(updated?.name).toBe('An sang o quan moi');
+    expect(updated?.amount).toBe(100_000);
+  });
+
+  it('deletes a transaction after confirmation, then restores it via Undo', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
+      const confirm = buttons?.find((button) => button.style === 'destructive');
+      confirm?.onPress?.();
+    });
+
+    const repos = makeRepos();
+    const { account, expenseCategory } = await seedAccountAndCategories(repos);
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 100_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-05',
+      name: 'An sang',
+    });
+
+    const screen = render(<ListHarness dependencies={repos} />);
+    await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText(t('transactionsDeleteLabel', { name: 'An sang' })));
+    expect(alertSpy).toHaveBeenCalled();
+
+    await waitFor(() => expect(screen.queryByText('An sang')).toBeNull());
+    expect(screen.getByText(t('transactionsDeleteUndoMessage'))).toBeTruthy();
+
+    const [deleted] = await repos.transactionRepository.list({ includeDeleted: true });
+    expect(deleted.deletedAt).not.toBeNull();
+
+    fireEvent.press(screen.getByLabelText('Hoan tac'));
+
+    await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
+    const [restored] = await repos.transactionRepository.list({ includeDeleted: true });
+    expect(restored.deletedAt).toBeNull();
+
+    alertSpy.mockRestore();
+  });
+});
