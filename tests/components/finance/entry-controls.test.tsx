@@ -11,6 +11,14 @@ import {
 } from '@/components/finance';
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
+import { translate } from '@/i18n/translations';
+
+const t = translate.bind(null, 'vi');
+const filterLabels = {
+  account: t('filterAccount'), all: t('filterAll'), category: t('filterCategory'), expense: t('filterExpense'),
+  income: t('filterIncome'), month: t('filterMonth'), nextMonth: t('filterNextMonth'), previousMonth: t('filterPreviousMonth'),
+  searchLabel: t('filterSearchLabel'), searchPlaceholder: t('filterSearchPlaceholder'), transfer: t('filterTransfer'),
+};
 
 function makeAccount(overrides: Partial<Account>): Account {
   return {
@@ -69,19 +77,19 @@ const categories: Category[] = [
 describe('AmountInput', () => {
   it('parses formatted VND text into a positive integer and flags invalid input', () => {
     const onChange = jest.fn();
-    const screen = render(<AmountInput onChange={onChange} value={null} />);
-    const input = screen.getByLabelText('So tien');
+    const screen = render(<AmountInput invalidMessage={t('amountInvalid')} label={t('transactionFormAmountLabel')} onChange={onChange} placeholder={t('amountPlaceholder')} value={null} />);
+    const input = screen.getByLabelText('Số tiền');
 
     fireEvent.changeText(input, '1.000.000');
     expect(onChange).toHaveBeenLastCalledWith(1000000);
 
     fireEvent.changeText(input, 'abc');
     expect(onChange).toHaveBeenLastCalledWith(null);
-    expect(screen.getByText('So tien khong hop le')).toBeTruthy();
+    expect(screen.getByText('Số tiền không hợp lệ')).toBeTruthy();
 
     fireEvent.changeText(input, '0');
     expect(onChange).toHaveBeenLastCalledWith(null);
-    expect(screen.getByText('So tien khong hop le')).toBeTruthy();
+    expect(screen.getByText('Số tiền không hợp lệ')).toBeTruthy();
   });
 });
 
@@ -89,7 +97,7 @@ describe('AccountPicker', () => {
   it('lists accounts with accessible labels and reports selection', () => {
     const onSelect = jest.fn();
     const screen = render(
-      <AccountPicker accounts={accounts} label="Tai khoan" onSelect={onSelect} selectedId="acc-cash" />,
+      <AccountPicker accounts={accounts} label="Tài khoản" onSelect={onSelect} selectedId="acc-cash" />,
     );
 
     expect(screen.getByRole('button', { name: 'Vi tien mat' }).props.accessibilityState).toEqual({ selected: true });
@@ -100,10 +108,10 @@ describe('AccountPicker', () => {
   it('shows an "all" chip and reports null selection when allowUnselect is set', () => {
     const onSelect = jest.fn();
     const screen = render(
-      <AccountPicker accounts={accounts} allowUnselect onSelect={onSelect} selectedId={null} />,
+      <AccountPicker allLabel={t('filterAll')} accounts={accounts} allowUnselect onSelect={onSelect} selectedId={null} />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Tat ca' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Tất cả' }));
     expect(onSelect).toHaveBeenCalledWith(null);
   });
 });
@@ -126,17 +134,17 @@ describe('CategoryPicker', () => {
 describe('DateField', () => {
   it('defaults to displaying the given date and exposes an accessible label', () => {
     const iso = todayIso();
-    const screen = render(<DateField onChange={jest.fn()} value={iso} />);
+    const screen = render(<DateField label={t('dateTransactionLabel')} onChange={jest.fn()} value={iso} />);
 
     expect(screen.getByText(formatDmy(iso))).toBeTruthy();
-    expect(screen.getByRole('button', { name: `Ngay giao dich: ${formatDmy(iso)}` })).toBeTruthy();
+    expect(screen.getByRole('button', { name: `Ngày giao dịch: ${formatDmy(iso)}` })).toBeTruthy();
   });
 });
 
 describe('TransactionForm', () => {
   function renderForm(onSubmit = jest.fn()) {
     const screen = render(
-      <TransactionForm accounts={accounts} categories={categories} onSubmit={onSubmit} />,
+      <TransactionForm accounts={accounts} categories={categories} onSubmit={onSubmit} t={t} />,
     );
     return { screen, onSubmit };
   }
@@ -144,74 +152,74 @@ describe('TransactionForm', () => {
   it('shows category for income/expense and destination account only for transfer', () => {
     const { screen } = renderForm();
 
-    expect(screen.getByText('Danh muc')).toBeTruthy();
-    expect(screen.queryByText('Tai khoan dich')).toBeNull();
+    expect(screen.getByText('Danh mục')).toBeTruthy();
+    expect(screen.queryByText('Tài khoản đích')).toBeNull();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Chuyen khoan' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Chuyển khoản' }));
 
-    expect(screen.queryByText('Danh muc')).toBeNull();
-    expect(screen.getByText('Tai khoan dich')).toBeTruthy();
+    expect(screen.queryByText('Danh mục')).toBeNull();
+    expect(screen.getByText('Tài khoản đích')).toBeTruthy();
   });
 
   it('requires a name before submitting', () => {
     const { screen, onSubmit } = renderForm();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Luu giao dich' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Lưu giao dịch' }));
 
-    expect(screen.getByText('Vui long nhap ten giao dich')).toBeTruthy();
+    expect(screen.getByText('Vui lòng nhập tên giao dịch')).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('requires an amount before submitting', () => {
     const { screen, onSubmit } = renderForm();
 
-    fireEvent.changeText(screen.getByLabelText('Ten giao dich'), 'An trua');
-    fireEvent.press(screen.getByRole('button', { name: 'Luu giao dich' }));
+    fireEvent.changeText(screen.getByLabelText('Tên giao dịch'), 'Ăn trưa');
+    fireEvent.press(screen.getByRole('button', { name: 'Lưu giao dịch' }));
 
-    expect(screen.getByText('So tien khong hop le')).toBeTruthy();
+    expect(screen.getByText('Số tiền không hợp lệ')).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('shows a single error line for a non-empty invalid amount, not a duplicate', () => {
     const { screen, onSubmit } = renderForm();
 
-    fireEvent.changeText(screen.getByLabelText('Ten giao dich'), 'An trua');
-    fireEvent.changeText(screen.getByLabelText('So tien'), 'abc');
+    fireEvent.changeText(screen.getByLabelText('Tên giao dịch'), 'Ăn trưa');
+    fireEvent.changeText(screen.getByLabelText('Số tiền'), 'abc');
     fireEvent.press(screen.getByRole('button', { name: 'Vi tien mat' }));
     fireEvent.press(screen.getByRole('button', { name: 'An uong' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Luu giao dich' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Lưu giao dịch' }));
 
-    expect(screen.getAllByText('So tien khong hop le')).toHaveLength(1);
+    expect(screen.getAllByText('Số tiền không hợp lệ')).toHaveLength(1);
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('requires a category for income/expense transactions', () => {
     const { screen, onSubmit } = renderForm();
 
-    fireEvent.changeText(screen.getByLabelText('Ten giao dich'), 'An trua');
-    fireEvent.changeText(screen.getByLabelText('So tien'), '50000');
+    fireEvent.changeText(screen.getByLabelText('Tên giao dịch'), 'Ăn trưa');
+    fireEvent.changeText(screen.getByLabelText('Số tiền'), '50000');
     fireEvent.press(screen.getByRole('button', { name: 'Vi tien mat' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Luu giao dich' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Lưu giao dịch' }));
 
-    expect(screen.getByText('Vui long chon danh muc')).toBeTruthy();
+    expect(screen.getByText('Vui lòng chọn danh mục')).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('rejects a transfer whose destination matches the source account', () => {
     const { screen, onSubmit } = renderForm();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Chuyen khoan' }));
-    fireEvent.changeText(screen.getByLabelText('Ten giao dich'), 'Chuyen tien');
-    fireEvent.changeText(screen.getByLabelText('So tien'), '50000');
+    fireEvent.press(screen.getByRole('button', { name: 'Chuyển khoản' }));
+    fireEvent.changeText(screen.getByLabelText('Tên giao dịch'), 'Chuyển tiền');
+    fireEvent.changeText(screen.getByLabelText('Số tiền'), '50000');
 
     const sourceButtons = screen.getAllByRole('button', { name: 'Vi tien mat' });
     fireEvent.press(sourceButtons[0]);
     const destButtons = screen.getAllByRole('button', { name: 'Vi tien mat' });
     fireEvent.press(destButtons[destButtons.length - 1]);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Luu giao dich' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Lưu giao dịch' }));
 
-    expect(screen.getByText('Tai khoan dich phai khac tai khoan nguon')).toBeTruthy();
+    expect(screen.getByText('Tài khoản đích phải khác tài khoản nguồn')).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -225,16 +233,16 @@ describe('TransactionForm', () => {
   it('submits a valid income/expense transaction', () => {
     const { screen, onSubmit } = renderForm();
 
-    fireEvent.changeText(screen.getByLabelText('Ten giao dich'), 'An trua');
-    fireEvent.changeText(screen.getByLabelText('So tien'), '50000');
+    fireEvent.changeText(screen.getByLabelText('Tên giao dịch'), 'Ăn trưa');
+    fireEvent.changeText(screen.getByLabelText('Số tiền'), '50000');
     fireEvent.press(screen.getByRole('button', { name: 'Vi tien mat' }));
     fireEvent.press(screen.getByRole('button', { name: 'An uong' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Luu giao dich' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Lưu giao dịch' }));
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'expense',
-        name: 'An trua',
+        name: 'Ăn trưa',
         amount: 50000,
         accountId: 'acc-cash',
         categoryId: 'cat-food',
@@ -266,13 +274,14 @@ describe('FilterBar', () => {
         onTypeChange={onTypeChange}
         search=""
         type="all"
+        labels={filterLabels}
       />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: 'Thang sau' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Tháng sau' }));
     expect(onMonthChange).toHaveBeenCalledWith('2026-09');
 
-    fireEvent.press(screen.getByRole('button', { name: 'Thu nhap' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Thu nhập' }));
     expect(onTypeChange).toHaveBeenCalledWith('income');
 
     fireEvent.press(screen.getByRole('button', { name: 'An uong' }));
@@ -281,8 +290,8 @@ describe('FilterBar', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Ngan hang ACB' }));
     expect(onAccountChange).toHaveBeenCalledWith('acc-bank');
 
-    fireEvent.changeText(screen.getByLabelText('Tim kiem giao dich'), 'ca phe');
-    expect(onSearchChange).toHaveBeenCalledWith('ca phe');
+    fireEvent.changeText(screen.getByLabelText('Tìm kiếm giao dịch'), 'cà phê');
+    expect(onSearchChange).toHaveBeenCalledWith('cà phê');
   });
 
   it('shows both income and expense categories in the default "all" type view', () => {
@@ -300,6 +309,7 @@ describe('FilterBar', () => {
         onTypeChange={jest.fn()}
         search=""
         type="all"
+        labels={filterLabels}
       />,
     );
 
@@ -319,11 +329,11 @@ describe('UndoBanner', () => {
 
   it('calls restore once when pressed and stops accepting further presses', () => {
     const onUndo = jest.fn();
-    const screen = render(<UndoBanner durationMs={5000} message="Da xoa giao dich" onUndo={onUndo} />);
+    const screen = render(<UndoBanner durationMs={5000} message={t('transactionsDeleteUndoMessage')} onUndo={onUndo} undoLabel={t('undoAction')} />);
 
-    expect(screen.getByText('Da xoa giao dich')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Hoan tac' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Hoan tac' }));
+    expect(screen.getByText('Đã xóa giao dịch')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Hoàn tác' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Hoàn tác' }));
 
     expect(onUndo).toHaveBeenCalledTimes(1);
   });
@@ -331,7 +341,7 @@ describe('UndoBanner', () => {
   it('expires after the configured window and calls onExpire', () => {
     const onUndo = jest.fn();
     const onExpire = jest.fn();
-    render(<UndoBanner durationMs={2000} message="Da xoa giao dich" onExpire={onExpire} onUndo={onUndo} />);
+    render(<UndoBanner durationMs={2000} message={t('transactionsDeleteUndoMessage')} onExpire={onExpire} onUndo={onUndo} undoLabel={t('undoAction')} />);
 
     jest.advanceTimersByTime(2000);
 

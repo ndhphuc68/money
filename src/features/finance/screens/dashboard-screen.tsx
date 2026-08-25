@@ -57,7 +57,9 @@ export function DashboardScreen(props: DashboardScreenProps) {
         balance={totalBalanceLabel}
         cardNumber={accountCountLabel}
         expiry={asOfLabel}
+        hideBalanceLabel={t('balanceHide')}
         label={t('dashboardBalanceLabel')}
+        showBalanceLabel={t('balanceShow')}
         masked={amountsHidden}
         onToggleMask={toggleAmountsHidden}
       />

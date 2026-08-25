@@ -27,6 +27,7 @@ describe('finance navigation controls', () => {
             { key: 'profile', label: 'Profile', icon: 'profile' },
           ]}
           activeKey="overview"
+          addAccessibilityLabel="Add transaction"
           onChange={onChange}
           onAdd={onAdd}
         />

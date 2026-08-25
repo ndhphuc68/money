@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
 import { validateTransactionInput, type TransactionInput, type TransactionType } from '@/core/domain/finance/transaction';
+import type { Translate } from '@/i18n/translations';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 
 import { AccountPicker } from './AccountPicker';
@@ -11,21 +12,6 @@ import { AmountInput } from './AmountInput';
 import { CategoryPicker } from './CategoryPicker';
 import { DateField } from './DateField';
 import { SegmentedControl } from './SegmentedControl';
-
-const TYPE_OPTIONS = ['Thu nhap', 'Chi tieu', 'Chuyen khoan'] as const;
-type TypeOption = (typeof TYPE_OPTIONS)[number];
-
-const TYPE_TO_DOMAIN: Record<TypeOption, TransactionType> = {
-  'Thu nhap': 'income',
-  'Chi tieu': 'expense',
-  'Chuyen khoan': 'transfer',
-};
-
-const DOMAIN_TO_TYPE: Record<TransactionType, TypeOption> = {
-  income: 'Thu nhap',
-  expense: 'Chi tieu',
-  transfer: 'Chuyen khoan',
-};
 
 type FormErrors = {
   name?: string;
@@ -42,6 +28,7 @@ type TransactionFormProps = {
   categories: readonly Category[];
   initialDate?: string;
   onSubmit: (input: TransactionInput) => void;
+  t: Translate;
 };
 
 function todayIso(): string {
@@ -52,7 +39,7 @@ function todayIso(): string {
   return `${year}-${month}-${day}`;
 }
 
-export function TransactionForm({ accounts, categories, initialDate, onSubmit }: TransactionFormProps) {
+export function TransactionForm({ accounts, categories, initialDate, onSubmit, t }: TransactionFormProps) {
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState<number | null>(null);
   const [name, setName] = useState('');
@@ -64,27 +51,32 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
   const [errors, setErrors] = useState<FormErrors>({});
 
   const isTransfer = type === 'transfer';
+  const typeLabels: Record<TransactionType, string> = {
+    income: t('transactionTypeIncome'),
+    expense: t('transactionTypeExpense'),
+    transfer: t('transactionTypeTransfer'),
+  };
 
   function handleSubmit() {
     const nextErrors: FormErrors = {};
 
     if (name.trim() === '') {
-      nextErrors.name = 'Vui long nhap ten giao dich';
+      nextErrors.name = t('transactionFormNameRequired');
     }
     if (amount === null || amount <= 0) {
-      nextErrors.amount = 'So tien khong hop le';
+      nextErrors.amount = t('transactionFormAmountRequired');
     }
     if (accountId === null) {
-      nextErrors.accountId = 'Vui long chon tai khoan';
+      nextErrors.accountId = t('transactionFormAccountRequired');
     }
     if (isTransfer) {
       if (destinationAccountId === null) {
-        nextErrors.destinationAccountId = 'Vui long chon tai khoan dich';
+        nextErrors.destinationAccountId = t('transactionFormDestinationRequired');
       } else if (destinationAccountId === accountId) {
-        nextErrors.destinationAccountId = 'Tai khoan dich phai khac tai khoan nguon';
+        nextErrors.destinationAccountId = t('transactionFormDestinationSame');
       }
     } else if (categoryId === null) {
-      nextErrors.categoryId = 'Vui long chon danh muc';
+      nextErrors.categoryId = t('transactionFormCategoryRequired');
     }
 
     setErrors(nextErrors);
@@ -115,7 +107,7 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
     try {
       validateTransactionInput(input);
     } catch (error) {
-      setErrors({ form: error instanceof Error ? error.message : 'Giao dich khong hop le' });
+      setErrors({ form: error instanceof Error ? error.message : t('transactionFormGenericError') });
       return;
     }
 
@@ -125,19 +117,19 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
   return (
     <View style={styles.container}>
       <SegmentedControl
-        onChange={(option: TypeOption) => setType(TYPE_TO_DOMAIN[option])}
-        options={TYPE_OPTIONS}
-        value={DOMAIN_TO_TYPE[type]}
+        onChange={(option: string) => setType((Object.keys(typeLabels) as TransactionType[]).find((key) => typeLabels[key] === option) ?? 'expense')}
+        options={Object.values(typeLabels)}
+        value={typeLabels[type]}
       />
 
-      <NameField errorMessage={errors.name} onChange={setName} value={name} />
+      <NameField errorMessage={errors.name} label={t('transactionFormNameLabel')} onChange={setName} placeholder={t('transactionFormNamePlaceholder')} value={name} />
 
-      <AmountInput errorMessage={amount === null ? (errors.amount ?? null) : null} onChange={setAmount} value={amount} />
+      <AmountInput errorMessage={amount === null ? (errors.amount ?? null) : null} invalidMessage={t('amountInvalid')} label={t('transactionFormAmountLabel')} onChange={setAmount} placeholder={t('amountPlaceholder')} value={amount} />
 
       <AccountPicker
         accounts={accounts}
         errorMessage={errors.accountId ?? null}
-        label="Tai khoan"
+        label={t('transactionFormAccountLabel')}
         onSelect={setAccountId}
         selectedId={accountId}
       />
@@ -146,7 +138,7 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
         <AccountPicker
           accounts={accounts}
           errorMessage={errors.destinationAccountId ?? null}
-          label="Tai khoan dich"
+          label={t('transactionFormDestinationLabel')}
           onSelect={setDestinationAccountId}
           selectedId={destinationAccountId}
         />
@@ -154,16 +146,16 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
         <CategoryPicker
           categories={categories}
           errorMessage={errors.categoryId ?? null}
-          label="Danh muc"
+          label={t('transactionFormCategoryLabel')}
           onSelect={setCategoryId}
           selectedId={categoryId}
           type={type === 'income' ? 'income' : 'expense'}
         />
       )}
 
-      <DateField onChange={setDate} value={date} />
+      <DateField label={t('dateTransactionLabel')} onChange={setDate} value={date} />
 
-      <NoteField onChange={setNote} value={note} />
+      <NoteField label={t('transactionFormNoteLabel')} onChange={setNote} placeholder={t('transactionFormNoteLabel')} value={note} />
 
       {errors.form ? (
         <Text accessibilityRole="alert" style={styles.error}>
@@ -172,25 +164,25 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
       ) : null}
 
       <Pressable
-        accessibilityLabel="Luu giao dich"
+        accessibilityLabel={t('transactionFormSave')}
         accessibilityRole="button"
         onPress={handleSubmit}
         style={({ pressed }) => [styles.saveButton, pressed && styles.saveButtonPressed]}
       >
-        <Text style={styles.saveButtonText}>Luu giao dich</Text>
+        <Text style={styles.saveButtonText}>{t('transactionFormSave')}</Text>
       </Pressable>
     </View>
   );
 }
 
-function NameField({ value, onChange, errorMessage }: { value: string; onChange: (value: string) => void; errorMessage?: string }) {
+function NameField({ value, onChange, errorMessage, label, placeholder }: { value: string; onChange: (value: string) => void; errorMessage?: string; label: string; placeholder: string }) {
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>Ten giao dich</Text>
+      <Text style={styles.label}>{label}</Text>
       <TextInput
-        accessibilityLabel="Ten giao dich"
+        accessibilityLabel={label}
         onChangeText={onChange}
-        placeholder="VD: An trua"
+        placeholder={placeholder}
         placeholderTextColor={colors.content.placeholder}
         style={[styles.input, errorMessage && styles.inputError]}
         value={value}
@@ -204,15 +196,15 @@ function NameField({ value, onChange, errorMessage }: { value: string; onChange:
   );
 }
 
-function NoteField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+function NoteField({ value, onChange, label, placeholder }: { value: string; onChange: (value: string) => void; label: string; placeholder: string }) {
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>Ghi chu (khong bat buoc)</Text>
+      <Text style={styles.label}>{label}</Text>
       <TextInput
-        accessibilityLabel="Ghi chu"
+        accessibilityLabel={label}
         multiline
         onChangeText={onChange}
-        placeholder="Them ghi chu"
+        placeholder={placeholder}
         placeholderTextColor={colors.content.placeholder}
         style={[styles.input, styles.noteInput]}
         value={value}

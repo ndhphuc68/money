@@ -70,6 +70,19 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
           onTypeChange={setType}
           search={filters.search}
           type={filters.type}
+          labels={{
+            account: t('filterAccount'),
+            all: t('filterAll'),
+            category: t('filterCategory'),
+            expense: t('filterExpense'),
+            income: t('filterIncome'),
+            month: t('filterMonth'),
+            nextMonth: t('filterNextMonth'),
+            previousMonth: t('filterPreviousMonth'),
+            searchLabel: t('filterSearchLabel'),
+            searchPlaceholder: t('filterSearchPlaceholder'),
+            transfer: t('filterTransfer'),
+          }}
         />
 
         {loading ? (
@@ -124,7 +137,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
         <Text style={styles.fabText}>+</Text>
       </Pressable>
 
-      {undoMessage ? <UndoBanner message={undoMessage} onExpire={dismissUndo} onUndo={undoDelete} /> : null}
+      {undoMessage ? <UndoBanner message={undoMessage} onExpire={dismissUndo} onUndo={undoDelete} undoLabel={t('undoAction')} /> : null}
     </View>
   );
 }

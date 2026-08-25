@@ -22,7 +22,7 @@ export function CategoryPicker({
   onSelect,
   label,
   allowUnselect = false,
-  allLabel = 'Tat ca',
+  allLabel,
   errorMessage = null,
 }: CategoryPickerProps) {
   const visible = categories.filter(
@@ -33,7 +33,7 @@ export function CategoryPicker({
     <View style={styles.container}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <View style={styles.list}>
-        {allowUnselect ? (
+        {allowUnselect && allLabel ? (
           <PickerChip active={selectedId === null} label={allLabel} onPress={() => onSelect(null)} />
         ) : null}
         {visible.map((category) => (

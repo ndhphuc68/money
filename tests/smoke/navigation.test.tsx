@@ -27,19 +27,19 @@ describe('root navigation', () => {
     const screen = renderRouter({ appDir: './src/app', overrides: {} }, { initialUrl: '/' });
 
     expect(screen.getPathname()).toBe('/');
-    await waitFor(() => expect(screen.getByLabelText('Ten hien thi')).toBeTruthy());
-    expect(screen.queryByText('Dong bo ngoai tuyen')).toBeNull();
+    await waitFor(() => expect(screen.getByLabelText('Tên hiển thị')).toBeTruthy());
+    expect(screen.queryByText('Đồng bộ ngoại tuyến')).toBeNull();
   });
 
   it('still renders the sync screen at /sync, in Vietnamese by default before sync actions are available', () => {
     const screen = renderRouter({ appDir: './src/app', overrides: {} }, { initialUrl: '/sync' });
 
     expect(screen.getPathname()).toBe('/sync');
-    expect(screen.getByText('Dong bo ngoai tuyen')).toBeTruthy();
-    expect(screen.getByText('Hay dat cum mat khau chung truoc khi nhap hoac xuat.')).toBeTruthy();
-    expect(screen.getByLabelText('Cum mat khau chung')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Xuat goi dong bo' }).props.accessibilityState).toEqual({ disabled: true });
-    expect(screen.getByRole('button', { name: 'Nhap goi dong bo' }).props.accessibilityState).toEqual({ disabled: true });
+    expect(screen.getByText('Đồng bộ ngoại tuyến')).toBeTruthy();
+    expect(screen.getByText('Hãy đặt cụm mật khẩu chung trước khi nhập hoặc xuất.')).toBeTruthy();
+    expect(screen.getByLabelText('Cụm mật khẩu chung')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Xuất gói đồng bộ' }).props.accessibilityState).toEqual({ disabled: true });
+    expect(screen.getByRole('button', { name: 'Nhập gói đồng bộ' }).props.accessibilityState).toEqual({ disabled: true });
   });
 
   it('switches visible sync labels to English when English is selected', () => {

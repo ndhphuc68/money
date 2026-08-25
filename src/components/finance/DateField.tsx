@@ -27,7 +27,7 @@ function formatDmy(iso: string): string {
   return `${day}/${month}/${year}`;
 }
 
-export function DateField({ value, onChange, label = 'Ngay giao dich' }: DateFieldProps) {
+export function DateField({ value, onChange, label }: DateFieldProps) {
   const [showPicker, setShowPicker] = useState(false);
   const formatted = formatDmy(value);
 

@@ -91,8 +91,10 @@ export function TransactionFormScreen(props: TransactionFormScreenProps) {
 
       <AmountInput
         errorMessage={values.amount === null ? (errors.amount ?? null) : null}
+        invalidMessage={t('amountInvalid')}
         label={t('transactionFormAmountLabel')}
         onChange={setAmount}
+        placeholder={t('amountPlaceholder')}
         value={values.amount}
       />
 
@@ -123,7 +125,7 @@ export function TransactionFormScreen(props: TransactionFormScreenProps) {
         />
       )}
 
-      <DateField onChange={setDate} value={values.date} />
+      <DateField label={t('dateTransactionLabel')} onChange={setDate} value={values.date} />
 
       <View style={styles.field}>
         <Text style={styles.label}>{t('transactionFormNoteLabel')}</Text>

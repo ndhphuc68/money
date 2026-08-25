@@ -20,6 +20,6 @@ describe('Expo foundation', () => {
       t,
     }));
 
-    expect(screen.getByText('Dong bo ngoai tuyen')).toBeTruthy();
+    expect(screen.getByText('Đồng bộ ngoại tuyến')).toBeTruthy();
   });
 });

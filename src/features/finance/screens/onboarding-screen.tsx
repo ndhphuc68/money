@@ -133,8 +133,10 @@ function FirstAccountStep({
 
       <AmountInput
         errorMessage={errors.openingBalance ?? null}
+        invalidMessage={t('amountInvalid')}
         label={t('onboardingOpeningBalanceLabel')}
         onChange={setOpeningBalance}
+        placeholder={t('amountPlaceholder')}
         value={accountForm.openingBalance}
       />
 

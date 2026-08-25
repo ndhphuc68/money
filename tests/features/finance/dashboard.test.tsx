@@ -327,7 +327,7 @@ describe('dashboard screen + view model', () => {
     await waitFor(() => expect(screen.getByText('Luong thang 8')).toBeTruthy());
     expect(screen.getByText(formatVnd(6_000_000))).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText('Hide balance'));
+    fireEvent.press(screen.getByLabelText('Ẩn số dư'));
 
     await waitFor(() => expect(screen.queryByText(formatVnd(6_000_000))).toBeNull());
     expect((await repos.profileSettingsRepository.get()).amountsHidden).toBe(true);

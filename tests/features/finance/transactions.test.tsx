@@ -414,11 +414,11 @@ describe('transactions list + view model', () => {
     expect(screen.getByText('Mua sam')).toBeTruthy();
     expect(screen.getByText('Luong thang 8')).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText('Thu nhap'));
+    fireEvent.press(screen.getByLabelText('Thu nhập'));
     await waitFor(() => expect(screen.queryByText('An sang')).toBeNull());
     expect(screen.getByText('Luong thang 8')).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText('Chi tieu'));
+    fireEvent.press(screen.getByLabelText('Chi tiêu'));
     await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
 
     fireEvent.press(screen.getByLabelText(secondAccount.name));
@@ -450,7 +450,7 @@ describe('transactions list + view model', () => {
     const screen = render(<ListHarness dependencies={repos} />);
     await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
 
-    fireEvent.changeText(screen.getByLabelText('Tim kiem giao dich'), 'sang');
+    fireEvent.changeText(screen.getByLabelText('Tìm kiếm giao dịch'), 'sang');
     await waitFor(() => expect(screen.queryByText('Mua sam')).toBeNull());
     expect(screen.getByText('An sang')).toBeTruthy();
   });
@@ -509,7 +509,7 @@ describe('transactions list + view model', () => {
     const [deleted] = await repos.transactionRepository.list({ includeDeleted: true });
     expect(deleted.deletedAt).not.toBeNull();
 
-    fireEvent.press(screen.getByLabelText('Hoan tac'));
+    fireEvent.press(screen.getByLabelText('Hoàn tác'));
 
     await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
     const [restored] = await repos.transactionRepository.list({ includeDeleted: true });

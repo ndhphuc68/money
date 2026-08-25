@@ -11,13 +11,6 @@ import { CategoryPicker } from './CategoryPicker';
 export type TransactionTypeFilter = 'all' | TransactionType;
 
 const TYPE_OPTIONS: readonly TransactionTypeFilter[] = ['all', 'income', 'expense', 'transfer'];
-const TYPE_LABELS: Record<TransactionTypeFilter, string> = {
-  all: 'Tat ca',
-  income: 'Thu nhap',
-  expense: 'Chi tieu',
-  transfer: 'Chuyen khoan',
-};
-
 type FilterBarProps = {
   month: string;
   onMonthChange: (month: string) => void;
@@ -31,6 +24,19 @@ type FilterBarProps = {
   onAccountChange: (id: string | null) => void;
   search: string;
   onSearchChange: (value: string) => void;
+  labels: {
+    all: string;
+    income: string;
+    expense: string;
+    transfer: string;
+    previousMonth: string;
+    nextMonth: string;
+    month: string;
+    category: string;
+    account: string;
+    searchLabel: string;
+    searchPlaceholder: string;
+  };
 };
 
 function shiftMonth(month: string, delta: number): string {
@@ -39,9 +45,9 @@ function shiftMonth(month: string, delta: number): string {
   return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
 }
 
-function formatMonth(month: string): string {
+function formatMonth(month: string, monthLabel: string): string {
   const [year, monthIndex] = month.split('-');
-  return `Thang ${Number(monthIndex)}/${year}`;
+  return `${monthLabel} ${Number(monthIndex)}/${year}`;
 }
 
 export function FilterBar({
@@ -57,23 +63,30 @@ export function FilterBar({
   onAccountChange,
   search,
   onSearchChange,
+  labels,
 }: FilterBarProps) {
+  const typeLabels: Record<TransactionTypeFilter, string> = {
+    all: labels.all,
+    income: labels.income,
+    expense: labels.expense,
+    transfer: labels.transfer,
+  };
   const categoryType = type === 'all' ? 'all' : type === 'income' ? 'income' : 'expense';
 
   return (
     <View style={styles.container}>
       <View style={styles.monthRow}>
         <Pressable
-          accessibilityLabel="Thang truoc"
+          accessibilityLabel={labels.previousMonth}
           accessibilityRole="button"
           onPress={() => onMonthChange(shiftMonth(month, -1))}
           style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}
         >
           <Text style={styles.monthButtonText}>‹</Text>
         </Pressable>
-        <Text style={styles.monthLabel}>{formatMonth(month)}</Text>
+        <Text style={styles.monthLabel}>{formatMonth(month, labels.month)}</Text>
         <Pressable
-          accessibilityLabel="Thang sau"
+          accessibilityLabel={labels.nextMonth}
           accessibilityRole="button"
           onPress={() => onMonthChange(shiftMonth(month, 1))}
           style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}
@@ -87,14 +100,14 @@ export function FilterBar({
           const active = option === type;
           return (
             <Pressable
-              accessibilityLabel={TYPE_LABELS[option]}
+              accessibilityLabel={typeLabels[option]}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
               key={option}
               onPress={() => onTypeChange(option)}
               style={({ pressed }) => [styles.typeChip, active && styles.typeChipActive, pressed && !active && styles.typeChipPressed]}
             >
-              <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>{TYPE_LABELS[option]}</Text>
+              <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>{typeLabels[option]}</Text>
             </Pressable>
           );
         })}
@@ -102,10 +115,10 @@ export function FilterBar({
 
       {type !== 'transfer' ? (
         <CategoryPicker
-          allLabel="Tat ca"
+          allLabel={labels.all}
           allowUnselect
           categories={categories}
-          label="Danh muc"
+          label={labels.category}
           onSelect={onCategoryChange}
           selectedId={categoryId}
           type={categoryType}
@@ -113,18 +126,18 @@ export function FilterBar({
       ) : null}
 
       <AccountPicker
-        allLabel="Tat ca"
+        allLabel={labels.all}
         allowUnselect
         accounts={accounts}
-        label="Tai khoan"
+        label={labels.account}
         onSelect={onAccountChange}
         selectedId={accountId}
       />
 
       <TextInput
-        accessibilityLabel="Tim kiem giao dich"
+        accessibilityLabel={labels.searchLabel}
         onChangeText={onSearchChange}
-        placeholder="Tim theo ten giao dich"
+        placeholder={labels.searchPlaceholder}
         placeholderTextColor={colors.content.placeholder}
         style={styles.searchInput}
         value={search}

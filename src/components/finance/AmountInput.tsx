@@ -7,8 +7,9 @@ import { colors, radius, spacing, typography } from '@/theme';
 type AmountInputProps = {
   value: number | null;
   onChange: (amount: number | null) => void;
-  label?: string;
-  placeholder?: string;
+  label: string;
+  placeholder: string;
+  invalidMessage: string;
   /**
    * External validation error (e.g. "amount is required") shown only while
    * the field has no parse error of its own, so the two sources never
@@ -17,13 +18,12 @@ type AmountInputProps = {
   errorMessage?: string | null;
 };
 
-const INVALID_AMOUNT_MESSAGE = 'So tien khong hop le';
-
 export function AmountInput({
   value,
   onChange,
-  label = 'So tien',
-  placeholder = 'Nhap so tien',
+  label,
+  placeholder,
+  invalidMessage,
   errorMessage = null,
 }: AmountInputProps) {
   const [text, setText] = useState(value != null ? formatVnd(value) : '');
@@ -41,7 +41,7 @@ export function AmountInput({
 
     const parsed = parseVndInput(nextText);
     if (parsed === null || parsed <= 0) {
-      setError(INVALID_AMOUNT_MESSAGE);
+      setError(invalidMessage);
       onChange(null);
       return;
     }

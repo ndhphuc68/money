@@ -10,9 +10,10 @@ type GoalCardProps = {
   percent: number;
   saved: string;
   target: string;
+  accessibilityLabel: string;
 };
 
-export function GoalCard({ name, initials, color = colors.brand.primary, due, percent, saved, target }: GoalCardProps) {
+export function GoalCard({ name, initials, color = colors.brand.primary, due, percent, saved, target, accessibilityLabel }: GoalCardProps) {
   const normalizedPercent = Math.max(0, Math.min(percent, 100));
 
   return (
@@ -27,7 +28,7 @@ export function GoalCard({ name, initials, color = colors.brand.primary, due, pe
         </View>
         <Text style={styles.percent}>{normalizedPercent}%</Text>
       </View>
-      <View accessibilityLabel={`${name} goal ${normalizedPercent}%`} style={styles.track}>
+      <View accessibilityLabel={accessibilityLabel} style={styles.track}>
         <View style={[styles.progress, { backgroundColor: color, width: `${normalizedPercent}%` }]} />
       </View>
       <View style={styles.footer}>

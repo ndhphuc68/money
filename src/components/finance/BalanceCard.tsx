@@ -10,6 +10,8 @@ type BalanceCardProps = {
   masked?: boolean;
   maskedText?: string;
   onToggleMask?: () => void;
+  showBalanceLabel: string;
+  hideBalanceLabel: string;
 };
 
 export function BalanceCard({
@@ -20,13 +22,15 @@ export function BalanceCard({
   masked = false,
   maskedText = '•• ••• •••',
   onToggleMask,
+  showBalanceLabel,
+  hideBalanceLabel,
 }: BalanceCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.label}>{label}</Text>
         <Pressable
-          accessibilityLabel={masked ? 'Show balance' : 'Hide balance'}
+          accessibilityLabel={masked ? showBalanceLabel : hideBalanceLabel}
           accessibilityRole="button"
           onPress={onToggleMask}
           style={({ pressed }) => [styles.maskButton, pressed && styles.maskButtonPressed]}

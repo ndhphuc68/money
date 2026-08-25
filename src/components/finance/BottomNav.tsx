@@ -15,10 +15,10 @@ type BottomNavProps = {
   activeKey: string;
   onChange?: (key: string) => void;
   onAdd?: () => void;
-  addAccessibilityLabel?: string;
+  addAccessibilityLabel: string;
 };
 
-export function BottomNav({ items, activeKey, onChange, onAdd, addAccessibilityLabel = 'Add transaction' }: BottomNavProps) {
+export function BottomNav({ items, activeKey, onChange, onAdd, addAccessibilityLabel }: BottomNavProps) {
   const firstItems = items.slice(0, 2);
   const lastItems = items.slice(2);
 

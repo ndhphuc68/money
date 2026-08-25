@@ -8,9 +8,10 @@ type BudgetRowProps = {
   limit: string;
   percent: number;
   color?: string;
+  accessibilityLabel: string;
 };
 
-export function BudgetRow({ category, spent, limit, percent, color = colors.brand.primary }: BudgetRowProps) {
+export function BudgetRow({ category, spent, limit, percent, color = colors.brand.primary, accessibilityLabel }: BudgetRowProps) {
   const normalizedPercent = Math.max(0, Math.min(percent, 100));
 
   return (
@@ -19,7 +20,7 @@ export function BudgetRow({ category, spent, limit, percent, color = colors.bran
         <Text style={styles.category}>{category}</Text>
         <Text style={styles.amount}>{spent} / {limit}</Text>
       </View>
-      <View accessibilityLabel={`${category} budget ${normalizedPercent}%`} style={styles.track}>
+      <View accessibilityLabel={accessibilityLabel} style={styles.track}>
         <View style={[styles.progress, { backgroundColor: color, width: `${normalizedPercent}%` }]} />
       </View>
     </View>

@@ -11,8 +11,10 @@ describe('finance card components', () => {
         balance="$12,480"
         cardNumber="**** 2381"
         expiry="09/29"
+        hideBalanceLabel="Hide balance"
         masked={false}
         onToggleMask={onToggleMask}
+        showBalanceLabel="Show balance"
       />,
     );
 
@@ -27,8 +29,8 @@ describe('finance card components', () => {
       <>
         <StatCard label="Income" value="+$3,200" tone="positive" />
         <TransactionRow name="Coffee" category="Food" meta="Today" amount="-$4.50" icon="food" positive={false} />
-        <BudgetRow category="Dining" spent="$320" limit="$500" percent={64} color="#F2734A" />
-        <GoalCard name="Emergency fund" initials="EF" due="Due Dec 2026" percent={42} saved="$4,200 saved" target="Target $10,000" />
+        <BudgetRow accessibilityLabel="Dining budget 64%" category="Dining" spent="$320" limit="$500" percent={64} color="#F2734A" />
+        <GoalCard accessibilityLabel="Emergency fund goal 42%" name="Emergency fund" initials="EF" due="Due Dec 2026" percent={42} saved="$4,200 saved" target="Target $10,000" />
       </>,
     );
 
