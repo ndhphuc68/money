@@ -1,0 +1,17 @@
+export const vi = {
+  appTitle: 'Dong bo ngoai tuyen',
+  description: 'Chuyen goi dong bo da ky giua cac thiet bi.',
+  languageLabel: 'Ngon ngu',
+  vietnamese: 'Tieng Viet',
+  english: 'English',
+  passphraseLabel: 'Cum mat khau chung',
+  passphrasePlaceholder: 'Nhap cum mat khau duoc thiet bi khac su dung',
+  passphraseRequired: 'Hay dat cum mat khau chung truoc khi nhap hoac xuat.',
+  exportPackage: 'Xuat goi dong bo',
+  importPackage: 'Nhap goi dong bo',
+  working: 'Dang xu ly...',
+  syncActionFailed: 'Tac vu dong bo that bai.',
+  exportComplete: 'Da xuat goi dong bo.',
+  importCanceled: 'Da huy nhap.',
+  importComplete: 'Nhap hoan tat: {applied} ap dung, {skipped} bo qua, {conflicted} xung dot, {rejected} tu choi.',
+};
