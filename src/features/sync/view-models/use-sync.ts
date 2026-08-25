@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { ImportSyncPackage } from '@/core/application/use-cases/import-sync-package';
 import { ExportSyncPackage } from '@/core/application/use-cases/export-sync-package';
 import { SyncPackage } from '@/core/domain/sync/sync-package';
+import type { Translate } from '@/i18n/translations';
 
 export type SyncDependencies = {
   exportSyncPackage: Pick<ExportSyncPackage, 'execute'>;
@@ -26,9 +27,10 @@ type UseSyncOptions = {
   dependencies: SyncDependencies | null;
   passphrase: string;
   setPassphrase(passphrase: string): void;
+  t: Translate;
 };
 
-export function useSync({ dependencies, passphrase, setPassphrase }: UseSyncOptions): SyncViewModel {
+export function useSync({ dependencies, passphrase, setPassphrase, t }: UseSyncOptions): SyncViewModel {
   const [isWorking, setIsWorking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function useSync({ dependencies, passphrase, setPassphrase }: UseSyncOpti
 
   const run = useCallback(async (operation: (configuredDependencies: SyncDependencies) => Promise<string>) => {
     if (dependencies === null) {
-      setError('Set a shared passphrase before importing or exporting.');
+      setError(t('passphraseRequired'));
       return;
     }
 
@@ -48,30 +50,30 @@ export function useSync({ dependencies, passphrase, setPassphrase }: UseSyncOpti
     try {
       setResult(await operation(dependencies));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Sync action failed.');
+      setError(cause instanceof Error ? cause.message : t('syncActionFailed'));
     } finally {
       setIsWorking(false);
     }
-  }, [dependencies]);
+  }, [dependencies, t]);
 
   const exportPackage = useCallback(async () => {
     await run(async (configuredDependencies) => {
       await configuredDependencies.exportFile(await configuredDependencies.exportSyncPackage.execute());
-      return 'Sync package exported.';
+      return t('exportComplete');
     });
-  }, [run]);
+  }, [run, t]);
 
   const importPackage = useCallback(async () => {
     await run(async (configuredDependencies) => {
       const pkg = await configuredDependencies.importFile();
       if (pkg === null) {
-        return 'Import canceled.';
+        return t('importCanceled');
       }
 
       const summary = await configuredDependencies.importSyncPackage.execute(pkg);
-      return `Import complete: ${summary.applied} applied, ${summary.skipped} skipped, ${summary.conflicted} conflicted, ${summary.rejected} rejected.`;
+      return t('importComplete', summary);
     });
-  }, [run]);
+  }, [run, t]);
 
   return { exportPackage, importPackage, isWorking, result, error, passphrase, setPassphrase, isConfigured };
 }
