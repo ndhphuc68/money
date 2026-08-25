@@ -80,7 +80,6 @@ describe('SyncEngine', () => {
     changes = new ChangeLogRepository(database);
     engine = new SyncEngine({
       database,
-      records,
       changes,
       serializer,
       appVersion: '1.0.0',
