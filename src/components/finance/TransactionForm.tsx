@@ -33,6 +33,8 @@ type FormErrors = {
   accountId?: string;
   categoryId?: string;
   destinationAccountId?: string;
+  /** Catch-all for domain-validation failures not already covered by a field-specific check above (e.g. an invalid date). */
+  form?: string;
 };
 
 type TransactionFormProps = {
@@ -113,7 +115,7 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
     try {
       validateTransactionInput(input);
     } catch (error) {
-      setErrors({ name: error instanceof Error ? error.message : 'Giao dich khong hop le' });
+      setErrors({ form: error instanceof Error ? error.message : 'Giao dich khong hop le' });
       return;
     }
 
@@ -130,12 +132,7 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
 
       <NameField errorMessage={errors.name} onChange={setName} value={name} />
 
-      <AmountInput onChange={setAmount} value={amount} />
-      {errors.amount ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          {errors.amount}
-        </Text>
-      ) : null}
+      <AmountInput errorMessage={amount === null ? (errors.amount ?? null) : null} onChange={setAmount} value={amount} />
 
       <AccountPicker
         accounts={accounts}
@@ -167,6 +164,12 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit }:
       <DateField onChange={setDate} value={date} />
 
       <NoteField onChange={setNote} value={note} />
+
+      {errors.form ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errors.form}
+        </Text>
+      ) : null}
 
       <Pressable
         accessibilityLabel="Luu giao dich"

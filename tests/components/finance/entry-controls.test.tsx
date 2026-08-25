@@ -172,6 +172,19 @@ describe('TransactionForm', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('shows a single error line for a non-empty invalid amount, not a duplicate', () => {
+    const { screen, onSubmit } = renderForm();
+
+    fireEvent.changeText(screen.getByLabelText('Ten giao dich'), 'An trua');
+    fireEvent.changeText(screen.getByLabelText('So tien'), 'abc');
+    fireEvent.press(screen.getByRole('button', { name: 'Vi tien mat' }));
+    fireEvent.press(screen.getByRole('button', { name: 'An uong' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Luu giao dich' }));
+
+    expect(screen.getAllByText('So tien khong hop le')).toHaveLength(1);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('requires a category for income/expense transactions', () => {
     const { screen, onSubmit } = renderForm();
 
@@ -270,6 +283,28 @@ describe('FilterBar', () => {
 
     fireEvent.changeText(screen.getByLabelText('Tim kiem giao dich'), 'ca phe');
     expect(onSearchChange).toHaveBeenCalledWith('ca phe');
+  });
+
+  it('shows both income and expense categories in the default "all" type view', () => {
+    const screen = render(
+      <FilterBar
+        accountId={null}
+        accounts={accounts}
+        categories={categories}
+        categoryId={null}
+        month="2026-08"
+        onAccountChange={jest.fn()}
+        onCategoryChange={jest.fn()}
+        onMonthChange={jest.fn()}
+        onSearchChange={jest.fn()}
+        onTypeChange={jest.fn()}
+        search=""
+        type="all"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'An uong' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Luong' })).toBeTruthy();
   });
 });
 

@@ -58,7 +58,7 @@ export function FilterBar({
   search,
   onSearchChange,
 }: FilterBarProps) {
-  const categoryType = type === 'income' ? 'income' : 'expense';
+  const categoryType = type === 'all' ? 'all' : type === 'income' ? 'income' : 'expense';
 
   return (
     <View style={styles.container}>

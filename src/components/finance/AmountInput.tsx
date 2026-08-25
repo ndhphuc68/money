@@ -9,13 +9,26 @@ type AmountInputProps = {
   onChange: (amount: number | null) => void;
   label?: string;
   placeholder?: string;
+  /**
+   * External validation error (e.g. "amount is required") shown only while
+   * the field has no parse error of its own, so the two sources never
+   * render two error lines at once.
+   */
+  errorMessage?: string | null;
 };
 
 const INVALID_AMOUNT_MESSAGE = 'So tien khong hop le';
 
-export function AmountInput({ value, onChange, label = 'So tien', placeholder = 'Nhap so tien' }: AmountInputProps) {
+export function AmountInput({
+  value,
+  onChange,
+  label = 'So tien',
+  placeholder = 'Nhap so tien',
+  errorMessage = null,
+}: AmountInputProps) {
   const [text, setText] = useState(value != null ? formatVnd(value) : '');
   const [error, setError] = useState<string | null>(null);
+  const displayedError = error ?? errorMessage;
 
   function handleChangeText(nextText: string) {
     setText(nextText);
@@ -53,12 +66,12 @@ export function AmountInput({ value, onChange, label = 'So tien', placeholder = 
         onChangeText={handleChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.content.placeholder}
-        style={[styles.input, error && styles.inputError]}
+        style={[styles.input, displayedError && styles.inputError]}
         value={text}
       />
-      {error ? (
+      {displayedError ? (
         <Text accessibilityRole="alert" style={styles.error}>
-          {error}
+          {displayedError}
         </Text>
       ) : null}
     </View>

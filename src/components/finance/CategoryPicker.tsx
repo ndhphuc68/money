@@ -5,7 +5,8 @@ import { colors, radius, spacing, typography } from '@/theme';
 
 type CategoryPickerProps = {
   categories: readonly Category[];
-  type: CategoryType;
+  /** Pass 'all' to show both income and expense categories together (e.g. an unfiltered list view). */
+  type: CategoryType | 'all';
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   label?: string;
@@ -24,7 +25,9 @@ export function CategoryPicker({
   allLabel = 'Tat ca',
   errorMessage = null,
 }: CategoryPickerProps) {
-  const visible = categories.filter((category) => category.type === type && !category.isArchived);
+  const visible = categories.filter(
+    (category) => (type === 'all' || category.type === type) && !category.isArchived,
+  );
 
   return (
     <View style={styles.container}>
