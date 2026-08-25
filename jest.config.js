@@ -7,6 +7,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^expo-sqlite$': '<rootDir>/tests/data/local/expo-sqlite.mock.ts',
+    '^@react-native-community/datetimepicker$': '<rootDir>/tests/mocks/datetimepicker.mock.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
 };
