@@ -1,4 +1,5 @@
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
+import { check, index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 import { accounts } from './accounts';
 import { categories } from './categories';
@@ -30,5 +31,6 @@ export const transactions = sqliteTable(
     index('transactions_transaction_date_idx').on(table.transactionDate),
     index('transactions_type_idx').on(table.type),
     index('transactions_category_id_idx').on(table.categoryId),
+    check('transactions_type_check', sql`${table.type} in ('income', 'expense', 'transfer')`),
   ],
 );

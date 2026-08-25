@@ -231,6 +231,141 @@ describe('finance database schema', () => {
     expect(byCategory).toHaveLength(1);
   });
 
+  it('rejects an account row with a null name (not-null constraint)', async () => {
+    await expect(
+      database.db.insert(accounts).values({
+        id: '550e8400-e29b-41d4-a716-446655440030',
+        name: null as unknown as string,
+        type: 'cash',
+        openingBalance: 0,
+        isArchived: false,
+        ...syncFields(),
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('rejects a category row with a null type (not-null constraint)', async () => {
+    await expect(
+      database.db.insert(categories).values({
+        id: '550e8400-e29b-41d4-a716-446655440031',
+        name: 'Untyped',
+        type: null as unknown as 'income',
+        isArchived: false,
+        ...syncFields(),
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('rejects a transaction row with an invalid type enum value (CHECK constraint)', async () => {
+    const accountId = '550e8400-e29b-41d4-a716-446655440032';
+    await database.db.insert(accounts).values({
+      id: accountId,
+      name: 'Bank',
+      type: 'bank',
+      openingBalance: 0,
+      isArchived: false,
+      ...syncFields(),
+    });
+
+    await expect(
+      database.db.insert(transactions).values({
+        id: '550e8400-e29b-41d4-a716-446655440033',
+        type: 'not-a-real-type' as unknown as 'expense',
+        amount: 1000,
+        accountId,
+        categoryId: null,
+        destinationAccountId: null,
+        transactionDate: '2026-08-23',
+        name: 'Invalid type',
+        note: null,
+        ...syncFields(),
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('rejects a transaction row with a null amount (not-null constraint)', async () => {
+    const accountId = '550e8400-e29b-41d4-a716-446655440034';
+    await database.db.insert(accounts).values({
+      id: accountId,
+      name: 'Bank',
+      type: 'bank',
+      openingBalance: 0,
+      isArchived: false,
+      ...syncFields(),
+    });
+
+    await expect(
+      database.db.insert(transactions).values({
+        id: '550e8400-e29b-41d4-a716-446655440035',
+        type: 'expense',
+        amount: null as unknown as number,
+        accountId,
+        categoryId: null,
+        destinationAccountId: null,
+        transactionDate: '2026-08-23',
+        name: 'Missing amount',
+        note: null,
+        ...syncFields(),
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('rejects a transaction row that references a non-existent account (foreign key)', async () => {
+    await expect(
+      database.db.insert(transactions).values({
+        id: '550e8400-e29b-41d4-a716-446655440036',
+        type: 'expense',
+        amount: 1000,
+        accountId: '550e8400-e29b-41d4-a716-446655440099',
+        categoryId: null,
+        destinationAccountId: null,
+        transactionDate: '2026-08-23',
+        name: 'Bad account ref',
+        note: null,
+        ...syncFields(),
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('rejects a transaction row that references a non-existent category (foreign key)', async () => {
+    const accountId = '550e8400-e29b-41d4-a716-446655440037';
+    await database.db.insert(accounts).values({
+      id: accountId,
+      name: 'Bank',
+      type: 'bank',
+      openingBalance: 0,
+      isArchived: false,
+      ...syncFields(),
+    });
+
+    await expect(
+      database.db.insert(transactions).values({
+        id: '550e8400-e29b-41d4-a716-446655440038',
+        type: 'expense',
+        amount: 1000,
+        accountId,
+        categoryId: '550e8400-e29b-41d4-a716-446655440098',
+        destinationAccountId: null,
+        transactionDate: '2026-08-23',
+        name: 'Bad category ref',
+        note: null,
+        ...syncFields(),
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('rejects a profile settings row with a null display name (not-null constraint)', async () => {
+    await expect(
+      database.db.insert(profileSettings).values({
+        id: 'local-invalid',
+        displayName: null as unknown as string,
+        amountsHidden: false,
+        onboardingCompleted: false,
+        updatedAt: '2026-08-24T10:00:00.000Z',
+      }),
+    ).rejects.toThrow();
+  });
+
   it('creates, updates, and reads the single local profile settings row', async () => {
     await database.db.insert(profileSettings).values({
       id: 'local',
