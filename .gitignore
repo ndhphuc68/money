@@ -11,3 +11,4 @@ web-build/
 npm-debug.*
 expo-env.d.ts
 node_modules
+\.worktrees/
