@@ -2,9 +2,9 @@ import { ExportSyncPackage } from '@/core/application/use-cases/export-sync-pack
 import { ImportSyncPackage } from '@/core/application/use-cases/import-sync-package';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { ChangeLogRepository } from '@/data/local/repositories/change-log-repository';
-import { ExampleRecordRepository } from '@/data/local/repositories/example-record-repository';
 import { HmacSha256AuthenticationProvider } from '@/data/sync/authentication/hmac-sha256-authentication-provider';
 import { StableSyncPackageSerializer } from '@/data/sync/serializers/sync-package-serializer';
+import { defaultSyncEntityAdapters } from '@/data/sync/sync-engine/entity-adapters';
 import { SyncEngine } from '@/data/sync/sync-engine/sync-engine';
 import { FileSyncTransport } from '@/data/sync/transports/file-sync-transport';
 import type { SyncDependencies } from '@/features/sync/view-models/use-sync';
@@ -27,7 +27,7 @@ export function createMobileSyncDependencies(
   const createTransport = async () => new FileSyncTransport(
     new SyncEngine({
       database,
-      records: new ExampleRecordRepository(database),
+      records: defaultSyncEntityAdapters,
       changes: new ChangeLogRepository(database),
       serializer,
       appVersion: '1.0.0',
