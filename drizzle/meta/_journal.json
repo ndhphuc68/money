@@ -8,6 +8,13 @@
       "when": 1787585136007,
       "tag": "0000_open_zarda",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787669139599,
+      "tag": "0001_loose_deadpool",
+      "breakpoints": true
     }
   ]
 }
