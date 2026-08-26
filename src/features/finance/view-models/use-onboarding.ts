@@ -50,10 +50,6 @@ export type OnboardingViewModel = {
   finishOnboarding(): Promise<void>;
   skipCategories(): Promise<void>;
   goBack(): void;
-  showExitConfirm: boolean;
-  requestExit(): void;
-  cancelExit(): void;
-  confirmExit(): void;
   errors: OnboardingErrors;
 };
 
@@ -88,7 +84,6 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
   const [accountForm, setAccountForm] = useState<AccountFormValues>({ name: '', type: 'cash', openingBalance: null });
   const [categories, setCategories] = useState<DefaultCategory[]>(DEFAULT_CATEGORIES);
   const [categoryToggles, setCategoryToggles] = useState<Record<string, boolean>>(createDefaultCategoryToggles);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [errors, setErrors] = useState<OnboardingErrors>({});
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -240,20 +235,6 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
     });
   }, []);
 
-  const resetLocalFields = useCallback(() => {
-    setStep('display-name');
-    setDisplayName('');
-    setAccountForm({ name: '', type: 'cash', openingBalance: null });
-    setCategories(DEFAULT_CATEGORIES);
-    setCategoryToggles(createDefaultCategoryToggles());
-    setErrors({});
-    setShowExitConfirm(false);
-  }, []);
-
-  const requestExit = useCallback(() => setShowExitConfirm(true), []);
-  const cancelExit = useCallback(() => setShowExitConfirm(false), []);
-  const confirmExit = useCallback(() => resetLocalFields(), [resetLocalFields]);
-
   return {
     loading,
     submitting,
@@ -278,10 +259,6 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
     finishOnboarding,
     skipCategories,
     goBack,
-    showExitConfirm,
-    requestExit,
-    cancelExit,
-    confirmExit,
     errors,
   };
 }

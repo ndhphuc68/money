@@ -1,4 +1,5 @@
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ChevronLeft, Plus, X } from 'lucide-react-native';
 
 import { FilterBar, TransactionRow, UndoBanner } from '@/components/finance';
 import type { TransactionsViewModel } from '@/features/finance/view-models/use-transactions';
@@ -50,7 +51,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
     <View style={styles.root}>
       <View style={styles.header}>
         <Pressable accessibilityLabel={t('transactionsBack')} accessibilityRole="button" onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>‹</Text>
+          <ChevronLeft color={colors.content.primary} size={24} strokeWidth={2.2} />
         </Pressable>
         <Text style={styles.title}>{t('transactionsTitle')}</Text>
         <View style={styles.backButton} />
@@ -118,7 +119,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
                       onPress={() => confirmDelete(item.id, item.name)}
                       style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
                     >
-                      <Text style={styles.deleteButtonText}>×</Text>
+                      <X color={colors.status.negative} size={20} strokeWidth={2.4} />
                     </Pressable>
                   </View>
                 ))}
@@ -134,7 +135,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
         onPress={onAddTransaction}
         style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
       >
-        <Text style={styles.fabText}>+</Text>
+        <Plus color={colors.content.inverse} size={28} strokeWidth={2.6} />
       </Pressable>
 
       {undoMessage ? <UndoBanner message={undoMessage} onExpire={dismissUndo} onUndo={undoDelete} undoLabel={t('undoAction')} /> : null}
@@ -149,11 +150,6 @@ const styles = StyleSheet.create({
     minHeight: 40,
     width: 40,
   },
-  backButtonText: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.bold,
-  },
   container: {
     gap: spacing[4],
     padding: spacing[4],
@@ -167,11 +163,6 @@ const styles = StyleSheet.create({
   },
   deleteButtonPressed: {
     opacity: 0.6,
-  },
-  deleteButtonText: {
-    color: colors.status.negative,
-    fontSize: typography.sizes.bodyLg,
-    fontWeight: typography.weights.bold,
   },
   emptyText: {
     color: colors.content.muted,
@@ -193,11 +184,6 @@ const styles = StyleSheet.create({
   },
   fabPressed: {
     backgroundColor: colors.brand.primaryPressed,
-  },
-  fabText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.black,
   },
   group: {
     gap: spacing[2],

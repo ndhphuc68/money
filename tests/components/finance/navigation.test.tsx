@@ -1,6 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BottomNav, SegmentedControl, SettingsList } from '@/components/finance';
+import { CategoryIcon, NavIcon } from '@/components/finance/icons';
 
 describe('finance navigation controls', () => {
   it('renders an accessible segmented control and reports selection changes', () => {
@@ -41,5 +42,19 @@ describe('finance navigation controls', () => {
     expect(onSelect).toHaveBeenCalledWith(0);
     expect(onChange).toHaveBeenCalledWith('list');
     expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders vector icons instead of text glyphs', () => {
+    const screen = render(
+      <>
+        <CategoryIcon name="food" />
+        <NavIcon color="#2F6FED" name="overview" />
+        <SettingsList items={[{ label: 'Currency', iconColor: '#2F6FED' }]} />
+      </>,
+    );
+
+    expect(screen.queryByText('F')).toBeNull();
+    expect(screen.queryByText('O')).toBeNull();
+    expect(screen.queryByText('›')).toBeNull();
   });
 });

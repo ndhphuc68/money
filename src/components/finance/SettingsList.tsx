@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
 
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -25,7 +26,7 @@ export function SettingsList({ items, onSelect }: SettingsListProps) {
         >
           <View accessibilityElementsHidden importantForAccessibility="no" style={[styles.icon, { backgroundColor: item.iconColor }]} />
           <Text numberOfLines={1} style={styles.label}>{item.label}</Text>
-          <Text accessibilityElementsHidden importantForAccessibility="no" style={styles.chevron}>›</Text>
+          <ChevronRight accessibilityElementsHidden color="rgba(60, 60, 67, 0.3)" importantForAccessibility="no" size={22} strokeWidth={2.2} />
         </Pressable>
       ))}
     </View>
@@ -33,11 +34,6 @@ export function SettingsList({ items, onSelect }: SettingsListProps) {
 }
 
 const styles = StyleSheet.create({
-  chevron: {
-    color: 'rgba(60, 60, 67, 0.3)',
-    fontSize: 28,
-    fontWeight: typography.weights.semibold,
-  },
   divider: {
     borderBottomColor: 'rgba(60, 60, 67, 0.12)',
     borderBottomWidth: 1,

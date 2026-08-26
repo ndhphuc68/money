@@ -20,6 +20,7 @@ import { useTransactions } from '@/features/finance/view-models/use-transactions
 import { useReports } from '@/features/finance/view-models/use-reports';
 import { useSettings } from '@/features/finance/view-models/use-settings';
 import { SyncScreen } from '@/features/sync/screens/sync-screen';
+import { BottomNav } from '@/components/finance';
 import { useSync } from '@/features/sync/view-models/use-sync';
 import { createMobileSyncDependencies } from '@/infrastructure/expo/sync/create-mobile-sync-dependencies';
 import { Locale, Translate, translate } from '@/i18n/translations';
@@ -193,16 +194,36 @@ function ConfiguredDashboardScreen({
 }) {
   const viewModel = useDashboard({ dependencies, t });
   return (
-    <DashboardScreen
-      {...viewModel}
-      onAddTransaction={onAddTransaction}
-      onOpenSync={onOpenSync}
-      onOpenReports={onOpenReports}
-      onOpenSettings={onOpenSettings}
-      onOpenTransactions={onOpenTransactions}
-      onSelectTransaction={onSelectTransaction}
-      t={t}
-    />
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        <DashboardScreen
+          {...viewModel}
+          onAddTransaction={onAddTransaction}
+          onOpenSync={onOpenSync}
+          onOpenReports={onOpenReports}
+          onOpenSettings={onOpenSettings}
+          onOpenTransactions={onOpenTransactions}
+          onSelectTransaction={onSelectTransaction}
+          t={t}
+        />
+      </View>
+      <BottomNav
+        activeKey="overview"
+        addAccessibilityLabel={t('dashboardAddTransaction')}
+        items={[
+          { key: 'overview', label: t('navOverview'), icon: 'overview' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'list' },
+          { key: 'reports', label: t('navReports'), icon: 'target' },
+          { key: 'settings', label: t('navSettings'), icon: 'profile' },
+        ]}
+        onAdd={onAddTransaction}
+        onChange={(key) => {
+          if (key === 'transactions') onOpenTransactions();
+          if (key === 'reports') onOpenReports();
+          if (key === 'settings') onOpenSettings();
+        }}
+      />
+    </View>
   );
 }
 

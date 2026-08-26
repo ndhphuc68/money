@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
@@ -82,7 +83,7 @@ export function FilterBar({
           onPress={() => onMonthChange(shiftMonth(month, -1))}
           style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}
         >
-          <Text style={styles.monthButtonText}>‹</Text>
+          <ChevronLeft color={colors.content.primary} size={20} />
         </Pressable>
         <Text style={styles.monthLabel}>{formatMonth(month, labels.month)}</Text>
         <Pressable
@@ -91,7 +92,7 @@ export function FilterBar({
           onPress={() => onMonthChange(shiftMonth(month, 1))}
           style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}
         >
-          <Text style={styles.monthButtonText}>›</Text>
+          <ChevronRight color={colors.content.primary} size={20} />
         </Pressable>
       </View>
 
@@ -164,11 +165,6 @@ const styles = StyleSheet.create({
   },
   monthButtonPressed: {
     backgroundColor: colors.border.subtle,
-  },
-  monthButtonText: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.bold,
   },
   monthLabel: {
     color: colors.content.primary,

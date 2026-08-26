@@ -1,4 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useContext } from 'react';
+import { Bell } from 'lucide-react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BalanceCard, StatCard, TransactionRow } from '@/components/finance';
 import type { DashboardViewModel } from '@/features/finance/view-models/use-dashboard';
@@ -23,6 +26,7 @@ type DashboardScreenProps = DashboardViewModel & {
 export function DashboardScreen(props: DashboardScreenProps) {
   const {
     loading,
+    displayNameLabel,
     amountsHidden,
     toggleAmountsHidden,
     totalBalanceLabel,
@@ -42,6 +46,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
     onOpenSettings,
     t,
   } = props;
+  const insets = useContext(SafeAreaInsetsContext) ?? { top: 0 };
 
   if (loading) {
     return (
@@ -52,7 +57,21 @@ export function DashboardScreen(props: DashboardScreenProps) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top + 12 }]}>
+      <View style={styles.greetingHeader}>
+        <View style={styles.profileBlock}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{getInitials(displayNameLabel)}</Text>
+          </View>
+          <View>
+            <Text style={styles.greeting}>{t('dashboardGreeting')}</Text>
+            <Text style={styles.displayName}>{displayNameLabel}</Text>
+          </View>
+        </View>
+        <Pressable accessibilityLabel={t('dashboardNotifications')} accessibilityRole="button" style={({ pressed }) => [styles.notificationButton, pressed && styles.notificationButtonPressed]}>
+          <Bell color={colors.content.primary} size={17} strokeWidth={2} />
+        </Pressable>
+      </View>
       <BalanceCard
         balance={totalBalanceLabel}
         cardNumber={accountCountLabel}
@@ -67,30 +86,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
       <View style={styles.statsRow}>
         <StatCard label={t('dashboardIncomeLabel')} tone="positive" value={incomeLabel} />
         <StatCard label={t('dashboardExpenseLabel')} tone="negative" value={expenseLabel} />
-        <StatCard label={t('dashboardNetLabel')} tone={netTone} value={netLabel} />
       </View>
-
-      <Pressable
-        accessibilityLabel={t('dashboardAddTransaction')}
-        accessibilityRole="button"
-        onPress={onAddTransaction}
-        style={({ pressed }) => [styles.primaryAction, pressed && styles.primaryActionPressed]}
-      >
-        <Text style={styles.primaryActionText}>{t('dashboardAddTransaction')}</Text>
-      </Pressable>
-
-      <Section title={t('dashboardCategorySpendingTitle')}>
-        {categorySpending.length === 0 ? (
-          <Text style={styles.emptyText}>{t('dashboardCategorySpendingEmpty')}</Text>
-        ) : (
-          categorySpending.map((entry) => (
-            <View key={entry.id} style={styles.categoryRow}>
-              <Text numberOfLines={1} style={styles.categoryLabel}>{entry.label}</Text>
-              <Text style={styles.categoryAmount}>{entry.amountLabel}</Text>
-            </View>
-          ))
-        )}
-      </Section>
 
       <Section
         action={
@@ -104,7 +100,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
           <Text style={styles.emptyText}>{t('dashboardRecentTransactionsEmpty')}</Text>
         ) : (
           recentTransactions.map((item, index) => (
-            <Pressable accessibilityRole="button" key={item.id} onPress={() => onSelectTransaction(item.id)}>
+            <Pressable accessibilityLabel={`${item.name} · ${item.amountLabel}`} accessibilityRole="button" key={item.id} onPress={() => onSelectTransaction(item.id)}>
               <TransactionRow
                 amount={item.amountLabel}
                 category={item.categoryLabel}
@@ -119,17 +115,26 @@ export function DashboardScreen(props: DashboardScreenProps) {
         )}
       </Section>
 
-      {onOpenSync ? (
-        <Pressable accessibilityLabel={t('dashboardSyncLink')} accessibilityRole="link" onPress={onOpenSync} style={styles.syncLink}>
-          <Text style={styles.syncLinkText}>{t('dashboardSyncLink')}</Text>
-        </Pressable>
-      ) : null}
-      <View style={styles.quickLinks}>
-        {onOpenReports ? <Pressable accessibilityLabel={t('navReports')} onPress={onOpenReports}><Text style={styles.sectionAction}>{t('navReports')}</Text></Pressable> : null}
-        {onOpenSettings ? <Pressable accessibilityLabel={t('navSettings')} onPress={onOpenSettings}><Text style={styles.sectionAction}>{t('navSettings')}</Text></Pressable> : null}
-      </View>
+      <Section title={t('dashboardCategorySpendingTitle')}>
+        {categorySpending.length === 0 ? (
+          <Text style={styles.emptyText}>{t('dashboardCategorySpendingEmpty')}</Text>
+        ) : (
+          categorySpending.map((entry) => (
+            <View key={entry.id} style={styles.categoryRow}>
+              <Text numberOfLines={1} style={styles.categoryLabel}>{entry.label}</Text>
+              <Text style={styles.categoryAmount}>{entry.amountLabel}</Text>
+            </View>
+          ))
+        )}
+      </Section>
+
     </ScrollView>
   );
+}
+
+function getInitials(name: string): string {
+  const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('');
+  return initials.toUpperCase() || 'V';
 }
 
 function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
@@ -179,26 +184,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  primaryAction: {
-    alignItems: 'center',
-    backgroundColor: colors.brand.primary,
-    borderRadius: radius.sm,
-    justifyContent: 'center',
-    minHeight: 52,
-  },
-  primaryActionPressed: {
-    backgroundColor: colors.brand.primaryPressed,
-  },
-  primaryActionText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.bold,
-  },
-  quickLinks: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: spacing[2],
-  },
   section: {
     ...shadows.card,
     backgroundColor: colors.surface.primary,
@@ -228,16 +213,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing[3],
   },
-  syncLink: {
+  avatar: {
     alignItems: 'center',
-    minHeight: 36,
-    paddingVertical: spacing[2],
+    backgroundColor: colors.brand.primary,
+    borderRadius: radius.circle,
+    height: 42,
+    justifyContent: 'center',
+    width: 42,
   },
-  syncLinkText: {
+  avatarText: {
+    color: colors.content.inverse,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.black,
+  },
+  displayName: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.bold,
+  },
+  greeting: {
     color: colors.content.muted,
     fontSize: typography.sizes.caption,
     fontWeight: typography.weights.semibold,
-    textDecorationLine: 'underline',
+  },
+  greetingHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  notificationButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface.primary,
+    borderRadius: radius.circle,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
+    ...shadows.card,
+  },
+  notificationButtonPressed: {
+    opacity: 0.72,
+  },
+  profileBlock: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing[3],
   },
   title: {
     color: colors.content.primary,

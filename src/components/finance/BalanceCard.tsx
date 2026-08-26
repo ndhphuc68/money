@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Eye, EyeOff } from 'lucide-react-native';
 
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 
@@ -35,7 +36,7 @@ export function BalanceCard({
           onPress={onToggleMask}
           style={({ pressed }) => [styles.maskButton, pressed && styles.maskButtonPressed]}
         >
-          <Text style={styles.maskIcon}>{masked ? '+' : '-'}</Text>
+          {masked ? <Eye color={colors.content.inverse} size={18} /> : <EyeOff color={colors.content.inverse} size={18} />}
         </Pressable>
       </View>
       <Text adjustsFontSizeToFit numberOfLines={1} style={styles.balance}>
@@ -105,11 +106,5 @@ const styles = StyleSheet.create({
   },
   maskButtonPressed: {
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
-  },
-  maskIcon: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.black,
-    lineHeight: typography.lineHeights.heading,
   },
 });

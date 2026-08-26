@@ -254,12 +254,27 @@ async function seedAccountAndCategory(repos: ReturnType<typeof makeRepos>) {
 }
 
 describe('dashboard screen + view model', () => {
+  it('shows the personalized greeting from local profile settings', async () => {
+    const repos = makeRepos();
+    await repos.profileSettingsRepository.save({
+      ...(await repos.profileSettingsRepository.get()),
+      displayName: 'Minh Anh',
+    });
+    const dependencies = { ...repos, getDashboard: new GetDashboard(repos) };
+    const screen = render(<Harness dependencies={dependencies} />);
+
+    await waitFor(() => expect(screen.getByText('Minh Anh')).toBeTruthy());
+    expect(screen.getByText(t('dashboardGreeting'))).toBeTruthy();
+  });
+
   it('shows an empty state before any account or transaction exists', async () => {
     const repos = makeRepos();
     const dependencies = { ...repos, getDashboard: new GetDashboard(repos) };
     const screen = render(<Harness dependencies={dependencies} />);
 
     await waitFor(() => expect(screen.getByText(t('dashboardBalanceLabel'))).toBeTruthy());
+    expect(screen.getByLabelText(t('dashboardNotifications'))).toBeTruthy();
+    expect(screen.queryByText(t('dashboardNetLabel'))).toBeNull();
     expect(screen.getAllByText(formatVnd(0)).length).toBeGreaterThan(0);
     expect(screen.getByText(t('dashboardRecentTransactionsEmpty'))).toBeTruthy();
     expect(screen.getByText(t('dashboardCategorySpendingEmpty'))).toBeTruthy();
@@ -299,6 +314,7 @@ describe('dashboard screen + view model', () => {
 
     await waitFor(() => expect(screen.getByText('An trua')).toBeTruthy());
     expect(screen.getByText('Luong thang 8')).toBeTruthy();
+    expect(screen.getByLabelText('An trua · -200.000 ₫')).toBeTruthy();
     expect(screen.getByText(formatVnd(1_000_000 + 5_000_000 - 200_000))).toBeTruthy();
     expect(screen.getByText(`+${formatVnd(5_000_000)}`)).toBeTruthy();
     expect(screen.getByText(`-${formatVnd(200_000)}`)).toBeTruthy();

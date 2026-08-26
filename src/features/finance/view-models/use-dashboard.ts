@@ -23,6 +23,7 @@ export type DashboardCategorySpendingItem = {
 
 export type DashboardViewModel = {
   loading: boolean;
+  displayNameLabel: string;
   amountsHidden: boolean;
   toggleAmountsHidden(): Promise<void>;
   totalBalanceLabel: string;
@@ -47,6 +48,7 @@ export type UseDashboardOptions = {
 };
 
 type DashboardState = {
+  displayNameLabel: string;
   totalBalanceLabel: string;
   accountCountLabel: string;
   asOfLabel: string;
@@ -59,6 +61,7 @@ type DashboardState = {
 };
 
 const EMPTY_STATE: DashboardState = {
+  displayNameLabel: '',
   totalBalanceLabel: formatVnd(0),
   accountCountLabel: '',
   asOfLabel: '',
@@ -108,6 +111,7 @@ export function useDashboard({ dependencies, t, month, now }: UseDashboardOption
 
       setAmountsHidden(hidden);
       setState({
+        displayNameLabel: settings.displayName.trim() || t('dashboardGuestName'),
         totalBalanceLabel: maskAmountText(hidden, formatVnd(dashboard.totalBalance)),
         accountCountLabel: t('dashboardAccountsCount', { count: accounts.length }),
         asOfLabel: t('dashboardAsOf', { date: todayIsoDate(now?.() ?? new Date()) }),

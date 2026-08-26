@@ -1,5 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { BriefcaseBusiness, CarFront, Gamepad2, Gift, HeartPulse, House, ReceiptText, ShoppingBag, Utensils } from 'lucide-react-native';
 
 import {
   AccountRepository,
@@ -16,9 +17,14 @@ import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
 import { OnboardingScreen } from '@/features/finance/screens/onboarding-screen';
+import { getDefaultCategoryIcon } from '@/features/finance/screens/onboarding-screen';
 import { useOnboarding } from '@/features/finance/view-models/use-onboarding';
 import { Locale, translate } from '@/i18n/translations';
-import { colors, radius } from '@/theme';
+import { colors, radius, spacing } from '@/theme';
+
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 24, bottom: 34, left: 0, right: 0 }),
+}));
 
 // ---------------------------------------------------------------------------
 // Minimal in-memory fakes of the finance repository ports, matching the
@@ -160,6 +166,20 @@ function makeOnboarding(overrides: {
 
 const t = translate.bind(null, 'vi' as Locale);
 
+describe('default category icons', () => {
+  it('maps each default category to its semantic icon', async () => {
+    expect(getDefaultCategoryIcon('Lương', 'income')).toBe(BriefcaseBusiness);
+    expect(getDefaultCategoryIcon('Thưởng', 'income')).toBe(Gift);
+    expect(getDefaultCategoryIcon('Ăn uống', 'expense')).toBe(Utensils);
+    expect(getDefaultCategoryIcon('Di chuyển', 'expense')).toBe(CarFront);
+    expect(getDefaultCategoryIcon('Nhà ở', 'expense')).toBe(House);
+    expect(getDefaultCategoryIcon('Hóa đơn & tiện ích', 'expense')).toBe(ReceiptText);
+    expect(getDefaultCategoryIcon('Mua sắm', 'expense')).toBe(ShoppingBag);
+    expect(getDefaultCategoryIcon('Giải trí', 'expense')).toBe(Gamepad2);
+    expect(getDefaultCategoryIcon('Sức khỏe', 'expense')).toBe(HeartPulse);
+  });
+});
+
 function Harness({ onboarding, onComplete }: { onboarding: Onboarding; onComplete?: () => void }) {
   const viewModel = useOnboarding({ onboarding, t, onComplete });
   return <OnboardingScreen {...viewModel} locale="vi" setLocale={() => {}} t={t} />;
@@ -202,6 +222,7 @@ describe('onboarding screen + view model', () => {
     await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
     expect(screen.getByText(t('onboardingStepProgress', { current: 2, total: 4 }))).toBeTruthy();
     expect(screen.queryByTestId('onboarding-brand-logo')).toBeNull();
+    expect(screen.queryByLabelText(t('onboardingBack'))).toBeNull();
   });
 
   it('saving a display name advances to the account step and persists the trimmed name', async () => {
@@ -283,6 +304,18 @@ describe('onboarding screen + view model', () => {
     expect(expenseCategories.some((category) => category.name === t('onboardingCategoryFood'))).toBe(false);
   });
 
+  it('keeps Step 4 actions fixed while only the category list scrolls', async () => {
+    const { onboarding } = makeOnboarding();
+    const screen = render(<Harness onboarding={onboarding} />);
+
+    await advanceToConfirmCategories(screen);
+
+    expect(screen.getByTestId('onboarding-root').type).not.toBe(ScrollView);
+    expect(String(screen.getByTestId('onboarding-category-scroll').type)).toContain('ScrollView');
+    expect(screen.getByTestId('onboarding-category-scroll').props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screen.getByTestId('onboarding-primary-action')).toBeTruthy();
+  });
+
   it('confirm-categories step can be skipped, using the default category set as-is', async () => {
     const { onboarding, categoryRepository } = makeOnboarding();
     const onComplete = jest.fn();
@@ -296,19 +329,13 @@ describe('onboarding screen + view model', () => {
     expect(expenseCategories.length).toBeGreaterThan(0);
   });
 
-  it('confirms before exiting and resets local onboarding fields', async () => {
+  it('does not show an exit button during onboarding', async () => {
     const { onboarding } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
     await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
-    fireEvent.changeText(screen.getByLabelText(t('onboardingDisplayNameLabel')), 'Phuc');
-    fireEvent.press(screen.getByLabelText(t('onboardingExit')));
-
-    expect(screen.getByText(t('onboardingExitConfirmTitle'))).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: t('onboardingExitConfirmConfirm') }));
-
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
-    expect(screen.queryByDisplayValue('Phuc')).toBeNull();
+    expect(screen.queryByLabelText(t('onboardingExit'))).toBeNull();
+    expect(screen.queryByText(t('onboardingExitConfirmTitle'))).toBeNull();
   });
 
   it('uses the approved onboarding canvas and primary action styling', async () => {
@@ -323,6 +350,25 @@ describe('onboarding screen + view model', () => {
     expect(StyleSheet.flatten(screen.getByTestId('onboarding-primary-action').props.style)).toMatchObject({
       backgroundColor: colors.brand.primary,
       borderRadius: radius.sm,
+    });
+  });
+
+  it('keeps onboarding content clear of system bars and separates account type from the input card', async () => {
+    const { onboarding } = makeOnboarding();
+    const screen = render(<Harness onboarding={onboarding} />);
+
+    await waitFor(() => expect(screen.getByTestId('onboarding-root')).toBeTruthy());
+
+    expect(StyleSheet.flatten(screen.getByTestId('onboarding-root').props.contentContainerStyle)).toMatchObject({
+      paddingTop: 24 + 32,
+      paddingBottom: 34 + 32,
+    });
+
+    fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
+    await waitFor(() => expect(screen.getByText(t('onboardingAccountTypeLabel'))).toBeTruthy());
+
+    expect(StyleSheet.flatten(screen.getByText(t('onboardingAccountTypeLabel')).props.style)).toMatchObject({
+      marginTop: spacing[2],
     });
   });
 

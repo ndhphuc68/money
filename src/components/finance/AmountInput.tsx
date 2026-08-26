@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { formatVnd, parseVndInput } from '@/core/domain/finance/money';
-import { colors, radius, spacing, typography } from '@/theme';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
 
 type AmountInputProps = {
   value: number | null;
@@ -18,6 +18,10 @@ type AmountInputProps = {
   errorMessage?: string | null;
 };
 
+function formatAmountDisplay(amount: number): string {
+  return formatVnd(amount).replace(/\s₫$/, '');
+}
+
 export function AmountInput({
   value,
   onChange,
@@ -26,14 +30,13 @@ export function AmountInput({
   invalidMessage,
   errorMessage = null,
 }: AmountInputProps) {
-  const [text, setText] = useState(value != null ? formatVnd(value) : '');
+  const [text, setText] = useState(value != null ? formatAmountDisplay(value) : '');
   const [error, setError] = useState<string | null>(null);
   const displayedError = error ?? errorMessage;
 
   function handleChangeText(nextText: string) {
-    setText(nextText);
-
     if (nextText.trim() === '') {
+      setText('');
       setError(null);
       onChange(null);
       return;
@@ -47,28 +50,32 @@ export function AmountInput({
     }
 
     setError(null);
+    setText(formatAmountDisplay(parsed));
     onChange(parsed);
   }
 
   function handleBlur() {
     if (value != null) {
-      setText(formatVnd(value));
+      setText(formatAmountDisplay(value));
     }
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, displayedError && styles.containerError]}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
-        accessibilityLabel={label}
-        keyboardType="numeric"
-        onBlur={handleBlur}
-        onChangeText={handleChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={colors.content.placeholder}
-        style={[styles.input, displayedError && styles.inputError]}
-        value={text}
-      />
+      <View style={styles.inputRow}>
+        <TextInput
+          accessibilityLabel={label}
+          keyboardType="numeric"
+          onBlur={handleBlur}
+          onChangeText={handleChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={colors.content.placeholder}
+          style={styles.input}
+          value={text}
+        />
+        <Text style={styles.currency}>₫</Text>
+      </View>
       {displayedError ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {displayedError}
@@ -80,7 +87,16 @@ export function AmountInput({
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing[1],
+    ...shadows.card,
+    backgroundColor: colors.surface.primary,
+    borderRadius: radius.lg,
+    gap: spacing[2],
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[4],
+  },
+  containerError: {
+    borderColor: colors.status.negative,
+    borderWidth: 1,
   },
   error: {
     color: colors.status.negative,
@@ -88,18 +104,22 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.semibold,
   },
   input: {
-    backgroundColor: colors.surface.input,
-    borderColor: colors.border.strong,
-    borderRadius: radius.sm,
-    borderWidth: 1,
     color: colors.content.primary,
-    fontSize: typography.sizes.bodyLg,
+    flex: 1,
+    fontSize: typography.sizes.display,
     fontWeight: typography.weights.bold,
-    minHeight: 48,
-    paddingHorizontal: spacing[3],
+    minHeight: 52,
+    padding: 0,
   },
-  inputError: {
-    borderColor: colors.status.negative,
+  inputRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  currency: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.display,
+    fontWeight: typography.weights.bold,
+    textDecorationLine: 'underline',
   },
   label: {
     color: colors.content.secondary,

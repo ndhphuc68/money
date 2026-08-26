@@ -1,6 +1,7 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Car, CircleDollarSign, CircleUserRound, LayoutGrid, List, ReceiptText, ShoppingBag, Target, Utensils } from 'lucide-react-native';
 
-import { colors, radius, typography } from '@/theme';
+import { colors, radius } from '@/theme';
 
 export type CategoryIconName = 'income' | 'food' | 'shopping' | 'bills' | 'transport';
 export type NavIconName = 'overview' | 'list' | 'target' | 'profile';
@@ -10,15 +11,16 @@ type CategoryIconProps = {
   color?: string;
 };
 
-const categoryGlyphs: Record<CategoryIconName, string> = {
-  income: '+',
-  food: 'F',
-  shopping: 'S',
-  bills: 'B',
-  transport: 'T',
+const categoryIcons = {
+  income: CircleDollarSign,
+  food: Utensils,
+  shopping: ShoppingBag,
+  bills: ReceiptText,
+  transport: Car,
 };
 
 export function CategoryIcon({ name, color = categoryColor(name) }: CategoryIconProps) {
+  const Icon = categoryIcons[name];
   return (
     <View
       accessibilityElementsHidden
@@ -32,36 +34,23 @@ export function CategoryIcon({ name, color = categoryColor(name) }: CategoryIcon
         width: 40,
       }}
     >
-      <Text style={{ color: colors.content.inverse, fontSize: typography.sizes.small, fontWeight: typography.weights.black }}>
-        {categoryGlyphs[name]}
-      </Text>
+      <Icon color={colors.content.inverse} size={20} strokeWidth={2.2} />
     </View>
   );
 }
 
 export function NavIcon({ name, color }: { name: NavIconName; color: string }) {
-  const glyphs: Record<NavIconName, string> = {
-    overview: 'O',
-    list: 'L',
-    target: 'T',
-    profile: 'P',
+  const navIcons = {
+    overview: LayoutGrid,
+    list: List,
+    target: Target,
+    profile: CircleUserRound,
   };
+  const Icon = navIcons[name];
 
   return (
-    <View
-      accessibilityElementsHidden
-      importantForAccessibility="no"
-      style={{
-        alignItems: 'center',
-        borderColor: color,
-        borderRadius: radius.circle,
-        borderWidth: 1.8,
-        height: 22,
-        justifyContent: 'center',
-        width: 22,
-      }}
-    >
-      <Text style={{ color, fontSize: typography.sizes.micro, fontWeight: typography.weights.black }}>{glyphs[name]}</Text>
+    <View accessibilityElementsHidden importantForAccessibility="no">
+      <Icon color={color} size={25} strokeWidth={1.9} />
     </View>
   );
 }

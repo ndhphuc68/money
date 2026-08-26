@@ -75,6 +75,17 @@ const categories: Category[] = [
 ];
 
 describe('AmountInput', () => {
+  it('formats VND with thousands separators while typing', () => {
+    const onChange = jest.fn();
+    const screen = render(<AmountInput invalidMessage={t('amountInvalid')} label={t('transactionFormAmountLabel')} onChange={onChange} placeholder={t('amountPlaceholder')} value={null} />);
+    const input = screen.getByLabelText('Số tiền');
+
+    fireEvent.changeText(input, '1000000');
+
+    expect(input.props.value).toBe('1.000.000');
+    expect(onChange).toHaveBeenLastCalledWith(1000000);
+  });
+
   it('parses formatted VND text into a positive integer and flags invalid input', () => {
     const onChange = jest.fn();
     const screen = render(<AmountInput invalidMessage={t('amountInvalid')} label={t('transactionFormAmountLabel')} onChange={onChange} placeholder={t('amountPlaceholder')} value={null} />);

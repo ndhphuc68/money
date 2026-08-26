@@ -1,4 +1,6 @@
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { BriefcaseBusiness, CarFront, CircleDollarSign, Gamepad2, Gift, HeartPulse, House, ListChecks, MoreHorizontal, ReceiptText, ShoppingBag, Utensils, WalletCards } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
 
 import { AmountInput } from '@/components/finance';
@@ -25,10 +27,33 @@ const ACCOUNT_TYPE_KEYS: Record<AccountType, TranslationKey> = {
 
 const CATEGORY_COLORS = [colors.category.income, colors.category.shopping, colors.category.food, colors.category.transport, colors.brand.primary, colors.content.muted];
 
+const DEFAULT_CATEGORY_ICONS: Record<string, typeof WalletCards> = {
+  'Lương': BriefcaseBusiness,
+  'Thưởng': Gift,
+  'Thu nhập khác': WalletCards,
+  'Ăn uống': Utensils,
+  'Di chuyển': CarFront,
+  'Nhà ở': House,
+  'Hóa đơn & tiện ích': ReceiptText,
+  'Mua sắm': ShoppingBag,
+  'Giải trí': Gamepad2,
+  'Sức khỏe': HeartPulse,
+  'Chi tiêu khác': MoreHorizontal,
+};
+
+export function getDefaultCategoryIcon(name: string, type: 'income' | 'expense') {
+  return DEFAULT_CATEGORY_ICONS[name] ?? (type === 'income' ? CircleDollarSign : ReceiptText);
+}
+
 export function OnboardingScreen(props: OnboardingScreenProps) {
   const { loading, step, t } = props;
+  const insets = useSafeAreaInsets();
   const [reduceMotion, setReduceMotion] = useState(false);
   const logoProgress = useRef(new Animated.Value(1)).current;
+  const containerStyle = [
+    styles.container,
+    { paddingBottom: spacing[7] + insets.bottom, paddingTop: spacing[7] + insets.top },
+  ];
 
   useEffect(() => {
     let mounted = true;
@@ -61,39 +86,30 @@ export function OnboardingScreen(props: OnboardingScreenProps) {
     );
   }
 
+  const content = (
+    <>
+      <Progress step={step} t={t} />
+      <Animated.View key={step} style={[styles.stepTransition, reduceMotion ? null : { opacity: logoProgress }]}>
+        {step === 'display-name' ? <DisplayNameStep {...props} /> : null}
+        {step === 'first-account' ? <WalletStep {...props} /> : null}
+        {step === 'opening-balance' ? <OpeningBalanceStep {...props} /> : null}
+        {step === 'confirm-categories' ? <CategoryToggleStep {...props} /> : null}
+      </Animated.View>
+    </>
+  );
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.keyboardAvoiding}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" style={styles.scroll} testID="onboarding-root">
-        <OnboardingHeader {...props} />
-        <Progress step={step} t={t} />
-        <Animated.View key={step} style={[styles.stepTransition, reduceMotion ? null : { opacity: logoProgress }]}>
-          {step === 'display-name' ? <DisplayNameStep {...props} /> : null}
-          {step === 'first-account' ? <WalletStep {...props} /> : null}
-          {step === 'opening-balance' ? <OpeningBalanceStep {...props} /> : null}
-          {step === 'confirm-categories' ? <CategoryToggleStep {...props} /> : null}
-        </Animated.View>
-      </ScrollView>
-      {props.showExitConfirm ? <ExitConfirmModal {...props} /> : null}
+      {step === 'confirm-categories' ? (
+        <View style={[styles.scroll, containerStyle, styles.fixedContainer]} testID="onboarding-root">
+          {content}
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={containerStyle} keyboardShouldPersistTaps="handled" style={styles.scroll} testID="onboarding-root">
+          {content}
+        </ScrollView>
+      )}
     </KeyboardAvoidingView>
-  );
-}
-
-function OnboardingHeader({ t, step, goBack, requestExit }: OnboardingScreenProps) {
-  return (
-    <View style={styles.header}>
-      <View style={styles.headerControls}>
-        {step !== 'display-name' ? (
-          <Pressable accessibilityLabel={t('onboardingBack')} accessibilityRole="button" onPress={goBack} style={({ pressed }) => [styles.roundIconButton, pressed && styles.pressed]}>
-            <Text style={styles.roundIconText}>{'‹'}</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.roundIconButtonSpacer} />
-        )}
-        <Pressable accessibilityLabel={t('onboardingExit')} accessibilityRole="button" onPress={requestExit} style={({ pressed }) => [styles.roundIconButton, pressed && styles.pressed]}>
-          <Text style={styles.roundIconText}>{'×'}</Text>
-        </Pressable>
-      </View>
-    </View>
   );
 }
 
@@ -149,7 +165,7 @@ function DisplayNameStep({ displayName, setDisplayName, continueDisplayName, ski
 function WalletStep({ accountForm, setAccountName, setAccountType, continueWallet, errors, submitting, t }: OnboardingScreenProps) {
   return (
     <View style={styles.step} testID="onboarding-step-card">
-      <StepIcon glyph="VI" />
+      <StepIcon icon={WalletCards} />
       <Text style={styles.title}>{t('onboardingFirstAccountTitle')}</Text>
       <Text style={styles.description}>{t('onboardingFirstAccountDescription')}</Text>
 
@@ -167,7 +183,7 @@ function WalletStep({ accountForm, setAccountName, setAccountType, continueWalle
       </View>
       {errors.accountName ? <Text accessibilityRole="alert" style={styles.error}>{errors.accountName}</Text> : null}
 
-      <Text style={styles.label}>{t('onboardingAccountTypeLabel')}</Text>
+      <Text style={styles.accountTypeLabel}>{t('onboardingAccountTypeLabel')}</Text>
       <View accessibilityRole="tablist" style={styles.typeRow}>
         {ACCOUNT_TYPES.map((type) => {
           const label = t(ACCOUNT_TYPE_KEYS[type]);
@@ -197,19 +213,17 @@ function OpeningBalanceStep({ accountForm, setOpeningBalance, continueOpeningBal
   const walletName = accountForm.name || t('onboardingWalletFallback');
   return (
     <View style={styles.step} testID="onboarding-step-card">
-      <StepIcon glyph="SD" />
+      <StepIcon icon={CircleDollarSign} />
       <Text style={styles.title}>{t('onboardingOpeningBalanceTitle', { walletName })}</Text>
       <Text style={styles.description}>{t('onboardingOpeningBalanceDescription')}</Text>
-      <View style={styles.inputPanel}>
-        <AmountInput
-          errorMessage={errors.openingBalance ?? null}
-          invalidMessage={t('amountInvalid')}
-          label={t('onboardingOpeningBalanceLabel')}
-          onChange={setOpeningBalance}
-          placeholder={t('amountPlaceholder')}
-          value={accountForm.openingBalance}
-        />
-      </View>
+      <AmountInput
+        errorMessage={errors.openingBalance ?? null}
+        invalidMessage={t('amountInvalid')}
+        label={t('onboardingOpeningBalanceLabel')}
+        onChange={setOpeningBalance}
+        placeholder={t('amountPlaceholder')}
+        value={accountForm.openingBalance}
+      />
       {errors.form ? <Text accessibilityRole="alert" style={styles.error}>{errors.form}</Text> : null}
       <View style={styles.flexSpacer} />
       <ActionStack
@@ -226,17 +240,25 @@ function OpeningBalanceStep({ accountForm, setOpeningBalance, continueOpeningBal
 function CategoryToggleStep({ categories, categoryToggles, toggleCategory, finishOnboarding, skipCategories, errors, submitting, t }: OnboardingScreenProps) {
   return (
     <View style={styles.step} testID="onboarding-step-card">
-      <StepIcon glyph="DM" muted />
+      <StepIcon icon={ListChecks} muted />
       <Text style={styles.title}>{t('onboardingConfirmCategoriesTitle')}</Text>
       <Text style={styles.description}>{t('onboardingConfirmCategoriesDescription')}</Text>
-      <View style={styles.categoryPanel}>
+      <ScrollView
+        contentContainerStyle={styles.categoryPanelContent}
+        keyboardShouldPersistTaps="handled"
+        style={styles.categoryPanel}
+        testID="onboarding-category-scroll"
+      >
         {categories.map((category, index) => {
           const enabled = categoryToggles[category.name] !== false;
           const isLast = index === categories.length - 1;
           return (
             <View key={`${category.type}-${category.name}`} style={[styles.categoryToggleRow, isLast && styles.categoryToggleRowLast]}>
               <View style={[styles.categoryIcon, { backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }]}>
-                <Text style={styles.categoryIconText}>{category.name.slice(0, 2).toUpperCase()}</Text>
+                {(() => {
+                  const Icon = getDefaultCategoryIcon(category.name, category.type);
+                  return <Icon color={colors.content.inverse} size={18} />;
+                })()}
               </View>
               <Text numberOfLines={1} style={styles.categoryName}>{category.name}</Text>
               <Pressable
@@ -251,9 +273,8 @@ function CategoryToggleStep({ categories, categoryToggles, toggleCategory, finis
             </View>
           );
         })}
-      </View>
+      </ScrollView>
       {errors.form ? <Text accessibilityRole="alert" style={styles.error}>{errors.form}</Text> : null}
-      <View style={styles.flexSpacer} />
       <ActionStack
         primaryLabel={t('onboardingFinish')}
         secondaryLabel={t('onboardingSkip')}
@@ -300,29 +321,10 @@ function ActionStack({
   );
 }
 
-function StepIcon({ glyph, muted = false }: { glyph: string; muted?: boolean }) {
+function StepIcon({ icon: Icon, muted = false }: { icon: typeof WalletCards; muted?: boolean }) {
   return (
     <View style={[styles.stepIcon, muted && styles.stepIconMuted]}>
-      <Text style={[styles.stepIconText, muted && styles.stepIconTextMuted]}>{glyph}</Text>
-    </View>
-  );
-}
-
-function ExitConfirmModal({ cancelExit, confirmExit, t }: OnboardingScreenProps) {
-  return (
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalPanel}>
-        <Text style={styles.modalTitle}>{t('onboardingExitConfirmTitle')}</Text>
-        <Text style={styles.description}>{t('onboardingExitConfirmMessage')}</Text>
-        <View style={styles.actions}>
-          <Pressable accessibilityLabel={t('onboardingExitConfirmCancel')} accessibilityRole="button" onPress={cancelExit} style={({ pressed }) => [styles.secondaryAction, pressed && styles.pressed]}>
-            <Text style={styles.secondaryActionText}>{t('onboardingExitConfirmCancel')}</Text>
-          </Pressable>
-          <Pressable accessibilityLabel={t('onboardingExitConfirmConfirm')} accessibilityRole="button" onPress={confirmExit} style={({ pressed }) => [styles.primaryAction, pressed && styles.primaryActionPressed]}>
-            <Text style={styles.primaryActionText}>{t('onboardingExitConfirmConfirm')}</Text>
-          </Pressable>
-        </View>
-      </View>
+      <Icon color={muted ? colors.brand.primary : colors.content.inverse} size={26} strokeWidth={2.2} />
     </View>
   );
 }
@@ -343,11 +345,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 36,
   },
-  categoryIconText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.small,
-    fontWeight: typography.weights.bold,
-  },
   categoryName: {
     color: colors.content.primary,
     flex: 1,
@@ -356,7 +353,19 @@ const styles = StyleSheet.create({
   },
   categoryPanel: {
     backgroundColor: colors.surface.primary,
+    flex: 1,
     borderRadius: radius.lg,
+    minHeight: 0,
+    overflow: 'hidden',
+  },
+  accountTypeLabel: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.bold,
+    marginBottom: spacing[2],
+    marginTop: spacing[2],
+  },
+  categoryPanelContent: {
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[2],
   },
@@ -377,6 +386,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[7],
     paddingHorizontal: spacing[5],
     paddingTop: spacing[7],
+  },
+  fixedContainer: {
+    flex: 1,
   },
   description: {
     color: colors.content.secondary,
@@ -400,19 +412,6 @@ const styles = StyleSheet.create({
   flexSpacer: {
     flex: 1,
     minHeight: spacing[6],
-  },
-  header: {
-    alignItems: 'center',
-    minHeight: 44,
-    position: 'relative',
-  },
-  headerControls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
   },
   helperText: {
     color: colors.content.secondary,
@@ -453,29 +452,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  modalOverlay: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(16,24,40,0.45)',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    padding: spacing[5],
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  modalPanel: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.xl,
-    padding: spacing[5],
-    width: '100%',
-  },
-  modalTitle: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.title,
-    fontWeight: typography.weights.bold,
-    marginBottom: spacing[2],
-  },
   pressed: {
     opacity: 0.68,
   },
@@ -512,28 +488,6 @@ const styles = StyleSheet.create({
   progressTrack: {
     flexDirection: 'row',
     gap: spacing[2],
-  },
-  roundIconButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.pill,
-    height: 44,
-    justifyContent: 'center',
-    shadowColor: colors.content.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    width: 44,
-  },
-  roundIconButtonSpacer: {
-    height: 44,
-    width: 44,
-  },
-  roundIconText: {
-    color: colors.content.primary,
-    fontSize: 28,
-    fontWeight: typography.weights.bold,
-    lineHeight: 30,
   },
   secondaryAction: {
     alignItems: 'center',
@@ -585,14 +539,6 @@ const styles = StyleSheet.create({
   stepIconMuted: {
     backgroundColor: colors.brand.tint,
     shadowOpacity: 0,
-  },
-  stepIconText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.small,
-    fontWeight: typography.weights.bold,
-  },
-  stepIconTextMuted: {
-    color: colors.brand.primary,
   },
   stepTransition: {
     flex: 1,

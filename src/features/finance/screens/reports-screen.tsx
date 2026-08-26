@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import type { ReportsViewModel } from '@/features/finance/view-models/use-reports';
 import type { Translate } from '@/i18n/translations';
 import { colors, spacing, typography } from '@/theme';
@@ -6,7 +7,7 @@ import { colors, spacing, typography } from '@/theme';
 export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate }) {
   return <ScrollView contentContainerStyle={styles.container}>
     <Text style={styles.title}>{t('reportsTitle')}</Text>
-    <View style={styles.month}><Pressable accessibilityLabel={t('reportsPreviousMonth')} onPress={props.goToPreviousMonth}><Text>‹</Text></Pressable><Text>{props.monthLabel}</Text><Pressable accessibilityLabel={t('reportsNextMonth')} onPress={props.goToNextMonth}><Text>›</Text></Pressable></View>
+    <View style={styles.month}><Pressable accessibilityLabel={t('reportsPreviousMonth')} accessibilityRole="button" onPress={props.goToPreviousMonth}><ChevronLeft color={colors.content.primary} size={22} /></Pressable><Text>{props.monthLabel}</Text><Pressable accessibilityLabel={t('reportsNextMonth')} accessibilityRole="button" onPress={props.goToNextMonth}><ChevronRight color={colors.content.primary} size={22} /></Pressable></View>
     {props.loading ? <Text>{t('dashboardLoading')}</Text> : <>
       <View style={styles.card}><View style={styles.row}><Text>{t('reportsIncomeLabel')}</Text><Text>{props.incomeLabel}</Text></View><Text>{t('reportsExpenseLabel')}: {props.expenseLabel}</Text><View style={styles.row}><Text>{t('reportsNetLabel')}</Text><Text>{props.netLabel}</Text></View></View>
       <Totals title={t('reportsCategoryTitle')} empty={t('reportsCategoryEmpty')} items={props.categoryTotals} />

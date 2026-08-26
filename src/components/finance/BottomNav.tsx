@@ -1,4 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useContext } from 'react';
+import { Plus } from 'lucide-react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 
@@ -19,14 +22,15 @@ type BottomNavProps = {
 };
 
 export function BottomNav({ items, activeKey, onChange, onAdd, addAccessibilityLabel }: BottomNavProps) {
+  const insets = useContext(SafeAreaInsetsContext) ?? { bottom: 0 };
   const firstItems = items.slice(0, 2);
   const lastItems = items.slice(2);
 
   return (
-    <View style={styles.nav}>
+    <View style={[styles.nav, { paddingBottom: Math.max(26, insets.bottom + 10) }]}>
       {firstItems.map((item) => <NavItem active={item.key === activeKey} item={item} key={item.key} onChange={onChange} />)}
       <Pressable accessibilityLabel={addAccessibilityLabel} accessibilityRole="button" onPress={onAdd} style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-        <Text style={styles.addText}>+</Text>
+        <Plus color={colors.content.inverse} size={28} strokeWidth={2.6} />
       </Pressable>
       {lastItems.map((item) => <NavItem active={item.key === activeKey} item={item} key={item.key} onChange={onChange} />)}
     </View>
@@ -65,18 +69,12 @@ const styles = StyleSheet.create({
   addButtonPressed: {
     backgroundColor: '#243247',
   },
-  addText: {
-    color: colors.content.inverse,
-    fontSize: 28,
-    fontWeight: typography.weights.semibold,
-    lineHeight: 32,
-  },
   item: {
     alignItems: 'center',
     gap: spacing[1],
     justifyContent: 'center',
     minHeight: 44,
-    width: 56,
+    width: 64,
   },
   itemPressed: {
     opacity: 0.72,
@@ -84,6 +82,7 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: typography.sizes.micro,
     fontWeight: typography.weights.bold,
+    lineHeight: 14,
   },
   nav: {
     alignItems: 'center',
