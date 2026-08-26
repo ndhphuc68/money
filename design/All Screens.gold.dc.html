@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F6FED;text-decoration:none}
+a:hover{color:#1B4FC0}
+*{box-sizing:border-box;font-family:'Manrope',system-ui,sans-serif}
+::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#EAEBF1;padding:48px;display:flex;flex-direction:column;gap:8px">
+  <div style="font-size:22px;font-weight:800;color:#101828;margin-bottom:4px">Tất cả màn hình — Vimo</div>
+  <div style="font-size:14px;color:#8B93A7;font-weight:600;margin-bottom:8px">Mỗi khung cố định ở một màn để tiện xem và code riêng lẻ.</div>
+
+  <sc-for list="{{groups}}" as="group" hint-placeholder-count="3">
+    <div style="margin-top:24px">
+      <div style="font-size:15px;font-weight:800;color:#101828;margin-bottom:16px">{{group.title}}</div>
+      <div style="display:flex;gap:32px;flex-wrap:wrap">
+        <sc-for list="{{group.screens}}" as="screen" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+            <div style="font-size:14px;font-weight:800;color:#101828">{{screen.label}}</div>
+                <dc-import name="Finance App Gold" from="./Finance App.gold.dc.html" start-logged-in="{{screen.startLoggedIn}}" force-onboarding="{{screen.forceOnboarding}}" onboarding-start-step="{{screen.onboardingStartStep}}" initial-tab="{{screen.initialTab}}" force-add-tx="{{screen.forceAddTx}}" force-splash="{{screen.forceSplash}}" hint-size="402,874"></dc-import>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      groups: [
+        {
+          title: 'Splash & Onboarding',
+          screens: [
+            { label: '0. Splash', startLoggedIn: false, forceOnboarding: false, forceSplash: true },
+            { label: '1. Tên người dùng', forceOnboarding: true, onboardingStartStep: '1' },
+            { label: '2. Tạo ví đầu tiên', forceOnboarding: true, onboardingStartStep: '2' },
+            { label: '3. Số dư ban đầu', forceOnboarding: true, onboardingStartStep: '3' },
+            { label: '4. Danh mục mặc định', forceOnboarding: true, onboardingStartStep: '4' },
+          ],
+        },
+        {
+          title: 'Màn hình chính',
+          screens: [
+            { label: 'Tổng quan', startLoggedIn: true, initialTab: 'overview' },
+            { label: 'Giao dịch', startLoggedIn: true, initialTab: 'transactions' },
+            { label: 'Mục tiêu', startLoggedIn: true, initialTab: 'goals' },
+            { label: 'Cài đặt', startLoggedIn: true, initialTab: 'profile' },
+          ],
+        },
+        {
+          title: 'Khác',
+          screens: [
+            { label: 'Thêm giao dịch', startLoggedIn: true, forceAddTx: true },
+          ],
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
