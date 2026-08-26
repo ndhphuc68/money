@@ -1,10 +1,10 @@
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ChevronLeft, Plus, X } from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 
 import { FilterBar, TransactionRow, UndoBanner } from '@/components/finance';
 import type { TransactionsViewModel } from '@/features/finance/view-models/use-transactions';
 import type { Translate } from '@/i18n/translations';
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { colors, shadows, spacing, typography } from '@/theme';
 
 type TransactionsScreenProps = TransactionsViewModel & {
   t: Translate;
@@ -30,8 +30,6 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
     deleteTransaction,
     undoDelete,
     dismissUndo,
-    onBack,
-    onAddTransaction,
     onSelectTransaction,
     t,
   } = props;
@@ -49,15 +47,8 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
 
   return (
     <View style={styles.root}>
-      <View style={styles.header}>
-        <Pressable accessibilityLabel={t('transactionsBack')} accessibilityRole="button" onPress={onBack} style={styles.backButton}>
-          <ChevronLeft color={colors.content.primary} size={24} strokeWidth={2.2} />
-        </Pressable>
-        <Text style={styles.title}>{t('transactionsTitle')}</Text>
-        <View style={styles.backButton} />
-      </View>
-
       <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>{t('transactionsTitle')}</Text>
         <FilterBar
           accountId={filters.accountId}
           accounts={accounts}
@@ -69,6 +60,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
           onMonthChange={setMonth}
           onSearchChange={setSearch}
           onTypeChange={setType}
+          compact
           search={filters.search}
           type={filters.type}
           labels={{
@@ -83,6 +75,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
             searchLabel: t('filterSearchLabel'),
             searchPlaceholder: t('filterSearchPlaceholder'),
             transfer: t('filterTransfer'),
+            advanced: t('filterAdvanced'),
           }}
         />
 
@@ -129,31 +122,17 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
         )}
       </ScrollView>
 
-      <Pressable
-        accessibilityLabel={t('transactionsAdd')}
-        accessibilityRole="button"
-        onPress={onAddTransaction}
-        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
-      >
-        <Plus color={colors.content.inverse} size={28} strokeWidth={2.6} />
-      </Pressable>
-
       {undoMessage ? <UndoBanner message={undoMessage} onExpire={dismissUndo} onUndo={undoDelete} undoLabel={t('undoAction')} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 40,
-    width: 40,
-  },
   container: {
-    gap: spacing[4],
+    gap: spacing[3],
     padding: spacing[4],
-    paddingBottom: spacing[7] + 56,
+    paddingBottom: spacing[4],
+    paddingTop: 58,
   },
   deleteButton: {
     alignItems: 'center',
@@ -169,43 +148,21 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     textAlign: 'center',
   },
-  fab: {
-    ...shadows.elevated,
-    alignItems: 'center',
-    backgroundColor: colors.brand.primary,
-    borderRadius: radius.circle,
-    bottom: spacing[5],
-    height: 56,
-    justifyContent: 'center',
-    left: '50%',
-    marginLeft: -28,
-    position: 'absolute',
-    width: 56,
-  },
-  fabPressed: {
-    backgroundColor: colors.brand.primaryPressed,
-  },
   group: {
     gap: spacing[2],
   },
   groupCard: {
     ...shadows.card,
     backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
+    borderRadius: 16,
     paddingHorizontal: spacing[4],
   },
   groupLabel: {
     color: colors.content.muted,
-    fontSize: typography.sizes.caption,
+    fontSize: 11,
     fontWeight: typography.weights.semibold,
-  },
-  header: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.primary,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing[2],
-    paddingVertical: spacing[3],
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   root: {
     backgroundColor: colors.surface.canvas,
@@ -220,7 +177,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.content.primary,
-    fontSize: typography.sizes.bodyLg,
-    fontWeight: typography.weights.bold,
+    fontSize: 22,
+    fontWeight: typography.weights.black,
+    lineHeight: 26,
   },
 });

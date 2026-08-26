@@ -7,6 +7,7 @@ export function createIcon() {
 }
 
 export const Car = createIcon();
+export const ArrowLeft = createIcon();
 export const CarFront = createIcon();
 export const ChevronLeft = createIcon();
 export const ChevronRight = createIcon();

@@ -1,260 +1,142 @@
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AccountPicker, AmountInput, CategoryPicker, DateField, SegmentedControl } from '@/components/finance';
+import { AmountInput, BottomNav, CategoryPicker, SegmentedControl } from '@/components/finance';
 import type { TransactionType } from '@/core/domain/finance/transaction';
 import type { TransactionFormViewModel } from '@/features/finance/view-models/use-transaction-form';
-import type { Translate, TranslationKey } from '@/i18n/translations';
-import { colors, radius, spacing, typography } from '@/theme';
+import type { Translate } from '@/i18n/translations';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
 
 type TransactionFormScreenProps = TransactionFormViewModel & {
   t: Translate;
   onCancel(): void;
+  onNavigate?(key: string): void;
 };
 
-const TYPE_OPTIONS: TransactionType[] = ['expense', 'income', 'transfer'];
+const TYPE_OPTIONS: TransactionType[] = ['expense', 'income'];
 
-const TYPE_LABEL_KEYS: Record<TransactionType, TranslationKey> = {
-  expense: 'transactionTypeExpense',
-  income: 'transactionTypeIncome',
-  transfer: 'transactionTypeTransfer',
-};
-
-/**
- * Renders the primitive Task 6 fields directly (`AmountInput`,
- * `AccountPicker`, `CategoryPicker`, `DateField`, `SegmentedControl`)
- * instead of `TransactionForm`: `TransactionForm` only accepts an
- * `initialDate` prop and always starts every other field blank, so it
- * cannot be pre-filled for editing an existing transaction (see the Task 8
- * report). Every field here is driven by `useTransactionForm`'s controlled
- * state instead, which supports both create and edit.
- */
-export function TransactionFormScreen(props: TransactionFormScreenProps) {
-  const {
-    loading,
-    submitting,
-    isEditing,
-    values,
-    errors,
-    accounts,
-    categories,
-    setType,
-    setAmount,
-    setName,
-    setAccountId,
-    setDestinationAccountId,
-    setCategoryId,
-    setDate,
-    setNote,
-    submit,
-    onCancel,
-    t,
-  } = props;
-
-  const isTransfer = values.type === 'transfer';
-  const typeLabels = TYPE_OPTIONS.map((option) => t(TYPE_LABEL_KEYS[option]));
-  const typeLabelToType = new Map(TYPE_OPTIONS.map((option) => [t(TYPE_LABEL_KEYS[option]), option]));
+export function TransactionFormScreen({ onNavigate, t, ...props }: TransactionFormScreenProps) {
+  const { loading, submitting, isEditing, values, errors, categories, setType, setAmount, setCategoryId, setNote, submit } = props;
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.title}>{t('dashboardLoading')}</Text>
-      </View>
-    );
+    return <View style={styles.loadingContainer}><Text style={styles.loadingText}>{t('dashboardLoading')}</Text></View>;
   }
 
+  const typeLabels: Record<TransactionType, string> = {
+    expense: t('transactionTypeExpense'),
+    income: t('transactionTypeIncome'),
+    transfer: t('transactionTypeTransfer'),
+  };
+  const noteLabel = t('transactionFormNoteLabel');
+  const noteTitle = noteLabel.replace(/\s*\(.*\)$/, '');
+  const selectedType = values.type === 'income' ? 'income' : 'expense';
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{isEditing ? t('transactionFormEditTitle') : t('transactionFormNewTitle')}</Text>
+    <View style={styles.screen}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+        style={styles.keyboardAvoiding}
+      >
+        <SafeAreaView edges={['top']} style={styles.safeContent}>
+          <ScrollView
+            automaticallyAdjustKeyboardInsets
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            testID="transaction-form-scroll"
+          >
+          <View style={styles.header}>
+            <Text style={styles.title}>{isEditing ? t('transactionFormEditTitle') : t('dashboardAddTransaction')}</Text>
+          </View>
 
-      <SegmentedControl<string>
-        onChange={(label) => setType(typeLabelToType.get(label) as TransactionType)}
-        options={typeLabels}
-        value={t(TYPE_LABEL_KEYS[values.type])}
+          <SegmentedControl
+            onChange={(label) => setType(label === typeLabels.income ? 'income' : 'expense')}
+            options={TYPE_OPTIONS.map((type) => typeLabels[type])}
+            value={typeLabels[selectedType]}
+          />
+
+          <AmountInput
+            errorMessage={values.amount === null ? (errors.amount ?? null) : null}
+            invalidMessage={t('amountInvalid')}
+            label={t('transactionFormAmountLabel')}
+            onChange={setAmount}
+            placeholder={t('amountPlaceholder')}
+            value={values.amount}
+          />
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{t('transactionFormCategoryLabel')}</Text>
+            <CategoryPicker
+              categories={categories}
+              errorMessage={errors.categoryId ?? null}
+              onSelect={setCategoryId}
+              selectedId={values.categoryId}
+              type={selectedType}
+            />
+          </View>
+
+          <View style={styles.noteCard}>
+            <Text style={styles.sectionLabel}>{noteTitle}</Text>
+            <TextInput
+              accessibilityLabel={noteLabel}
+              multiline
+              onChangeText={setNote}
+              placeholder="Ví dụ: Ăn trưa với đồng nghiệp"
+              placeholderTextColor={colors.content.secondary}
+              style={styles.noteInput}
+              textAlignVertical="top"
+              value={values.note}
+            />
+          </View>
+
+          {errors.form ? <Text accessibilityRole="alert" style={styles.error}>{errors.form}</Text> : null}
+
+          <Pressable
+            accessibilityLabel={t('transactionFormSave')}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: submitting }}
+            disabled={submitting}
+            onPress={submit}
+            style={({ pressed }) => [styles.saveButton, pressed && styles.saveButtonPressed]}
+          >
+            <Text style={styles.saveButtonText}>{t('transactionFormSave')}</Text>
+          </Pressable>
+          </ScrollView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+
+      <BottomNav
+        activeKey=""
+        addAccessibilityLabel={t('dashboardAddTransaction')}
+        items={[
+          { key: 'overview', label: t('navOverview'), icon: 'overview' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'list' },
+          { key: 'reports', label: t('navReports'), icon: 'target' },
+          { key: 'settings', label: t('navSettings'), icon: 'profile' },
+        ]}
+        onAdd={onNavigate ? () => onNavigate('form') : undefined}
+        onChange={onNavigate}
       />
-
-      <View style={styles.field}>
-        <Text style={styles.label}>{t('transactionFormNameLabel')}</Text>
-        <TextInput
-          accessibilityLabel={t('transactionFormNameLabel')}
-          onChangeText={setName}
-          placeholder={t('transactionFormNamePlaceholder')}
-          placeholderTextColor={colors.content.placeholder}
-          style={[styles.input, errors.name && styles.inputError]}
-          value={values.name}
-        />
-        {errors.name ? (
-          <Text accessibilityRole="alert" style={styles.error}>
-            {errors.name}
-          </Text>
-        ) : null}
-      </View>
-
-      <AmountInput
-        errorMessage={values.amount === null ? (errors.amount ?? null) : null}
-        invalidMessage={t('amountInvalid')}
-        label={t('transactionFormAmountLabel')}
-        onChange={setAmount}
-        placeholder={t('amountPlaceholder')}
-        value={values.amount}
-      />
-
-      <AccountPicker
-        accounts={accounts}
-        errorMessage={errors.accountId ?? null}
-        label={t('transactionFormAccountLabel')}
-        onSelect={setAccountId}
-        selectedId={values.accountId}
-      />
-
-      {isTransfer ? (
-        <AccountPicker
-          accounts={accounts}
-          errorMessage={errors.destinationAccountId ?? null}
-          label={t('transactionFormDestinationLabel')}
-          onSelect={setDestinationAccountId}
-          selectedId={values.destinationAccountId}
-        />
-      ) : (
-        <CategoryPicker
-          categories={categories}
-          errorMessage={errors.categoryId ?? null}
-          label={t('transactionFormCategoryLabel')}
-          onSelect={setCategoryId}
-          selectedId={values.categoryId}
-          type={values.type === 'income' ? 'income' : 'expense'}
-        />
-      )}
-
-      <DateField label={t('dateTransactionLabel')} onChange={setDate} value={values.date} />
-
-      <View style={styles.field}>
-        <Text style={styles.label}>{t('transactionFormNoteLabel')}</Text>
-        <TextInput
-          accessibilityLabel={t('transactionFormNoteLabel')}
-          multiline
-          onChangeText={setNote}
-          style={[styles.input, styles.noteInput]}
-          value={values.note}
-        />
-      </View>
-
-      {errors.form ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          {errors.form}
-        </Text>
-      ) : null}
-
-      <View style={styles.actions}>
-        <Pressable
-          accessibilityLabel={t('transactionFormCancel')}
-          accessibilityRole="button"
-          onPress={onCancel}
-          style={({ pressed }) => [styles.secondaryAction, pressed && styles.secondaryActionPressed]}
-        >
-          <Text style={styles.secondaryActionText}>{t('transactionFormCancel')}</Text>
-        </Pressable>
-        <Pressable
-          accessibilityLabel={t('transactionFormSave')}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: submitting }}
-          disabled={submitting}
-          onPress={submit}
-          style={({ pressed }) => [styles.primaryAction, pressed && styles.primaryActionPressed]}
-        >
-          <Text style={styles.primaryActionText}>{t('transactionFormSave')}</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  actions: {
-    flexDirection: 'row',
-    gap: spacing[2],
-    marginTop: spacing[2],
-  },
-  container: {
-    backgroundColor: colors.surface.canvas,
-    flexGrow: 1,
-    gap: spacing[4],
-    padding: spacing[4],
-  },
-  error: {
-    color: colors.status.negative,
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.semibold,
-  },
-  field: {
-    gap: spacing[1],
-  },
-  input: {
-    backgroundColor: colors.surface.input,
-    borderColor: colors.border.strong,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    color: colors.content.primary,
-    fontSize: typography.sizes.bodyLg,
-    fontWeight: typography.weights.semibold,
-    minHeight: 48,
-    paddingHorizontal: spacing[3],
-  },
-  inputError: {
-    borderColor: colors.status.negative,
-  },
-  label: {
-    color: colors.content.secondary,
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.semibold,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.canvas,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  noteInput: {
-    minHeight: 72,
-    paddingTop: spacing[3],
-    textAlignVertical: 'top',
-  },
-  primaryAction: {
-    alignItems: 'center',
-    backgroundColor: colors.content.primary,
-    borderRadius: radius.sm,
-    flexGrow: 1,
-    justifyContent: 'center',
-    minHeight: 52,
-  },
-  primaryActionPressed: {
-    backgroundColor: '#243247',
-  },
-  primaryActionText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.bodyLg,
-    fontWeight: typography.weights.bold,
-  },
-  secondaryAction: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.brand.primary,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    justifyContent: 'center',
-    minHeight: 52,
-    paddingHorizontal: spacing[4],
-  },
-  secondaryActionPressed: {
-    backgroundColor: colors.brand.soft,
-  },
-  secondaryActionText: {
-    color: colors.brand.primaryPressed,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-  },
-  title: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.title,
-    fontWeight: typography.weights.bold,
-  },
+  content: { gap: spacing[4], paddingBottom: spacing[5], paddingHorizontal: spacing[4], paddingTop: spacing[2] },
+  error: { color: colors.status.negative, fontSize: typography.sizes.caption, fontWeight: typography.weights.semibold },
+  header: { justifyContent: 'center', minHeight: 44 },
+  keyboardAvoiding: { flex: 1 },
+  loadingContainer: { alignItems: 'center', backgroundColor: colors.surface.canvas, flex: 1, justifyContent: 'center' },
+  loadingText: { color: colors.content.primary, fontSize: typography.sizes.body, fontWeight: typography.weights.semibold },
+  noteCard: { ...shadows.card, backgroundColor: colors.surface.primary, borderRadius: radius.lg, gap: spacing[1], minHeight: 64, paddingHorizontal: spacing[4], paddingTop: spacing[3] },
+  noteInput: { color: colors.content.primary, fontSize: typography.sizes.body, minHeight: 30, padding: 0 },
+  safeContent: { flex: 1 },
+  saveButton: { alignItems: 'center', backgroundColor: colors.content.primary, borderRadius: radius.sm, justifyContent: 'center', minHeight: 52 },
+  saveButtonPressed: { backgroundColor: colors.brand.primaryPressed },
+  saveButtonText: { color: colors.content.inverse, fontSize: typography.sizes.body, fontWeight: typography.weights.bold },
+  screen: { backgroundColor: colors.surface.canvas, flex: 1 },
+  section: { gap: spacing[2] },
+  sectionLabel: { color: colors.content.primary, fontSize: typography.sizes.small, fontWeight: typography.weights.bold },
+  title: { color: colors.content.primary, fontSize: typography.sizes.heading, fontWeight: typography.weights.bold },
 });

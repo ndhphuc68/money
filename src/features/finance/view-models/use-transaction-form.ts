@@ -125,6 +125,8 @@ export function useTransactionForm({ dependencies, transactionId, t, onSaved, no
             note: existing.note ?? '',
           };
         }
+      } else {
+        nextValues.accountId = activeAccounts[0]?.id ?? null;
       }
 
       if (!cancelled) {
@@ -156,15 +158,18 @@ export function useTransactionForm({ dependencies, transactionId, t, onSaved, no
 
   const submit = useCallback(async () => {
     const isTransfer = values.type === 'transfer';
+    const selectedAccountId = values.accountId ?? accounts[0]?.id ?? null;
+    const selectedCategory = categories.find((category) => category.id === values.categoryId);
+    const compactName = values.name.trim() || values.note.trim() || selectedCategory?.name || '';
     const nextErrors: TransactionFormErrors = {};
 
-    if (values.name.trim() === '') {
+    if (compactName === '') {
       nextErrors.name = t('transactionFormNameRequired');
     }
     if (values.amount === null || values.amount <= 0) {
       nextErrors.amount = t('transactionFormAmountRequired');
     }
-    if (values.accountId === null) {
+    if (selectedAccountId === null) {
       nextErrors.accountId = t('transactionFormAccountRequired');
     }
     if (isTransfer) {
@@ -186,19 +191,19 @@ export function useTransactionForm({ dependencies, transactionId, t, onSaved, no
       ? {
           type: 'transfer',
           amount: values.amount as number,
-          accountId: values.accountId as string,
+          accountId: selectedAccountId as string,
           destinationAccountId: values.destinationAccountId as string,
           date: values.date,
-          name: values.name.trim(),
+          name: compactName,
           note: values.note.trim() === '' ? null : values.note.trim(),
         }
       : {
           type: values.type,
           amount: values.amount as number,
-          accountId: values.accountId as string,
+          accountId: selectedAccountId as string,
           categoryId: values.categoryId as string,
           date: values.date,
-          name: values.name.trim(),
+          name: compactName,
           note: values.note.trim() === '' ? null : values.note.trim(),
         };
 

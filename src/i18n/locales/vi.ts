@@ -174,6 +174,7 @@ export const vi = {
   filterAccount: 'Tài khoản',
   filterSearchLabel: 'Tìm kiếm giao dịch',
   filterSearchPlaceholder: 'Tìm theo tên giao dịch',
+  filterAdvanced: 'Bộ lọc nâng cao',
   amountInvalid: 'Số tiền không hợp lệ',
   amountPlaceholder: 'Nhập số tiền',
   dateTransactionLabel: 'Ngày giao dịch',

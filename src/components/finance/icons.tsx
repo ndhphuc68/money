@@ -34,7 +34,7 @@ export function CategoryIcon({ name, color = categoryColor(name) }: CategoryIcon
         width: 40,
       }}
     >
-      <Icon color={colors.content.inverse} size={20} strokeWidth={2.2} />
+      <Icon color={colors.content.inverse} size={18} strokeWidth={1.8} />
     </View>
   );
 }

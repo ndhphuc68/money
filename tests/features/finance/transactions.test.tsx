@@ -1,5 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { Alert, KeyboardAvoidingView } from 'react-native';
 
 import {
   AccountRepository,
@@ -357,6 +357,58 @@ function FormHarness({ dependencies, transactionId, onSaved }: { dependencies: R
 }
 
 describe('transactions list + view model', () => {
+  it('renders the prototype transaction hierarchy with compact filters', () => {
+    const screen = render(
+      <TransactionsScreen
+        accounts={[]}
+        amountsHidden={false}
+        categories={[]}
+        deleteTransaction={async () => undefined}
+        dismissUndo={() => undefined}
+        filters={{ accountId: null, categoryId: null, month: '2026-08', search: '', type: 'all' }}
+        groups={[
+          {
+            date: '2026-08-25',
+            dateLabel: 'HÔM NAY',
+            items: [
+              {
+                amountLabel: '+18.000.000 ₫',
+                categoryLabel: 'Thu nhập',
+                date: '2026-08-25',
+                icon: 'income',
+                id: 'tx-1',
+                meta: '07:00',
+                name: 'Lương tháng 8',
+                positive: true,
+              },
+            ],
+          },
+        ]}
+        isEmpty={false}
+        loading={false}
+        onAddTransaction={() => undefined}
+        onBack={() => undefined}
+        onSelectTransaction={() => undefined}
+        refresh={async () => undefined}
+        setAccountId={() => undefined}
+        setCategoryId={() => undefined}
+        setMonth={() => undefined}
+        setSearch={() => undefined}
+        setType={() => undefined}
+        undoDelete={async () => undefined}
+        undoMessage={null}
+        t={t}
+      />,
+    );
+
+    expect(screen.getByText('Giao dịch')).toBeTruthy();
+    expect(screen.getAllByText('Tất cả').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Thu nhập').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Chi tiêu').length).toBeGreaterThan(0);
+    expect(screen.getByText('Lương tháng 8')).toBeTruthy();
+    expect(screen.getByLabelText('Bộ lọc nâng cao')).toBeTruthy();
+  });
+
   it('shows an empty state, then a created transaction after a successful create', async () => {
     const repos = makeRepos();
     const { account, expenseCategory } = await seedAccountAndCategories(repos);
@@ -367,17 +419,16 @@ describe('transactions list + view model', () => {
     const onSaved = jest.fn();
     const form = render(<FormHarness dependencies={repos} onSaved={onSaved} />);
 
-    await waitFor(() => expect(form.getByLabelText(t('transactionFormNameLabel'))).toBeTruthy());
-    fireEvent.changeText(form.getByLabelText(t('transactionFormNameLabel')), 'An trua');
+    await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
     fireEvent.changeText(form.getByLabelText(t('transactionFormAmountLabel')), '150.000');
-    fireEvent.press(form.getByLabelText(account.name));
     fireEvent.press(form.getByLabelText(expenseCategory.name));
+    fireEvent.changeText(form.getByLabelText(t('transactionFormNoteLabel')), 'An trua');
     fireEvent.press(form.getByLabelText(t('transactionFormSave')));
 
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     const stored = await repos.transactionRepository.list({});
     expect(stored).toHaveLength(1);
-    expect(stored[0]).toMatchObject({ name: 'An trua', amount: 150_000, type: 'expense' });
+    expect(stored[0]).toMatchObject({ accountId: account.id, name: 'An trua', amount: 150_000, note: 'An trua', type: 'expense' });
   });
 
   it('filters by type, category, account and free-text search', async () => {
@@ -421,6 +472,7 @@ describe('transactions list + view model', () => {
     fireEvent.press(screen.getByLabelText('Chi tiêu'));
     await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
 
+    fireEvent.press(screen.getByLabelText('Bộ lọc nâng cao'));
     fireEvent.press(screen.getByLabelText(secondAccount.name));
     await waitFor(() => expect(screen.queryByText('An sang')).toBeNull());
     expect(screen.getByText('Mua sam')).toBeTruthy();
@@ -450,6 +502,7 @@ describe('transactions list + view model', () => {
     const screen = render(<ListHarness dependencies={repos} />);
     await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
 
+    fireEvent.press(screen.getByLabelText('Bộ lọc nâng cao'));
     fireEvent.changeText(screen.getByLabelText('Tìm kiếm giao dịch'), 'sang');
     await waitFor(() => expect(screen.queryByText('Mua sam')).toBeNull());
     expect(screen.getByText('An sang')).toBeTruthy();
@@ -470,14 +523,48 @@ describe('transactions list + view model', () => {
     const onSaved = jest.fn();
     const form = render(<FormHarness dependencies={repos} onSaved={onSaved} transactionId={created.id} />);
 
-    await waitFor(() => expect(form.getByDisplayValue('An sang')).toBeTruthy());
-    fireEvent.changeText(form.getByLabelText(t('transactionFormNameLabel')), 'An sang o quan moi');
+    await waitFor(() => expect(form.getByLabelText(t('transactionFormNoteLabel'))).toBeTruthy());
+    fireEvent.changeText(form.getByLabelText(t('transactionFormNoteLabel')), 'An sang o quan moi');
     fireEvent.press(form.getByLabelText(t('transactionFormSave')));
 
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     const updated = await repos.transactionRepository.findById(created.id);
-    expect(updated?.name).toBe('An sang o quan moi');
+    expect(updated?.name).toBe('An sang');
+    expect(updated?.note).toBe('An sang o quan moi');
     expect(updated?.amount).toBe(100_000);
+  });
+
+  it('saves the compact add form using the note as its name and the first account by default', async () => {
+    const repos = makeRepos();
+    const { account, expenseCategory } = await seedAccountAndCategories(repos);
+    const onSaved = jest.fn();
+    const form = render(<FormHarness dependencies={repos} onSaved={onSaved} />);
+
+    await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
+    fireEvent.changeText(form.getByLabelText('Số tiền'), '50000');
+    fireEvent.press(form.getByRole('button', { name: expenseCategory.name }));
+    fireEvent.changeText(form.getByLabelText('Ghi chú (không bắt buộc)'), 'Ăn trưa với đồng nghiệp');
+    fireEvent.press(form.getByRole('button', { name: 'Lưu giao dịch' }));
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    const [created] = await repos.transactionRepository.list({});
+    expect(created).toEqual(expect.objectContaining({
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-25',
+      name: 'Ăn trưa với đồng nghiệp',
+      note: 'Ăn trưa với đồng nghiệp',
+    }));
+  });
+
+  it('keeps the note input above the keyboard with keyboard-aware insets', async () => {
+    const repos = makeRepos();
+    await seedAccountAndCategories(repos);
+    const form = render(<FormHarness dependencies={repos} onSaved={() => {}} />);
+
+    await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
+    expect(form.UNSAFE_getByType(KeyboardAvoidingView)).toBeTruthy();
+    expect(form.getByTestId('transaction-form-scroll').props.automaticallyAdjustKeyboardInsets).toBe(true);
   });
 
   it('deletes a transaction after confirmation, then restores it via Undo', async () => {

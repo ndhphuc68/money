@@ -74,7 +74,6 @@ export function AmountInput({
           style={styles.input}
           value={text}
         />
-        <Text style={styles.currency}>₫</Text>
       </View>
       {displayedError ? (
         <Text accessibilityRole="alert" style={styles.error}>
@@ -114,12 +113,6 @@ const styles = StyleSheet.create({
   inputRow: {
     alignItems: 'center',
     flexDirection: 'row',
-  },
-  currency: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.display,
-    fontWeight: typography.weights.bold,
-    textDecorationLine: 'underline',
   },
   label: {
     color: colors.content.secondary,

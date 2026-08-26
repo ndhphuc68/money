@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, ListChecks } from 'lucide-react-native';
+import { useState } from 'react';
 
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
@@ -13,6 +14,7 @@ export type TransactionTypeFilter = 'all' | TransactionType;
 
 const TYPE_OPTIONS: readonly TransactionTypeFilter[] = ['all', 'income', 'expense', 'transfer'];
 type FilterBarProps = {
+  compact?: boolean;
   month: string;
   onMonthChange: (month: string) => void;
   type: TransactionTypeFilter;
@@ -37,6 +39,7 @@ type FilterBarProps = {
     account: string;
     searchLabel: string;
     searchPlaceholder: string;
+    advanced?: string;
   };
 };
 
@@ -65,7 +68,9 @@ export function FilterBar({
   search,
   onSearchChange,
   labels,
+  compact = false,
 }: FilterBarProps) {
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const typeLabels: Record<TransactionTypeFilter, string> = {
     all: labels.all,
     income: labels.income,
@@ -73,10 +78,11 @@ export function FilterBar({
     transfer: labels.transfer,
   };
   const categoryType = type === 'all' ? 'all' : type === 'income' ? 'income' : 'expense';
+  const visibleOptions = compact ? TYPE_OPTIONS.filter((option) => option !== 'transfer') : TYPE_OPTIONS;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.monthRow}>
+    <View style={compact ? styles.compactContainer : styles.container}>
+      {!compact ? <View style={styles.monthRow}>
         <Pressable
           accessibilityLabel={labels.previousMonth}
           accessibilityRole="button"
@@ -94,10 +100,10 @@ export function FilterBar({
         >
           <ChevronRight color={colors.content.primary} size={20} />
         </Pressable>
-      </View>
+      </View> : null}
 
-      <View style={styles.typeRow}>
-        {TYPE_OPTIONS.map((option) => {
+      <View style={compact ? styles.compactTypeRow : styles.typeRow}>
+        {visibleOptions.map((option) => {
           const active = option === type;
           return (
             <Pressable
@@ -106,7 +112,7 @@ export function FilterBar({
               accessibilityState={{ selected: active }}
               key={option}
               onPress={() => onTypeChange(option)}
-              style={({ pressed }) => [styles.typeChip, active && styles.typeChipActive, pressed && !active && styles.typeChipPressed]}
+              style={({ pressed }) => [styles.typeChip, compact && styles.compactTypeChip, active && styles.typeChipActive, pressed && !active && styles.typeChipPressed]}
             >
               <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>{typeLabels[option]}</Text>
             </Pressable>
@@ -114,7 +120,21 @@ export function FilterBar({
         })}
       </View>
 
-      {type !== 'transfer' ? (
+      {compact ? (
+        <Pressable
+          accessibilityLabel={labels.advanced ?? 'Bộ lọc nâng cao'}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: advancedOpen }}
+          onPress={() => setAdvancedOpen((open) => !open)}
+          style={({ pressed }) => [styles.advancedToggle, pressed && styles.advancedTogglePressed]}
+        >
+          <ListChecks color={colors.content.muted} size={16} strokeWidth={2} />
+          <Text style={styles.advancedToggleText}>{labels.advanced ?? 'Bộ lọc nâng cao'}</Text>
+          <Text style={styles.advancedToggleValue}>{advancedOpen ? 'Ẩn' : 'Hiện'}</Text>
+        </Pressable>
+      ) : null}
+
+      {(!compact || advancedOpen) && type !== 'transfer' ? (
         <CategoryPicker
           allLabel={labels.all}
           allowUnselect
@@ -126,23 +146,23 @@ export function FilterBar({
         />
       ) : null}
 
-      <AccountPicker
+      {(!compact || advancedOpen) ? <AccountPicker
         allLabel={labels.all}
         allowUnselect
         accounts={accounts}
         label={labels.account}
         onSelect={onAccountChange}
         selectedId={accountId}
-      />
+      /> : null}
 
-      <TextInput
+      {(!compact || advancedOpen) ? <TextInput
         accessibilityLabel={labels.searchLabel}
         onChangeText={onSearchChange}
         placeholder={labels.searchPlaceholder}
         placeholderTextColor={colors.content.placeholder}
         style={styles.searchInput}
         value={search}
-      />
+      /> : null}
     </View>
   );
 }
@@ -154,6 +174,17 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     gap: spacing[3],
     padding: spacing[4],
+  },
+  compactContainer: {
+    gap: spacing[2],
+  },
+  compactTypeRow: {
+    backgroundColor: colors.surface.muted,
+    borderRadius: 16,
+    flexDirection: 'row',
+    gap: spacing[1],
+    minHeight: 44,
+    padding: spacing[1],
   },
   monthButton: {
     alignItems: 'center',
@@ -186,12 +217,39 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: spacing[3],
   },
+  advancedToggle: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing[2],
+    minHeight: 44,
+    paddingHorizontal: spacing[1],
+  },
+  advancedTogglePressed: {
+    opacity: 0.6,
+  },
+  advancedToggleText: {
+    color: colors.content.muted,
+    flex: 1,
+    fontSize: typography.sizes.small,
+    fontWeight: typography.weights.semibold,
+  },
+  advancedToggleValue: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.small,
+    fontWeight: typography.weights.bold,
+  },
   typeChip: {
     backgroundColor: colors.surface.muted,
     borderRadius: radius.pill,
     justifyContent: 'center',
     minHeight: 36,
     paddingHorizontal: spacing[3],
+  },
+  compactTypeChip: {
+    alignItems: 'center',
+    flex: 1,
+    minHeight: 32,
+    paddingHorizontal: spacing[2],
   },
   typeChipActive: {
     backgroundColor: colors.content.primary,

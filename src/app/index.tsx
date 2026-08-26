@@ -128,6 +128,7 @@ function ConfiguredFinanceScreen({
         onAddTransaction={() => setView({ name: 'form', transactionId: null })}
         onBack={() => setView({ name: 'dashboard' })}
         onSelectTransaction={(id) => setView({ name: 'form', transactionId: id })}
+        setView={setView}
         t={t}
       />
     );
@@ -138,6 +139,12 @@ function ConfiguredFinanceScreen({
       <ConfiguredTransactionFormScreen
         dependencies={dependencies}
         onCancel={() => setView({ name: 'dashboard' })}
+        onNavigate={(key) => {
+          if (key === 'overview' || key === 'form') setView({ name: 'dashboard' });
+          if (key === 'transactions') setView({ name: 'transactions' });
+          if (key === 'reports') setView({ name: 'reports' });
+          if (key === 'settings') setView({ name: 'settings' });
+        }}
         onSaved={() => setView({ name: 'dashboard' })}
         t={t}
         transactionId={view.transactionId}
@@ -233,22 +240,44 @@ function ConfiguredTransactionsScreen({
   onBack,
   onAddTransaction,
   onSelectTransaction,
+  setView,
 }: {
   dependencies: FinanceDependencies;
   t: Translate;
   onBack(): void;
   onAddTransaction(): void;
   onSelectTransaction(id: string): void;
+  setView(view: FinanceView): void;
 }) {
   const viewModel = useTransactions({ dependencies, t });
   return (
-    <TransactionsScreen
-      {...viewModel}
-      onAddTransaction={onAddTransaction}
-      onBack={onBack}
-      onSelectTransaction={onSelectTransaction}
-      t={t}
-    />
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        <TransactionsScreen
+          {...viewModel}
+          onAddTransaction={onAddTransaction}
+          onBack={onBack}
+          onSelectTransaction={onSelectTransaction}
+          t={t}
+        />
+      </View>
+      <BottomNav
+        activeKey="transactions"
+        addAccessibilityLabel={t('transactionsAdd')}
+        items={[
+          { key: 'overview', label: t('navOverview'), icon: 'overview' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'list' },
+          { key: 'reports', label: t('navReports'), icon: 'target' },
+          { key: 'settings', label: t('navSettings'), icon: 'profile' },
+        ]}
+        onAdd={onAddTransaction}
+        onChange={(key) => {
+          if (key === 'overview') onBack();
+          if (key === 'reports') setView({ name: 'reports' });
+          if (key === 'settings') setView({ name: 'settings' });
+        }}
+      />
+    </View>
   );
 }
 
@@ -257,16 +286,18 @@ function ConfiguredTransactionFormScreen({
   t,
   transactionId,
   onCancel,
+  onNavigate,
   onSaved,
 }: {
   dependencies: FinanceDependencies;
   t: Translate;
   transactionId: string | null;
   onCancel(): void;
+  onNavigate(key: string): void;
   onSaved(): void;
 }) {
   const viewModel = useTransactionForm({ dependencies, onSaved, t, transactionId });
-  return <TransactionFormScreen {...viewModel} onCancel={onCancel} t={t} />;
+  return <TransactionFormScreen {...viewModel} onCancel={onCancel} onNavigate={onNavigate} t={t} />;
 }
 
 /**

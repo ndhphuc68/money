@@ -31,10 +31,11 @@ export function TransactionRow({ name, category, meta, amount, positive, icon, s
 
 const styles = StyleSheet.create({
   amount: {
-    fontSize: typography.sizes.body,
+    fontSize: typography.sizes.small,
     fontWeight: typography.weights.black,
-    marginLeft: spacing[3],
-    maxWidth: 112,
+    lineHeight: 15,
+    marginLeft: spacing[2],
+    maxWidth: 126,
   },
   copy: {
     flex: 1,
@@ -46,20 +47,21 @@ const styles = StyleSheet.create({
   },
   meta: {
     color: colors.content.muted,
-    fontSize: typography.sizes.small,
+    fontSize: 11,
     fontWeight: typography.weights.semibold,
-    marginTop: 2,
+    lineHeight: 14,
   },
   name: {
     color: colors.content.primary,
-    fontSize: typography.sizes.body,
+    fontSize: 13,
     fontWeight: typography.weights.bold,
+    lineHeight: 16,
   },
   row: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: spacing[3],
-    minHeight: 64,
-    paddingVertical: spacing[3],
+    gap: spacing[2] + 2,
+    minHeight: 56,
+    paddingVertical: spacing[2],
   },
 });

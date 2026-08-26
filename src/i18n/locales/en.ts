@@ -178,6 +178,7 @@ export const en = {
   filterAccount: 'Account',
   filterSearchLabel: 'Search transactions',
   filterSearchPlaceholder: 'Search by transaction name',
+  filterAdvanced: 'Advanced filters',
   amountInvalid: 'Invalid amount',
   amountPlaceholder: 'Enter amount',
   dateTransactionLabel: 'Transaction date',
