@@ -163,6 +163,16 @@ function Harness({ onboarding, onComplete }: { onboarding: Onboarding; onComplet
   return <OnboardingScreen {...viewModel} locale="vi" setLocale={() => {}} t={t} />;
 }
 
+async function advanceToConfirmCategories(screen: ReturnType<typeof render>) {
+  await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+  fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
+  await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
+  fireEvent.changeText(screen.getByLabelText(t('onboardingAccountNameLabel')), 'Cash');
+  fireEvent.changeText(screen.getByLabelText(t('onboardingOpeningBalanceLabel')), '500.000');
+  fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
+  await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+}
+
 describe('onboarding screen + view model', () => {
   it('presents the display-name step with progress, helper copy, and a single primary action', async () => {
     const { onboarding } = makeOnboarding();
@@ -225,20 +235,11 @@ describe('onboarding screen + view model', () => {
   });
 
   it('confirm-categories step allows editing and removing suggested categories, then finishes onboarding', async () => {
-    const { onboarding, accountRepository, categoryRepository, profileSettingsRepository } = makeOnboarding();
-    await accountRepository.create({
-      id: 'account-1',
-      name: 'Cash',
-      type: 'cash',
-      openingBalance: 0,
-      originDeviceId: DEVICE_ID,
-      operationId: 'op-1',
-      now: '2026-08-25T00:00:00.000Z',
-    });
+    const { onboarding, categoryRepository, profileSettingsRepository } = makeOnboarding();
     const onComplete = jest.fn();
     const screen = render(<Harness onboarding={onboarding} onComplete={onComplete} />);
 
-    await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+    await advanceToConfirmCategories(screen);
 
     const removeButtons = screen.getAllByRole('button', { name: new RegExp(`^${t('onboardingRemoveCategory')}`) });
     fireEvent.press(removeButtons[0]);
@@ -253,20 +254,11 @@ describe('onboarding screen + view model', () => {
   });
 
   it('confirm-categories step can be skipped, using the default category set as-is', async () => {
-    const { onboarding, accountRepository, categoryRepository } = makeOnboarding();
-    await accountRepository.create({
-      id: 'account-1',
-      name: 'Cash',
-      type: 'cash',
-      openingBalance: 0,
-      originDeviceId: DEVICE_ID,
-      operationId: 'op-1',
-      now: '2026-08-25T00:00:00.000Z',
-    });
+    const { onboarding, categoryRepository } = makeOnboarding();
     const onComplete = jest.fn();
     const screen = render(<Harness onboarding={onboarding} onComplete={onComplete} />);
 
-    await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+    await advanceToConfirmCategories(screen);
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
@@ -274,7 +266,7 @@ describe('onboarding screen + view model', () => {
     expect(expenseCategories.length).toBeGreaterThan(0);
   });
 
-  it('resumes at the correct step after unmount and remount, using the same onboarding backing store', async () => {
+  it('restarts from display-name after unmount and remount when onboarding is incomplete', async () => {
     const { onboarding, accountRepository, profileSettingsRepository } = makeOnboarding();
     await accountRepository.create({
       id: 'account-1',
@@ -288,11 +280,11 @@ describe('onboarding screen + view model', () => {
     await profileSettingsRepository.save({ displayName: 'Phuc', amountsHidden: false, onboardingCompleted: false });
 
     const first = render(<Harness onboarding={onboarding} />);
-    await waitFor(() => expect(first.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+    await waitFor(() => expect(first.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
     first.unmount();
 
     const second = render(<Harness onboarding={onboarding} />);
-    await waitFor(() => expect(second.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+    await waitFor(() => expect(second.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
   });
 
   it('calls onComplete immediately when resuming an already-completed onboarding', async () => {

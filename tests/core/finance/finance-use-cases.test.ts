@@ -761,7 +761,7 @@ describe('Onboarding', () => {
     expect(await categoryRepository.listActiveByType('income')).toHaveLength(1);
   });
 
-  it('resumes mid-flow after an exit: an existing account with onboarding incomplete resumes at confirm-categories', async () => {
+  it('restarts from display-name after an exit when onboarding is incomplete', async () => {
     const { accountRepository, profileSettingsRepository } = setup();
 
     await accountRepository.create({
@@ -786,7 +786,9 @@ describe('Onboarding', () => {
     });
 
     const state = await resumed.resume();
-    expect(state.step).toBe('confirm-categories');
+    expect(state.step).toBe('display-name');
+    expect(state.hasAccount).toBe(true);
+    expect(state.displayName).toBe('Phuc');
   });
 
   it('resumes at completed once onboarding has finished, even across a fresh Onboarding instance', async () => {

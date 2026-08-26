@@ -55,11 +55,11 @@ export type UseOnboardingOptions = {
 
 /**
  * Thin UI view model over `Onboarding` (Task 4): loads/resumes the
- * persisted step on mount, then drives the wizard's 4 steps (display name,
+ * entry state on mount, then drives the wizard's 4 steps (display name,
  * first account, opening balance, confirm default categories) locally so
  * "skip" and "back" don't require re-deriving state from storage on every
- * keystroke. All state-derivation logic (what step a fresh vs. resumed
- * profile starts at) stays in `Onboarding`; this hook never reimplements it.
+ * keystroke. Re-entry behavior stays in `Onboarding`: completed profiles
+ * leave the wizard; incomplete profiles restart from display name.
  */
 export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOptions): OnboardingViewModel {
   const [loading, setLoading] = useState(true);

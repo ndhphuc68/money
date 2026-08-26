@@ -78,9 +78,17 @@ export class Onboarding {
     return deriveOnboardingState(settings, accounts.length > 0);
   }
 
-  /** Resuming is just re-deriving state from current data; see `getState`. */
-  resume(): Promise<OnboardingState> {
-    return this.getState();
+  /**
+   * App re-entry deliberately restarts an incomplete onboarding flow instead
+   * of resuming the last derived wizard step.
+   */
+  async resume(): Promise<OnboardingState> {
+    const state = await this.getState();
+    if (state.onboardingCompleted) {
+      return state;
+    }
+
+    return { ...state, step: 'display-name' };
   }
 
   async saveDisplayName(displayName: string): Promise<ProfileSettings> {
