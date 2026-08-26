@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { useLocalDatabase } from '@/data/local/db/provider';
 import { createFinanceDependencies, FinanceDependencies } from '@/features/finance/finance-dependencies';
 import { DashboardScreen } from '@/features/finance/screens/dashboard-screen';
 import { OnboardingScreen } from '@/features/finance/screens/onboarding-screen';
+import { SplashScreen } from '@/features/finance/screens/splash-screen';
 import { TransactionFormScreen } from '@/features/finance/screens/transaction-form-screen';
 import { TransactionsScreen } from '@/features/finance/screens/transactions-screen';
 import { ReportsScreen } from '@/features/finance/screens/reports-screen';
@@ -22,7 +23,6 @@ import { SyncScreen } from '@/features/sync/screens/sync-screen';
 import { useSync } from '@/features/sync/view-models/use-sync';
 import { createMobileSyncDependencies } from '@/infrastructure/expo/sync/create-mobile-sync-dependencies';
 import { Locale, Translate, translate } from '@/i18n/translations';
-import { colors, spacing, typography } from '@/theme';
 
 /** Which finance screen the root route shows once onboarding is complete. */
 type FinanceView = { name: 'dashboard' } | { name: 'transactions' } | { name: 'reports' } | { name: 'settings' } | { name: 'accounts' } | { name: 'categories' } | { name: 'form'; transactionId: string | null };
@@ -32,6 +32,7 @@ export default function RootScreen() {
   const [locale, setLocale] = useState<Locale>('vi');
   const [dependencies, setDependencies] = useState<FinanceDependencies | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [splashReady, setSplashReady] = useState(false);
   const [view, setView] = useState<FinanceView>({ name: 'dashboard' });
   const t = useMemo(() => translate.bind(null, locale), [locale]);
 
@@ -56,12 +57,13 @@ export default function RootScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (dependencies === null) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.title}>{t('onboardingLoading')}</Text>
-      </View>
-    );
+  useEffect(() => {
+    const timer = setTimeout(() => setSplashReady(true), 900);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (dependencies === null || !splashReady) {
+    return <SplashScreen t={t} />;
   }
 
   if (onboardingComplete) {
@@ -265,18 +267,3 @@ export function ConfiguredSyncScreen() {
   return <SyncScreen {...useSync({ dependencies, passphrase, setPassphrase, t })} locale={locale} setLocale={setLocale} t={t} />;
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.canvas,
-    flex: 1,
-    gap: spacing[3],
-    justifyContent: 'center',
-    padding: spacing[4],
-  },
-  title: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.title,
-    fontWeight: typography.weights.bold,
-  },
-});

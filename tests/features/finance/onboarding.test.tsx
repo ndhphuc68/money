@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import {
@@ -17,6 +18,7 @@ import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/fin
 import { OnboardingScreen } from '@/features/finance/screens/onboarding-screen';
 import { useOnboarding } from '@/features/finance/view-models/use-onboarding';
 import { Locale, translate } from '@/i18n/translations';
+import { colors, radius } from '@/theme';
 
 // ---------------------------------------------------------------------------
 // Minimal in-memory fakes of the finance repository ports, matching the
@@ -168,6 +170,8 @@ async function advanceToConfirmCategories(screen: ReturnType<typeof render>) {
   fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
   await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
   fireEvent.changeText(screen.getByLabelText(t('onboardingAccountNameLabel')), 'Cash');
+  fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
+  await waitFor(() => expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy());
   fireEvent.changeText(screen.getByLabelText(t('onboardingOpeningBalanceLabel')), '500.000');
   fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
   await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
@@ -180,9 +184,10 @@ describe('onboarding screen + view model', () => {
 
     await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
 
-    expect(screen.getByText(t('onboardingStepProgress', { current: 1, total: 3 }))).toBeTruthy();
+    expect(screen.getByText(t('onboardingStepProgress', { current: 1, total: 4 }))).toBeTruthy();
     expect(screen.getByText(t('onboardingDisplayNameHint'))).toBeTruthy();
-    expect(screen.getByLabelText(t('languageLabel'))).toBeTruthy();
+    expect(screen.queryByTestId('onboarding-brand-logo')).toBeNull();
+    expect(screen.queryByLabelText(t('languageLabel'))).toBeNull();
     expect(screen.getByRole('button', { name: t('onboardingContinue') })).toBeTruthy();
   });
 
@@ -195,7 +200,8 @@ describe('onboarding screen + view model', () => {
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
 
     await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
-    expect(screen.getByTestId('onboarding-brand-logo')).toBeTruthy();
+    expect(screen.getByText(t('onboardingStepProgress', { current: 2, total: 4 }))).toBeTruthy();
+    expect(screen.queryByTestId('onboarding-brand-logo')).toBeNull();
   });
 
   it('saving a display name advances to the account step and persists the trimmed name', async () => {
@@ -210,7 +216,7 @@ describe('onboarding screen + view model', () => {
     expect((await profileSettingsRepository.get()).displayName).toBe('Phuc');
   });
 
-  it('requires a name and opening balance before the first account can be created', async () => {
+  it('requires a wallet name before the balance step can be opened', async () => {
     const { onboarding, accountRepository } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
@@ -221,10 +227,16 @@ describe('onboarding screen + view model', () => {
     fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
 
     expect(screen.getByText(t('onboardingAccountNameRequired'))).toBeTruthy();
-    expect(screen.getByText(t('onboardingOpeningBalanceRequired'))).toBeTruthy();
     expect(await accountRepository.listActive()).toHaveLength(0);
 
     fireEvent.changeText(screen.getByLabelText(t('onboardingAccountNameLabel')), 'Vi tien mat');
+    fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
+
+    await waitFor(() => expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy());
+    expect(screen.getByText(t('onboardingStepProgress', { current: 3, total: 4 }))).toBeTruthy();
+    expect(screen.getByText(t('onboardingOpeningBalanceTitle', { walletName: 'Vi tien mat' }))).toBeTruthy();
+    expect(await accountRepository.listActive()).toHaveLength(0);
+
     fireEvent.changeText(screen.getByLabelText(t('onboardingOpeningBalanceLabel')), '500.000');
     fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
 
@@ -234,6 +246,24 @@ describe('onboarding screen + view model', () => {
     expect(created[0]).toMatchObject({ name: 'Vi tien mat', openingBalance: 500000 });
   });
 
+  it('can skip the opening balance and creates the first wallet with zero balance', async () => {
+    const { onboarding, accountRepository } = makeOnboarding();
+    const screen = render(<Harness onboarding={onboarding} />);
+
+    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
+    await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText(t('onboardingAccountNameLabel')), 'Cash');
+    fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
+
+    await waitFor(() => expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy());
+    fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
+
+    await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+    const created = await accountRepository.listActive();
+    expect(created[0]).toMatchObject({ name: 'Cash', openingBalance: 0 });
+  });
+
   it('confirm-categories step allows editing and removing suggested categories, then finishes onboarding', async () => {
     const { onboarding, categoryRepository, profileSettingsRepository } = makeOnboarding();
     const onComplete = jest.fn();
@@ -241,8 +271,7 @@ describe('onboarding screen + view model', () => {
 
     await advanceToConfirmCategories(screen);
 
-    const removeButtons = screen.getAllByRole('button', { name: new RegExp(`^${t('onboardingRemoveCategory')}`) });
-    fireEvent.press(removeButtons[0]);
+    fireEvent.press(screen.getByRole('switch', { name: t('onboardingCategoryFood') }));
 
     fireEvent.press(screen.getByRole('button', { name: t('onboardingFinish') }));
 
@@ -251,6 +280,7 @@ describe('onboarding screen + view model', () => {
     const expenseCategories = await categoryRepository.listActiveByType('expense');
     const incomeCategories = await categoryRepository.listActiveByType('income');
     expect(expenseCategories.length + incomeCategories.length).toBeGreaterThan(0);
+    expect(expenseCategories.some((category) => category.name === t('onboardingCategoryFood'))).toBe(false);
   });
 
   it('confirm-categories step can be skipped, using the default category set as-is', async () => {
@@ -264,6 +294,36 @@ describe('onboarding screen + view model', () => {
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
     const expenseCategories = await categoryRepository.listActiveByType('expense');
     expect(expenseCategories.length).toBeGreaterThan(0);
+  });
+
+  it('confirms before exiting and resets local onboarding fields', async () => {
+    const { onboarding } = makeOnboarding();
+    const screen = render(<Harness onboarding={onboarding} />);
+
+    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText(t('onboardingDisplayNameLabel')), 'Phuc');
+    fireEvent.press(screen.getByLabelText(t('onboardingExit')));
+
+    expect(screen.getByText(t('onboardingExitConfirmTitle'))).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: t('onboardingExitConfirmConfirm') }));
+
+    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    expect(screen.queryByDisplayValue('Phuc')).toBeNull();
+  });
+
+  it('uses the approved onboarding canvas and primary action styling', async () => {
+    const { onboarding } = makeOnboarding();
+    const screen = render(<Harness onboarding={onboarding} />);
+
+    await waitFor(() => expect(screen.getByTestId('onboarding-root')).toBeTruthy());
+
+    expect(StyleSheet.flatten(screen.getByTestId('onboarding-root').props.style)).toMatchObject({
+      backgroundColor: colors.surface.canvas,
+    });
+    expect(StyleSheet.flatten(screen.getByTestId('onboarding-primary-action').props.style)).toMatchObject({
+      backgroundColor: colors.brand.primary,
+      borderRadius: radius.sm,
+    });
   });
 
   it('restarts from display-name after unmount and remount when onboarding is incomplete', async () => {

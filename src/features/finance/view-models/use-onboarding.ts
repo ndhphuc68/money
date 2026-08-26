@@ -24,10 +24,12 @@ export type OnboardingErrors = {
   form?: string;
 };
 
+export type OnboardingUiStep = 'display-name' | 'first-account' | 'opening-balance' | 'confirm-categories' | 'completed';
+
 export type OnboardingViewModel = {
   loading: boolean;
   submitting: boolean;
-  step: OnboardingStep;
+  step: OnboardingUiStep;
   displayName: string;
   setDisplayName(value: string): void;
   continueDisplayName(): Promise<void>;
@@ -36,13 +38,22 @@ export type OnboardingViewModel = {
   setAccountName(value: string): void;
   setAccountType(value: AccountType): void;
   setOpeningBalance(value: number | null): void;
+  continueWallet(): Promise<void>;
   continueFirstAccount(): Promise<void>;
+  skipOpeningBalance(): void;
+  continueOpeningBalance(): Promise<void>;
   categories: DefaultCategory[];
+  categoryToggles: Record<string, boolean>;
+  toggleCategory(index: number): void;
   updateCategoryName(index: number, name: string): void;
   removeCategory(index: number): void;
   finishOnboarding(): Promise<void>;
   skipCategories(): Promise<void>;
   goBack(): void;
+  showExitConfirm: boolean;
+  requestExit(): void;
+  cancelExit(): void;
+  confirmExit(): void;
   errors: OnboardingErrors;
 };
 
@@ -52,6 +63,14 @@ export type UseOnboardingOptions = {
   /** Called once when onboarding reaches (or resumes at) the completed state. */
   onComplete?: () => void;
 };
+
+function toUiStep(step: OnboardingStep): OnboardingUiStep {
+  return step;
+}
+
+function createDefaultCategoryToggles() {
+  return Object.fromEntries(DEFAULT_CATEGORIES.map((category) => [category.name, true]));
+}
 
 /**
  * Thin UI view model over `Onboarding` (Task 4): loads/resumes the
@@ -64,10 +83,12 @@ export type UseOnboardingOptions = {
 export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOptions): OnboardingViewModel {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState<OnboardingStep>('display-name');
+  const [step, setStep] = useState<OnboardingUiStep>('display-name');
   const [displayName, setDisplayName] = useState('');
   const [accountForm, setAccountForm] = useState<AccountFormValues>({ name: '', type: 'cash', openingBalance: null });
   const [categories, setCategories] = useState<DefaultCategory[]>(DEFAULT_CATEGORIES);
+  const [categoryToggles, setCategoryToggles] = useState<Record<string, boolean>>(createDefaultCategoryToggles);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [errors, setErrors] = useState<OnboardingErrors>({});
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -79,7 +100,7 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
       if (cancelled) {
         return;
       }
-      setStep(state.step);
+      setStep(toUiStep(state.step));
       setDisplayName(state.displayName);
       setLoading(false);
       if (state.step === 'completed') {
@@ -119,23 +140,26 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
     setAccountForm((current) => ({ ...current, openingBalance: value }));
   }, []);
 
-  const continueFirstAccount = useCallback(async () => {
+  const continueWallet = useCallback(async () => {
     const nextErrors: OnboardingErrors = {};
     if (accountForm.name.trim() === '') {
       nextErrors.accountName = t('onboardingAccountNameRequired');
-    }
-    if (accountForm.openingBalance === null) {
-      nextErrors.openingBalance = t('onboardingOpeningBalanceRequired');
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
+    setErrors({});
+    setStep('opening-balance');
+  }, [accountForm.name, t]);
+
+  const createAccountAndAdvance = useCallback(
+    async (openingBalance: number) => {
     const request: CreateAccountRequest = {
       name: accountForm.name.trim(),
       type: accountForm.type,
-      openingBalance: accountForm.openingBalance as number,
+      openingBalance,
     };
 
     setSubmitting(true);
@@ -148,7 +172,18 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
     } finally {
       setSubmitting(false);
     }
-  }, [accountForm, onboarding, t]);
+    },
+    [accountForm.name, accountForm.type, onboarding, t],
+  );
+
+  const continueOpeningBalance = useCallback(async () => {
+    await createAccountAndAdvance(accountForm.openingBalance ?? 0);
+  }, [accountForm.openingBalance, createAccountAndAdvance]);
+
+  const skipOpeningBalance = useCallback(() => {
+    setAccountForm((current) => ({ ...current, openingBalance: 0 }));
+    void createAccountAndAdvance(0);
+  }, [createAccountAndAdvance]);
 
   const updateCategoryName = useCallback((index: number, name: string) => {
     setCategories((current) => current.map((category, i) => (i === index ? { ...category, name } : category)));
@@ -157,6 +192,16 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
   const removeCategory = useCallback((index: number) => {
     setCategories((current) => current.filter((_, i) => i !== index));
   }, []);
+
+  const toggleCategory = useCallback((index: number) => {
+    setCategoryToggles((current) => {
+      const category = categories[index];
+      if (!category) {
+        return current;
+      }
+      return { ...current, [category.name]: !current[category.name] };
+    });
+  }, [categories]);
 
   const complete = useCallback(
     async (selection?: DefaultCategory[]) => {
@@ -174,12 +219,18 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
     [onboarding, t],
   );
 
-  const finishOnboarding = useCallback(() => complete(categories), [complete, categories]);
+  const finishOnboarding = useCallback(
+    () => complete(categories.filter((category) => categoryToggles[category.name] !== false)),
+    [complete, categories, categoryToggles],
+  );
   const skipCategories = useCallback(() => complete(undefined), [complete]);
 
   const goBack = useCallback(() => {
     setStep((current) => {
       if (current === 'confirm-categories') {
+        return 'opening-balance';
+      }
+      if (current === 'opening-balance') {
         return 'first-account';
       }
       if (current === 'first-account') {
@@ -188,6 +239,20 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
       return current;
     });
   }, []);
+
+  const resetLocalFields = useCallback(() => {
+    setStep('display-name');
+    setDisplayName('');
+    setAccountForm({ name: '', type: 'cash', openingBalance: null });
+    setCategories(DEFAULT_CATEGORIES);
+    setCategoryToggles(createDefaultCategoryToggles());
+    setErrors({});
+    setShowExitConfirm(false);
+  }, []);
+
+  const requestExit = useCallback(() => setShowExitConfirm(true), []);
+  const cancelExit = useCallback(() => setShowExitConfirm(false), []);
+  const confirmExit = useCallback(() => resetLocalFields(), [resetLocalFields]);
 
   return {
     loading,
@@ -201,13 +266,22 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
     setAccountName,
     setAccountType,
     setOpeningBalance,
-    continueFirstAccount,
+    continueWallet,
+    continueFirstAccount: continueWallet,
+    skipOpeningBalance,
+    continueOpeningBalance,
     categories,
+    categoryToggles,
+    toggleCategory,
     updateCategoryName,
     removeCategory,
     finishOnboarding,
     skipCategories,
     goBack,
+    showExitConfirm,
+    requestExit,
+    cancelExit,
+    confirmExit,
     errors,
   };
 }

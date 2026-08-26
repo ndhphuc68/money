@@ -31,7 +31,7 @@ a:hover{color:#1B4FC0}
         <sc-for list="{{group.screens}}" as="screen" hint-placeholder-count="4">
           <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
             <div style="font-size:14px;font-weight:800;color:#101828">{{screen.label}}</div>
-            <dc-import name="Finance App" start-logged-in="{{screen.startLoggedIn}}" force-onboarding="{{screen.forceOnboarding}}" onboarding-start-step="{{screen.onboardingStartStep}}" initial-tab="{{screen.initialTab}}" force-add-tx="{{screen.forceAddTx}}" hint-size="402,874"></dc-import>
+            <dc-import name="Finance App" start-logged-in="{{screen.startLoggedIn}}" force-onboarding="{{screen.forceOnboarding}}" onboarding-start-step="{{screen.onboardingStartStep}}" initial-tab="{{screen.initialTab}}" force-add-tx="{{screen.forceAddTx}}" force-splash="{{screen.forceSplash}}" hint-size="402,874"></dc-import>
           </div>
         </sc-for>
       </div>
@@ -48,7 +48,7 @@ class Component extends DCLogic {
         {
           title: 'Splash & Onboarding',
           screens: [
-            { label: '0. Splash', startLoggedIn: false, forceOnboarding: false },
+            { label: '0. Splash', startLoggedIn: false, forceOnboarding: false, forceSplash: true },
             { label: '1. Tên người dùng', forceOnboarding: true, onboardingStartStep: '1' },
             { label: '2. Tạo ví đầu tiên', forceOnboarding: true, onboardingStartStep: '2' },
             { label: '3. Số dư ban đầu', forceOnboarding: true, onboardingStartStep: '3' },
