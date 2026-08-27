@@ -3,6 +3,9 @@ import { eq } from 'drizzle-orm';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { Transaction } from '@/core/domain/finance/transaction';
+import { GoldBrand } from '@/core/domain/gold/gold-brand';
+import { GoldLot } from '@/core/domain/gold/gold-lot';
+import { GoldSellTransaction } from '@/core/domain/gold/gold-sell-transaction';
 import { canonicalizeUuid, isIsoTimestamp, isUuid } from '@/core/domain/sync/sync-operation';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 import { LocalDatabaseClient } from '@/data/local/db/client';
@@ -12,9 +15,15 @@ import {
   toTransactionEntity,
   toTransactionRowValues,
 } from '@/data/local/repositories/finance-record-mappers';
-import { accounts, categories, exampleRecords, transactions } from '@/data/local/schema';
+import {
+  toGoldBrandRowValues,
+  toGoldLotRowValues,
+  toGoldSellTransactionRowValues,
+} from '@/data/local/repositories/gold-record-mappers';
+import { accounts, categories, exampleRecords, goldBrands, goldLots, goldSellTransactions, transactions } from '@/data/local/schema';
 
 import { parseAccountPayload, parseCategoryPayload, parseTransactionPayload } from './finance-payload-validators';
+import { parseGoldBrandPayload, parseGoldLotPayload, parseGoldSellTransactionPayload } from './gold-payload-validators';
 
 /**
  * The object `LocalDatabaseClient['db'].transaction()` hands its callback —
@@ -96,11 +105,44 @@ export const transactionSyncAdapter: SyncEntityAdapter<Transaction> = {
   },
 };
 
+export const goldBrandSyncAdapter: SyncEntityAdapter<GoldBrand> = {
+  parsePayload: parseGoldBrandPayload,
+  readLocal: (tx, id) => tx.select().from(goldBrands).where(eq(goldBrands.id, canonicalizeUuid(id))).get(),
+  upsert: (tx, record) => {
+    const values = toGoldBrandRowValues(record);
+    tx.insert(goldBrands).values(values).onConflictDoUpdate({ target: goldBrands.id, set: values }).run();
+  },
+};
+
+export const goldLotSyncAdapter: SyncEntityAdapter<GoldLot> = {
+  parsePayload: parseGoldLotPayload,
+  readLocal: (tx, id) => tx.select().from(goldLots).where(eq(goldLots.id, canonicalizeUuid(id))).get(),
+  upsert: (tx, record) => {
+    const values = toGoldLotRowValues(record);
+    tx.insert(goldLots).values(values).onConflictDoUpdate({ target: goldLots.id, set: values }).run();
+  },
+};
+
+export const goldSellTransactionSyncAdapter: SyncEntityAdapter<GoldSellTransaction> = {
+  parsePayload: parseGoldSellTransactionPayload,
+  readLocal: (tx, id) => tx.select().from(goldSellTransactions).where(eq(goldSellTransactions.id, canonicalizeUuid(id))).get(),
+  upsert: (tx, record) => {
+    const values = toGoldSellTransactionRowValues(record);
+    tx.insert(goldSellTransactions)
+      .values(values)
+      .onConflictDoUpdate({ target: goldSellTransactions.id, set: values })
+      .run();
+  },
+};
+
 export const defaultSyncEntityAdapters: Record<string, SyncEntityAdapter> = {
   'example-record': exampleRecordSyncAdapter,
   account: accountSyncAdapter,
   category: categorySyncAdapter,
   transaction: transactionSyncAdapter,
+  gold_brand: goldBrandSyncAdapter,
+  gold_lot: goldLotSyncAdapter,
+  gold_sell_transaction: goldSellTransactionSyncAdapter,
 };
 
 function parseSyncableRecord(value: unknown): SyncableRecord {

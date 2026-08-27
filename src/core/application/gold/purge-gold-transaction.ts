@@ -28,6 +28,9 @@ export class PurgeGoldLot {
     if (!lot) {
       throw new Error('Gold lot not found');
     }
+    if (lot.deletedAt === null) {
+      throw new Error('Cannot permanently delete a gold lot that is not in the trash');
+    }
 
     const operation: SyncOperation = {
       operationId: this.deps.generateId(),
@@ -57,6 +60,9 @@ export class PurgeGoldSale {
     const sale = await this.deps.goldSellTransactionRepository.findById(id);
     if (!sale) {
       throw new Error('Gold sell transaction not found');
+    }
+    if (sale.deletedAt === null) {
+      throw new Error('Cannot permanently delete a gold sell transaction that is not in the trash');
     }
 
     const operation: SyncOperation = {

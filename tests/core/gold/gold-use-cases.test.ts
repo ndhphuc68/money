@@ -197,6 +197,36 @@ describe('gold use cases', () => {
 
       await expect(restoreGoldSale.execute(firstSale.id)).rejects.toThrow('Cannot restore: the gold lot is no longer available');
     });
+
+    it('rejects purging a gold lot that was never trashed and leaves it queryable', async () => {
+      const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
+      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
+      const purgeGoldLot = new PurgeGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+
+      const brand = await createGoldBrand.execute({ name: 'PNJ' });
+      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+
+      await expect(purgeGoldLot.execute(lot.id)).rejects.toThrow('Cannot permanently delete a gold lot that is not in the trash');
+      await expect(goldLotRepository.findById(lot.id)).resolves.toMatchObject({ id: lot.id, deletedAt: null });
+    });
+
+    it('rejects purging a gold sell transaction that was never trashed and leaves it queryable', async () => {
+      const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
+      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const purgeGoldSale = new PurgeGoldSale({ goldSellTransactionRepository, now, deviceId, generateId });
+
+      const brand = await createGoldBrand.execute({ name: 'SJC' });
+      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const sale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+
+      await expect(purgeGoldSale.execute(sale.id)).rejects.toThrow(
+        'Cannot permanently delete a gold sell transaction that is not in the trash',
+      );
+      await expect(goldSellTransactionRepository.findById(sale.id)).resolves.toMatchObject({ id: sale.id, deletedAt: null });
+    });
   });
 
   describe('GetGoldOverview', () => {
