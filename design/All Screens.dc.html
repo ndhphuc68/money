@@ -31,7 +31,15 @@ a:hover{color:#1B4FC0}
         <sc-for list="{{group.screens}}" as="screen" hint-placeholder-count="4">
           <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
             <div style="font-size:14px;font-weight:800;color:#101828">{{screen.label}}</div>
-            <dc-import name="Finance App" start-logged-in="{{screen.startLoggedIn}}" force-onboarding="{{screen.forceOnboarding}}" onboarding-start-step="{{screen.onboardingStartStep}}" initial-tab="{{screen.initialTab}}" force-add-tx="{{screen.forceAddTx}}" force-splash="{{screen.forceSplash}}" hint-size="402,874"></dc-import>
+            <sc-if value="{{screen.isFinanceApp}}">
+              <dc-import name="Finance App" start-logged-in="{{screen.startLoggedIn}}" force-onboarding="{{screen.forceOnboarding}}" onboarding-start-step="{{screen.onboardingStartStep}}" initial-tab="{{screen.initialTab}}" force-add-tx="{{screen.forceAddTx}}" force-splash="{{screen.forceSplash}}" hint-size="402,874"></dc-import>
+            </sc-if>
+            <sc-if value="{{screen.isGoldProfile}}">
+              <dc-import name="Finance App.gold" start-logged-in="{{screen.startLoggedIn}}" initial-tab="{{screen.initialTab}}" hint-size="402,874"></dc-import>
+            </sc-if>
+            <sc-if value="{{screen.isGoldManagement}}">
+              <dc-import name="Finance App.gold-management" hint-size="402,874"></dc-import>
+            </sc-if>
           </div>
         </sc-for>
       </div>
@@ -48,26 +56,27 @@ class Component extends DCLogic {
         {
           title: 'Splash & Onboarding',
           screens: [
-            { label: '0. Splash', startLoggedIn: false, forceOnboarding: false, forceSplash: true },
-            { label: '1. Tên người dùng', forceOnboarding: true, onboardingStartStep: '1' },
-            { label: '2. Tạo ví đầu tiên', forceOnboarding: true, onboardingStartStep: '2' },
-            { label: '3. Số dư ban đầu', forceOnboarding: true, onboardingStartStep: '3' },
-            { label: '4. Danh mục mặc định', forceOnboarding: true, onboardingStartStep: '4' },
+            { label: '0. Splash', isFinanceApp: true, startLoggedIn: false, forceOnboarding: false, forceSplash: true },
+            { label: '1. Tên người dùng', isFinanceApp: true, forceOnboarding: true, onboardingStartStep: '1' },
+            { label: '2. Tạo ví đầu tiên', isFinanceApp: true, forceOnboarding: true, onboardingStartStep: '2' },
+            { label: '3. Số dư ban đầu', isFinanceApp: true, forceOnboarding: true, onboardingStartStep: '3' },
+            { label: '4. Danh mục mặc định', isFinanceApp: true, forceOnboarding: true, onboardingStartStep: '4' },
           ],
         },
         {
           title: 'Màn hình chính',
           screens: [
-            { label: 'Tổng quan', startLoggedIn: true, initialTab: 'overview' },
-            { label: 'Giao dịch', startLoggedIn: true, initialTab: 'transactions' },
-            { label: 'Mục tiêu', startLoggedIn: true, initialTab: 'goals' },
-            { label: 'Cài đặt', startLoggedIn: true, initialTab: 'profile' },
+            { label: 'Tổng quan', isFinanceApp: true, startLoggedIn: true, initialTab: 'overview' },
+            { label: 'Giao dịch', isFinanceApp: true, startLoggedIn: true, initialTab: 'transactions' },
+            { label: 'Mục tiêu', isFinanceApp: true, startLoggedIn: true, initialTab: 'goals' },
+            { label: 'Cài đặt', isGoldProfile: true, startLoggedIn: true, initialTab: 'profile' },
+            { label: 'Quản lý vàng', isGoldManagement: true },
           ],
         },
         {
           title: 'Khác',
           screens: [
-            { label: 'Thêm giao dịch', startLoggedIn: true, forceAddTx: true },
+            { label: 'Thêm giao dịch', isFinanceApp: true, startLoggedIn: true, forceAddTx: true },
           ],
         },
       ],

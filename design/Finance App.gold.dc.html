@@ -16,6 +16,11 @@ a{color:#2F6FED;text-decoration:none}
 a:hover{color:#1B4FC0}
 *{box-sizing:border-box;font-family:'Manrope',system-ui,sans-serif}
 ::-webkit-scrollbar{display:none}
+.asset-shortcut{appearance:none;-webkit-appearance:none;width:100%;border:0;margin:0;font:inherit;text-align:left;transition:background-color 120ms ease,box-shadow 120ms ease}
+.asset-shortcut:hover{background:#FAFBFC!important}
+.asset-shortcut:active{background:#F2F4F7!important;box-shadow:0 1px 4px rgba(16,24,40,.08)!important}
+.asset-shortcut:focus-visible{outline:3px solid rgba(47,111,237,.35);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.asset-shortcut{transition:none}}
 @keyframes vela-pulse{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 @keyframes vimo-rise{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes vimo-fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -376,39 +381,14 @@ a:hover{color:#1B4FC0}
         <div style="width:36px;height:36px;border-radius:18px;background:#EAF1FF;display:flex;align-items:center;justify-content:center;color:#2F6FED;font-size:18px">⋯</div>
       </div>
 
-      <div style="border-radius:20px;padding:18px;color:#fff;background:linear-gradient(135deg,#F4B942 0%,#C98213 100%);margin-bottom:16px;box-shadow:0 10px 20px rgba(201,130,19,0.2)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:15px">
-          <div>
-            <div style="font-size:14px;font-weight:800;margin-bottom:4px">Vàng của tôi</div>
-            <div style="font-size:12px;opacity:0.88;font-weight:600">Tổng quan tài sản vàng đã mua</div>
-          </div>
-          <div style="width:38px;height:38px;border-radius:19px;background:rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;font-size:20px">Au</div>
-        </div>
-        <div style="display:flex;gap:28px">
-          <div><div style="font-size:11px;opacity:0.8;font-weight:700;margin-bottom:3px">Khối lượng</div><div style="font-size:20px;font-weight:800">5 chỉ</div></div>
-          <div><div style="font-size:11px;opacity:0.8;font-weight:700;margin-bottom:3px">Giá vốn</div><div style="font-size:20px;font-weight:800">42.500.000 ₫</div></div>
-        </div>
-        <div onClick="{{openGoldHistory}}" style="cursor:pointer;margin-top:16px;padding-top:13px;border-top:1px solid rgba(255,255,255,0.25);font-size:13px;font-weight:800">Lịch sử mua vàng →</div>
-      </div>
-
-      <div style="font-size:12px;font-weight:800;color:#8B93A7;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px">Lịch sử mua vàng</div>
-      <div style="background:#fff;border-radius:18px;padding:4px 16px;margin-bottom:20px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
-        <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(16,24,40,0.07)">
-          <div style="width:36px;height:36px;border-radius:18px;background:#FFF4D6;color:#C98213;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">Au</div>
-          <div style="flex:1"><div style="font-size:14px;font-weight:800;color:#101828">Nhẫn trơn 9999</div><div style="font-size:12px;color:#8B93A7;font-weight:600;margin-top:3px">Ngày mua · 24/08/2026 · 2 chỉ</div></div>
-          <div style="font-size:13px;font-weight:800;color:#101828">17.000.000 ₫</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
-          <div style="width:36px;height:36px;border-radius:18px;background:#FFF4D6;color:#C98213;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800">Au</div>
-          <div style="flex:1"><div style="font-size:14px;font-weight:800;color:#101828">Vàng miếng SJC</div><div style="font-size:12px;color:#8B93A7;font-weight:600;margin-top:3px">Ngày mua · 12/08/2026 · 3 chỉ</div></div>
-          <div style="font-size:13px;font-weight:800;color:#101828">25.500.000 ₫</div>
-        </div>
-      </div>
-
-      <div onClick="{{openGoldPurchase}}" style="cursor:pointer;border-radius:16px;padding:15px 16px;background:#101828;color:#fff;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
-        <div><div style="font-size:14px;font-weight:800">Thêm lần mua</div><div style="font-size:12px;color:#B8C0D0;margin-top:3px;font-weight:600">Ghi lại ngày, giá và khối lượng</div></div>
-        <div style="font-size:22px;font-weight:400">＋</div>
-      </div>
+      <section aria-labelledby="asset-categories-title" style="margin:4px 0 20px">
+        <div id="asset-categories-title" style="font-size:12px;font-weight:800;color:#8B93A7;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Quản lý tài sản</div>
+        <button type="button" class="asset-shortcut" aria-label="Mở quản lý vàng" onClick="{{openGoldManagement}}" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+          <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#FFF4D6;color:#C98213;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0">Au</div>
+          <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828">Quản lý vàng</div>
+          <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </section>
 
       <div style="font-size:12px;font-weight:800;color:#8B93A7;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px">Cài đặt ứng dụng</div>
       <x-import component-from-global-scope="IOSList" from="./ios-frame.jsx" hint-size="100%,208">
@@ -496,8 +476,7 @@ class Component extends DCLogic {
   };
 
   goTab(tab) { this.setState({ activeTab: tab }); }
-  openGoldHistory() { this.setState({ activeTab: 'profile' }); }
-  openGoldPurchase() { this.setState({ activeTab: 'profile' }); }
+  openGoldManagement() { window.location.href = './Finance App.gold-management.dc.html'; }
   toggleBalance() { this.setState(s => ({ balanceHidden: !s.balanceHidden })); }
   setFilter(f) { this.setState({ txFilter: f }); }
   login() {
@@ -705,9 +684,8 @@ class Component extends DCLogic {
       isOverview: active === 'overview',
       isTransactions: active === 'transactions',
       isGoals: active === 'goals',
-          isProfile: active === 'profile',
-          openGoldHistory: () => this.openGoldHistory(),
-          openGoldPurchase: () => this.openGoldPurchase(),
+      isProfile: active === 'profile',
+      openGoldManagement: () => this.openGoldManagement(),
       goOverview: () => this.goTab('overview'),
       goTransactions: () => this.goTab('transactions'),
       goGoals: () => this.goTab('goals'),
