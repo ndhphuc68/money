@@ -17,6 +17,7 @@ import { SellGoldLot } from '@/core/application/gold/sell-gold-lot';
 import { TrashGoldLot, TrashGoldSale } from '@/core/application/gold/trash-gold-transaction';
 import { RestoreGoldLot, RestoreGoldSale } from '@/core/application/gold/restore-gold-transaction';
 import { PurgeGoldLot, PurgeGoldSale } from '@/core/application/gold/purge-gold-transaction';
+import { GetGoldOverview } from '@/core/application/gold/get-gold-overview';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { openTestLocalDatabase } from '@/data/local/db/client';
 import { ChangeLogRepository } from '@/data/local/repositories/change-log-repository';
@@ -195,6 +196,27 @@ describe('gold use cases', () => {
       await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-22', totalAmount: 8600000 });
 
       await expect(restoreGoldSale.execute(firstSale.id)).rejects.toThrow('Cannot restore: the gold lot is no longer available');
+    });
+  });
+
+  describe('GetGoldOverview', () => {
+    it('sums quantity and cost basis across held lots only', async () => {
+      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
+      const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
+      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const getGoldOverview = new GetGoldOverview({ goldLotRepository });
+
+      const brand = await createGoldBrand.execute({ name: 'PNJ' });
+      const lotA = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 2, unit: 'chi', totalAmount: 17000000 });
+      const lotB = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-20', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      await sellGoldLot.execute({ lotId: lotB.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+
+      const overview = await getGoldOverview.execute();
+
+      expect(overview.totalQuantityGrams).toBeCloseTo(7.5, 10);
+      expect(overview.totalCostBasis).toBe(17000000);
+      expect(overview.heldLots).toEqual([lotA]);
     });
   });
 });
