@@ -6,7 +6,8 @@
   "scripts": {
     "start": "expo start",
     "test": "jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@noble/hashes": "^2.3.0",

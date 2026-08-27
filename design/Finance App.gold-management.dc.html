@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <script src="./support.js"></script>
 </head>
 <body>
@@ -14,7 +15,7 @@
 body{margin:0}
 *{box-sizing:border-box;font-family:'Manrope',system-ui,sans-serif}
 ::-webkit-scrollbar{display:none}
-.gold-control{appearance:none;-webkit-appearance:none;border:0;margin:0;font:inherit;text-align:inherit;transition:opacity 120ms ease,background-color 120ms ease}
+.gold-control{appearance:none;-webkit-appearance:none;border:0;margin:0;font:inherit;text-align:inherit;color:inherit;transition:opacity 120ms ease,background-color 120ms ease}
 .gold-control:active{opacity:.72}
 .gold-control:disabled{opacity:.42;cursor:not-allowed}
 .gold-back:active{background:#E7E9F0!important}
@@ -133,20 +134,142 @@ body{margin:0}
               </button>
             </div>
             <div style="display:flex;flex-direction:column;gap:14px;margin-top:18px">
-              <label><span class="gold-label">Ngày giao dịch</span><input class="gold-field" type="date" value="2026-08-27"></label>
-              <label><span class="gold-label">{{placeLabel}}</span><input class="gold-field" type="text" value="{{placeValue}}"></label>
-              <sc-if value="{{isSellForm}}">
-                <label><span class="gold-label">Lô mua sử dụng</span><select class="gold-field"><option>PNJ · mua 24/08/2026 · còn 2 chỉ</option><option>SJC · mua 12/08/2026 · còn 2 chỉ</option></select></label>
+              <label>
+                <span class="gold-label">Ngày giao dịch</span>
+                <button type="button" class="gold-control" onClick="{{toggleDatePicker}}" style="width:100%;height:48px;border:1px solid #D0D5DD;border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer">
+                  <span style="font-size:14px;font-weight:600;color:#101828">{{dateDisplay}}</span>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink:0"><rect x="2.5" y="3.5" width="13" height="12" rx="2.5" stroke="#667085" stroke-width="1.5"/><path d="M2.5 7h13M6 2v3M12 2v3" stroke="#667085" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+              </label>
+
+              <sc-if value="{{isBuyForm}}">
+                <div style="position:relative">
+                  <span class="gold-label">{{placeLabel}}</span>
+                  <button type="button" class="gold-control" onClick="{{toggleBrandDropdown}}" style="width:100%;height:48px;border:1px solid {{brandFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;box-shadow:{{brandFieldShadow}}">
+                    <span style="font-size:14px;font-weight:600;color:#101828;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{placeValue}}</span>
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="flex-shrink:0;transform:{{brandChevronRotate}}"><path d="M1 1.5 6 6.5l5-5" stroke="#667085" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <sc-if value="{{brandDropdownOpen}}" hint-placeholder-val="{{false}}">
+                    <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 28px rgba(16,24,40,.16);border:1px solid rgba(16,24,40,.06);max-height:240px;overflow-y:auto">
+                      <sc-for list="{{brandOptions}}" as="b" hint-placeholder-count="3">
+                        <div class="gold-control" onClick="{{b.onSelect}}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{b.bg}};color:{{b.color}};font-size:14px;font-weight:{{b.weight}}">
+                          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{b.label}}</span>
+                          <sc-if value="{{b.active}}"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" style="flex-shrink:0"><path d="M1 5.5 5 9.5 13 1.5" stroke="#2F6FED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if>
+                        </div>
+                      </sc-for>
+                      <div class="gold-control" onClick="{{selectAddNewBrand}}" style="display:flex;align-items:center;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;color:#2F6FED;font-size:14px;font-weight:800">+ Thêm thương hiệu mới…</div>
+                    </div>
+                  </sc-if>
+                </div>
               </sc-if>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                <label><span class="gold-label">Khối lượng</span><input class="gold-field" type="number" value="1"></label>
-                <label><span class="gold-label">Đơn vị</span><select class="gold-field"><option>chỉ</option><option>lượng/cây</option><option>phân</option><option>gram</option></select></label>
-              </div>
-              <label><span class="gold-label">Đơn giá (VNĐ/chỉ)</span><input class="gold-field" type="text" value="{{unitPrice}}"></label>
+
+              <sc-if value="{{isSellForm}}">
+                <div style="position:relative">
+                  <span class="gold-label">Vàng đã mua</span>
+                  <button type="button" class="gold-control" onClick="{{toggleLotDropdown}}" style="width:100%;height:48px;border:1px solid {{lotFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;box-shadow:{{lotFieldShadow}}">
+                    <span style="font-size:14px;font-weight:600;color:#101828;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{lotValue}}</span>
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="flex-shrink:0;transform:{{lotChevronRotate}}"><path d="M1 1.5 6 6.5l5-5" stroke="#667085" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <sc-if value="{{lotDropdownOpen}}" hint-placeholder-val="{{false}}">
+                    <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 28px rgba(16,24,40,.16);border:1px solid rgba(16,24,40,.06)">
+                      <sc-for list="{{lotOptions}}" as="l" hint-placeholder-count="2">
+                        <div class="gold-control" onClick="{{l.onSelect}}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{l.bg}};color:{{l.color}};font-size:13px;font-weight:{{l.weight}}">
+                          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{l.label}}</span>
+                          <sc-if value="{{l.active}}"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" style="flex-shrink:0"><path d="M1 5.5 5 9.5 13 1.5" stroke="#2F6FED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{isBuyForm}}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <label><span class="gold-label">Khối lượng</span><input class="gold-field" type="number" value="1"></label>
+                  <div style="position:relative">
+                    <span class="gold-label">Đơn vị</span>
+                    <button type="button" class="gold-control" onClick="{{toggleUnitDropdown}}" style="width:100%;height:48px;border:1px solid {{unitFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;box-shadow:{{unitFieldShadow}}">
+                      <span style="font-size:14px;font-weight:600;color:#101828">{{unitValue}}</span>
+                      <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="flex-shrink:0;transform:{{unitChevronRotate}}"><path d="M1 1.5 6 6.5l5-5" stroke="#667085" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <sc-if value="{{unitDropdownOpen}}" hint-placeholder-val="{{false}}">
+                      <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 28px rgba(16,24,40,.16);border:1px solid rgba(16,24,40,.06)">
+                        <sc-for list="{{unitOptions}}" as="u" hint-placeholder-count="4">
+                          <div class="gold-control" onClick="{{u.onSelect}}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{u.bg}};color:{{u.color}};font-size:14px;font-weight:{{u.weight}}">
+                            <span>{{u.label}}</span>
+                            <sc-if value="{{u.active}}"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" style="flex-shrink:0"><path d="M1 5.5 5 9.5 13 1.5" stroke="#2F6FED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
               <label><span class="gold-label">{{totalLabel}}</span><input class="gold-field" type="text" value="{{totalValue}}"></label>
-              <div style="padding:12px 14px;border-radius:12px;background:#fff;border:1px solid rgba(16,24,40,.08);font-size:12px;line-height:18px;color:#667085;font-weight:600">{{formHelper}}</div>
               <button type="button" class="gold-control gold-save" onClick="{{saveForm}}">
                 <span>{{saveLabel}}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{datePickerOpen}}" hint-placeholder-val="{{false}}">
+        <div role="dialog" aria-modal="true" aria-labelledby="date-picker-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:95;background:rgba(16,24,40,.48);display:flex;align-items:center;justify-content:center;padding:20px">
+          <div style="width:100%;max-width:320px;background:#fff;border-radius:20px;padding:18px;box-shadow:0 20px 40px rgba(16,24,40,.2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div id="date-picker-title" style="font-size:16px;font-weight:800;color:#101828">Chọn ngày giao dịch</div>
+              <button type="button" class="gold-control gold-back" aria-label="Đóng lịch" onClick="{{closeDatePicker}}" style="width:36px;height:36px;border-radius:18px;background:#F2F4F7;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <button type="button" class="gold-control" aria-label="Tháng trước" onClick="{{prevMonth}}" style="width:32px;height:32px;border-radius:16px;background:#F2F4F7;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M6 1 1 6l5 5" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div style="font-size:14px;font-weight:800;color:#101828">{{calendarMonthLabel}}</div>
+              <button type="button" class="gold-control" aria-label="Tháng sau" onClick="{{nextMonth}}" style="width:32px;height:32px;border-radius:16px;background:#F2F4F7;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1 6 6l-5 5" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
+              <sc-for list="{{weekdayLabels}}" as="w" hint-placeholder-count="7">
+                <div style="text-align:center;font-size:11px;font-weight:800;color:#9AA1B4;padding:4px 0">{{w}}</div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+              <sc-for list="{{calendarCells}}" as="cell" hint-placeholder-count="35">
+                <button type="button" class="gold-control" disabled="{{cell.empty}}" onClick="{{cell.onSelect}}" style="aspect-ratio:1;border-radius:10px;background:{{cell.bg}};color:{{cell.color}};font-size:13px;font-weight:{{cell.weight}};cursor:pointer;position:relative">{{cell.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{brandManageVisible}}" hint-placeholder-val="{{false}}">
+        <div role="dialog" aria-modal="true" aria-labelledby="brand-manage-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:90;background:rgba(16,24,40,.48);display:flex;align-items:flex-end">
+          <div class="gold-sheet">
+            <div class="gold-handle"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <div><div id="brand-manage-title" style="font-size:18px;line-height:26px;font-weight:800;color:#101828">Thương hiệu vàng</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:3px">Quản lý danh sách chọn khi thêm giao dịch mua</div></div>
+              <button type="button" class="gold-control gold-back" aria-label="Đóng" onClick="{{closeBrandManage}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div style="background:#fff;border-radius:18px;padding:4px 16px;margin-top:18px;box-shadow:0 2px 10px rgba(16,24,40,.05)">
+              <sc-for list="{{brandRows}}" as="b" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 0;{{b.dividerStyle}}">
+                  <div aria-hidden="true" style="width:36px;height:36px;border-radius:18px;background:#FFF4D6;color:#A96308;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;line-height:1">{{b.initials}}</div>
+                  <div style="flex:1;min-width:0;font-size:14px;line-height:20px;font-weight:800;color:#101828;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{b.name}}</div>
+                  <button type="button" class="gold-control" aria-label="Xoá thương hiệu" onClick="{{b.onDelete}}" style="width:36px;height:36px;border-radius:12px;background:#FEF3F2;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5 5 13a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.5-8.5M6.5 7.3v4M9.5 7.3v4" stroke="#B42318" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-top:18px">
+              <label><span class="gold-label">Thêm thương hiệu mới</span><input class="gold-field" type="text" placeholder="VD: PNJ, SJC, DOJI..." value="{{newBrandName}}" onChange="{{handleNewBrandChange}}"></label>
+              <button type="button" class="gold-control gold-save" disabled="{{addBrandDisabled}}" onClick="{{addBrand}}">
+                <span>Thêm thương hiệu</span>
               </button>
             </div>
           </div>
@@ -157,7 +280,7 @@ body{margin:0}
         <div role="dialog" aria-modal="true" aria-labelledby="detail-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:80;background:rgba(16,24,40,.48);display:flex;align-items:flex-end">
           <div class="gold-sheet">
             <div class="gold-handle"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between"><div><div id="detail-title" style="font-size:18px;font-weight:800;color:#101828">{{detailTitle}}</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:4px">{{detailSubtitle}}</div></div><button type="button" class="gold-control gold-back" aria-label="Đóng chi tiết" onClick="{{dismissNotice}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer">×</button></div>
+            <div style="display:flex;align-items:center;justify-content:space-between"><div><div id="detail-title" style="font-size:18px;font-weight:800;color:#101828">{{detailTitle}}</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:4px">{{detailSubtitle}}</div></div><button type="button" class="gold-control gold-back" aria-label="Đóng chi tiết" onClick="{{dismissNotice}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
             <div style="background:#fff;border-radius:16px;padding:4px 16px;margin-top:18px">
               <div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(16,24,40,.08);font-size:13px"><span style="color:#667085;font-weight:600">Khối lượng</span><strong>{{detailWeight}}</strong></div>
               <div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(16,24,40,.08);font-size:13px"><span style="color:#667085;font-weight:600">Tổng tiền</span><strong>{{detailTotal}}</strong></div>
@@ -173,13 +296,15 @@ body{margin:0}
         <div role="dialog" aria-modal="true" aria-labelledby="trash-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:80;background:rgba(16,24,40,.48);display:flex;align-items:flex-end">
           <div class="gold-sheet">
             <div class="gold-handle"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between"><div><div id="trash-title" style="font-size:18px;font-weight:800;color:#101828">Thùng rác</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:4px">Giao dịch không còn được tính vào số liệu</div></div><button type="button" class="gold-control gold-back" aria-label="Đóng thùng rác" onClick="{{dismissNotice}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer">×</button></div>
+            <div style="display:flex;align-items:center;justify-content:space-between"><div><div id="trash-title" style="font-size:18px;font-weight:800;color:#101828">Thùng rác</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:4px">Giao dịch không còn được tính vào số liệu</div></div><button type="button" class="gold-control gold-back" aria-label="Đóng thùng rác" onClick="{{dismissNotice}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
             <div style="background:#fff;border-radius:16px;padding:4px 16px;margin-top:18px">
               <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
                 <div style="width:40px;height:40px;border-radius:20px;background:#ECFDF3;color:#067647;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">Bán</div>
                 <div style="flex:1"><div style="font-size:13px;font-weight:800">SJC · 1 chỉ</div><div style="font-size:11px;color:#667085;font-weight:600;margin-top:3px">Đã xoá 27/08/2026</div></div>
                 <button type="button" class="gold-control" onClick="{{restoreTrash}}" style="min-height:44px;padding:0 10px;border-radius:12px;background:#F2F4F7;color:#101828;font-size:11px;font-weight:800;cursor:pointer">Khôi phục</button>
-                <button type="button" class="gold-control" onClick="{{purgeTrash}}" style="width:44px;height:44px;border-radius:12px;background:#FEF3F2;color:#B42318;font-size:18px;font-weight:800;cursor:pointer">×</button>
+                <button type="button" class="gold-control" aria-label="Xoá vĩnh viễn" onClick="{{purgeTrash}}" style="width:44px;height:44px;border-radius:12px;background:#FEF3F2;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5 5 13a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.5-8.5M6.5 7.3v4M9.5 7.3v4" stroke="#B42318" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -201,6 +326,20 @@ class Component extends DCLogic {
     detailVisible: false,
     detailType: 'BUY',
     trashVisible: false,
+    brands: ['PNJ', 'SJC', 'DOJI', 'Bảo Tín Minh Châu'],
+    brandManageVisible: false,
+    newBrandName: '',
+    datePickerOpen: false,
+    selectedDate: '2026-08-27',
+    calendarYear: 2026,
+    calendarMonth: 7,
+    brandDropdownOpen: false,
+    units: ['chỉ', 'lượng/cây', 'phân', 'gram'],
+    selectedUnit: 'chỉ',
+    unitDropdownOpen: false,
+    lots: ['PNJ · mua 24/08/2026 · còn 2 chỉ', 'SJC · mua 12/08/2026 · còn 2 chỉ'],
+    selectedLot: 'PNJ · mua 24/08/2026 · còn 2 chỉ',
+    lotDropdownOpen: false,
   };
 
   goBack() { window.location.href = './Finance App.gold.dc.html'; }
@@ -215,7 +354,7 @@ class Component extends DCLogic {
   openSaleDetail() { this.setState({ detailVisible: true, detailType: 'SELL' }); }
   openTrash() { this.setState({ trashVisible: true }); }
   dismissNotice() {
-    this.setState({ actionPickerVisible: false, formVisible: false, detailVisible: false, trashVisible: false }, () => {
+    this.setState({ actionPickerVisible: false, formVisible: false, detailVisible: false, trashVisible: false, brandManageVisible: false, datePickerOpen: false, brandDropdownOpen: false, unitDropdownOpen: false, lotDropdownOpen: false }, () => {
       if (this.purchaseCtaRef.current) this.purchaseCtaRef.current.focus();
     });
   }
@@ -225,6 +364,56 @@ class Component extends DCLogic {
     this.setState({ detailVisible: false, trashVisible: true });
   }
   restoreTrash() { this.setState({ trashVisible: false }); }
+  closeBrandManage() { this.setState({ brandManageVisible: false }); }
+  handleNewBrandChange(event) { this.setState({ newBrandName: event.target.value }); }
+  addBrand() {
+    const name = this.state.newBrandName.trim();
+    if (!name) return;
+    this.setState({ brands: [...this.state.brands, name], newBrandName: '', selectedBrand: name });
+  }
+  deleteBrand(index) {
+    this.setState({ brands: this.state.brands.filter((_, i) => i !== index) });
+  }
+  toggleDatePicker() {
+    this.setState({ datePickerOpen: !this.state.datePickerOpen, brandDropdownOpen: false, unitDropdownOpen: false, lotDropdownOpen: false });
+  }
+  closeDatePicker() {
+    this.setState({ datePickerOpen: false });
+  }
+  prevMonth() {
+    let m = this.state.calendarMonth - 1, y = this.state.calendarYear;
+    if (m < 0) { m = 11; y -= 1; }
+    this.setState({ calendarMonth: m, calendarYear: y });
+  }
+  nextMonth() {
+    let m = this.state.calendarMonth + 1, y = this.state.calendarYear;
+    if (m > 11) { m = 0; y += 1; }
+    this.setState({ calendarMonth: m, calendarYear: y });
+  }
+  selectDate(iso) {
+    this.setState({ selectedDate: iso, datePickerOpen: false });
+  }
+  toggleBrandDropdown() {
+    this.setState({ brandDropdownOpen: !this.state.brandDropdownOpen, datePickerOpen: false, unitDropdownOpen: false, lotDropdownOpen: false });
+  }
+  selectBrand(name) {
+    this.setState({ selectedBrand: name, brandDropdownOpen: false });
+  }
+  selectAddNewBrand() {
+    this.setState({ brandDropdownOpen: false, brandManageVisible: true, newBrandName: '' });
+  }
+  toggleUnitDropdown() {
+    this.setState({ unitDropdownOpen: !this.state.unitDropdownOpen, datePickerOpen: false, brandDropdownOpen: false, lotDropdownOpen: false });
+  }
+  selectUnit(unit) {
+    this.setState({ selectedUnit: unit, unitDropdownOpen: false });
+  }
+  toggleLotDropdown() {
+    this.setState({ lotDropdownOpen: !this.state.lotDropdownOpen, datePickerOpen: false, brandDropdownOpen: false, unitDropdownOpen: false });
+  }
+  selectLot(lot) {
+    this.setState({ selectedLot: lot, lotDropdownOpen: false });
+  }
   purgeTrash() {
     if (window.confirm('Xoá vĩnh viễn giao dịch này? Thao tác không thể hoàn tác.')) {
       this.setState({ trashVisible: false });
@@ -233,8 +422,35 @@ class Component extends DCLogic {
   handleDialogKeyDown(event) {
     if (event.key === 'Escape') {
       event.preventDefault();
+      if (this.state.datePickerOpen) {
+        this.closeDatePicker();
+        return;
+      }
       this.dismissNotice();
     }
+  }
+  buildCalendarCells() {
+    const { calendarYear: y, calendarMonth: m, selectedDate } = this.state;
+    const first = new Date(y, m, 1);
+    const startOffset = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < startOffset; i++) {
+      cells.push({ empty: true, label: '', bg: 'transparent', color: 'transparent', weight: 600, onSelect: () => {} });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const isSelected = iso === selectedDate;
+      cells.push({
+        empty: false,
+        label: String(d),
+        bg: isSelected ? 'linear-gradient(135deg,#F4B942 0%,#C98213 100%)' : 'transparent',
+        color: isSelected ? '#fff' : '#101828',
+        weight: isSelected ? 800 : 600,
+        onSelect: () => this.selectDate(iso),
+      });
+    }
+    return cells;
   }
 
   renderVals() {
@@ -251,19 +467,91 @@ class Component extends DCLogic {
       moveToTrash: () => this.moveToTrash(),
       restoreTrash: () => this.restoreTrash(),
       purgeTrash: () => this.purgeTrash(),
+      closeBrandManage: () => this.closeBrandManage(),
+      handleNewBrandChange: (event) => this.handleNewBrandChange(event),
+      addBrand: () => this.addBrand(),
       handleDialogKeyDown: (event) => this.handleDialogKeyDown(event),
+      brandManageVisible: this.state.brandManageVisible,
+      newBrandName: this.state.newBrandName,
+      addBrandDisabled: this.state.newBrandName.trim() === '',
+      brandRows: this.state.brands.map((name, i) => ({
+        name,
+        initials: name.slice(0, 2).toUpperCase(),
+        dividerStyle: i < this.state.brands.length - 1 ? 'border-bottom:1px solid rgba(16,24,40,.08)' : '',
+        onDelete: () => this.deleteBrand(i),
+      })),
       actionPickerVisible: this.state.actionPickerVisible,
       formVisible: this.state.formVisible,
       isSellForm: this.state.formType === 'SELL',
+      isBuyForm: this.state.formType === 'BUY',
       formTitle: this.state.formType === 'SELL' ? 'Thêm giao dịch bán' : 'Thêm giao dịch mua',
       placeLabel: this.state.formType === 'SELL' ? 'Nơi bán' : 'Thương hiệu / nơi mua',
-      placeValue: this.state.formType === 'SELL' ? 'SJC' : 'PNJ',
-      unitPrice: this.state.formType === 'SELL' ? '8.700.000' : '8.500.000',
+      placeValue: this.state.selectedBrand || (this.state.formType === 'SELL' ? 'SJC' : 'PNJ'),
+      toggleDatePicker: () => this.toggleDatePicker(),
+      closeDatePicker: () => this.closeDatePicker(),
+      prevMonth: () => this.prevMonth(),
+      nextMonth: () => this.nextMonth(),
+      datePickerOpen: this.state.datePickerOpen,
+      dateDisplay: (() => {
+        const [y, m, d] = this.state.selectedDate.split('-');
+        return `${d}/${m}/${y}`;
+      })(),
+      calendarMonthLabel: `Tháng ${this.state.calendarMonth + 1} ${this.state.calendarYear}`,
+      weekdayLabels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+      calendarCells: this.buildCalendarCells(),
+      toggleBrandDropdown: () => this.toggleBrandDropdown(),
+      selectAddNewBrand: () => this.selectAddNewBrand(),
+      brandDropdownOpen: this.state.brandDropdownOpen,
+      brandFieldBorder: this.state.brandDropdownOpen ? '#2F6FED' : '#D0D5DD',
+      brandFieldShadow: this.state.brandDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
+      brandChevronRotate: this.state.brandDropdownOpen ? 'rotate(180deg)' : 'none',
+      brandOptions: this.state.brands.map((name) => {
+        const active = name === (this.state.selectedBrand || (this.state.formType === 'SELL' ? 'SJC' : 'PNJ'));
+        return {
+          label: name,
+          active,
+          bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
+          color: active ? '#2F6FED' : '#101828',
+          weight: active ? 800 : 600,
+          onSelect: () => this.selectBrand(name),
+        };
+      }),
+      toggleUnitDropdown: () => this.toggleUnitDropdown(),
+      unitDropdownOpen: this.state.unitDropdownOpen,
+      unitFieldBorder: this.state.unitDropdownOpen ? '#2F6FED' : '#D0D5DD',
+      unitFieldShadow: this.state.unitDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
+      unitChevronRotate: this.state.unitDropdownOpen ? 'rotate(180deg)' : 'none',
+      unitValue: this.state.selectedUnit,
+      unitOptions: this.state.units.map((u) => {
+        const active = u === this.state.selectedUnit;
+        return {
+          label: u,
+          active,
+          bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
+          color: active ? '#2F6FED' : '#101828',
+          weight: active ? 800 : 600,
+          onSelect: () => this.selectUnit(u),
+        };
+      }),
+      toggleLotDropdown: () => this.toggleLotDropdown(),
+      lotDropdownOpen: this.state.lotDropdownOpen,
+      lotFieldBorder: this.state.lotDropdownOpen ? '#2F6FED' : '#D0D5DD',
+      lotFieldShadow: this.state.lotDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
+      lotChevronRotate: this.state.lotDropdownOpen ? 'rotate(180deg)' : 'none',
+      lotValue: this.state.selectedLot,
+      lotOptions: this.state.lots.map((lot) => {
+        const active = lot === this.state.selectedLot;
+        return {
+          label: lot,
+          active,
+          bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
+          color: active ? '#2F6FED' : '#101828',
+          weight: active ? 800 : 600,
+          onSelect: () => this.selectLot(lot),
+        };
+      }),
       totalLabel: this.state.formType === 'SELL' ? 'Tổng tiền thực nhận' : 'Tổng tiền thực trả',
       totalValue: this.state.formType === 'SELL' ? '8.700.000' : '8.500.000',
-      formHelper: this.state.formType === 'SELL'
-        ? 'Giá vốn được lấy từ lô đã chọn. Không thể bán vượt lượng còn lại.'
-        : 'Tổng tiền thực trả được dùng làm giá vốn của lô mới.',
       saveLabel: this.state.formType === 'SELL' ? 'Lưu giao dịch bán' : 'Lưu giao dịch mua',
       detailVisible: this.state.detailVisible,
       detailTitle: this.state.detailType === 'SELL' ? 'Chi tiết lần bán' : 'Chi tiết lần mua',

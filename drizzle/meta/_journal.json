@@ -22,6 +22,13 @@
       "when": 1787669554682,
       "tag": "0002_gorgeous_malice",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1787850574961,
+      "tag": "0003_high_overlord",
+      "breakpoints": true
     }
   ]
 }

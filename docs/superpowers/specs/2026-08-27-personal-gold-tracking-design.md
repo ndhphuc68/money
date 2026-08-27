@@ -25,7 +25,7 @@ Quy đổi chuẩn:
 
 Hệ thống giữ cả số lượng và đơn vị người dùng nhập để đối soát, đồng thời chuẩn hóa khối lượng nội bộ về gram bằng kiểu số thập phân chính xác.
 
-## Không thuộc MVP
+## Không thuộc MVP  
 
 - Vàng miếng, vàng trang sức, đá quý hoặc vàng không phải nhẫn trơn 9999.
 - Mua bán vàng trực tiếp trong ứng dụng.
@@ -41,29 +41,27 @@ Hệ thống giữ cả số lượng và đơn vị người dùng nhập để
 
 Mỗi giao dịch mua tạo một lô riêng. Lô lưu:
 
-- ngày và giờ mua;
+- ngày mua;
 - thương hiệu hoặc nơi mua;
 - khối lượng và đơn vị nhập gốc;
 - khối lượng chuẩn hóa theo gram;
-- đơn giá mua theo đơn vị nhập;
 - tổng tiền mua;
 - ghi chú tùy chọn;
 - metadata local-first/sync theo convention hiện tại.
 
-Giá vốn ban đầu của lô bằng tổng tiền mua. Do MVP không tính phí và tiền công, mọi kết quả lời/lỗ phải kèm nhãn `Chưa bao gồm phí và tiền công`.
+Giá vốn ban đầu của lô bằng tổng tiền mua do người dùng nhập trực tiếp; hệ thống không lưu đơn giá mua riêng và không tự tính hay đối chiếu tổng tiền từ khối lượng × đơn giá. Do MVP không tính phí và tiền công, mọi kết quả lời/lỗ phải kèm nhãn `Chưa bao gồm phí và tiền công`.
 
 ### Giao dịch bán
 
-Mỗi giao dịch bán liên kết đích danh tới một hoặc nhiều lô mua. Với mỗi lô, giao dịch lưu khối lượng được lấy từ lô đó. Giao dịch bán còn lưu:
+Mỗi giao dịch bán liên kết đích danh tới đúng một lô mua và luôn bán toàn bộ khối lượng còn lại của lô đó; không hỗ trợ bán một phần lô hoặc gộp nhiều lô trong cùng một giao dịch bán. Muốn bán một phần khối lượng của một lô, người dùng phải tách lô đó thành các giao dịch mua nhỏ hơn từ trước. Giao dịch bán lưu:
 
-- ngày và giờ bán;
-- nơi bán;
-- đơn giá bán thực tế;
+- ngày bán;
+- lô mua được chọn để bán;
 - tổng tiền thực nhận;
 - ghi chú tùy chọn;
 - metadata local-first/sync.
 
-Không dùng FIFO hoặc bình quân gia quyền để tự chọn lô.
+Không dùng FIFO hoặc bình quân gia quyền để tự chọn lô; người dùng luôn tự chọn đích danh lô cần bán.
 
 ### Giá tham chiếu
 
@@ -90,64 +88,60 @@ Việc lấy giá online không được làm hỏng thao tác thêm, sửa, bá
 
 ## Công thức
 
-Với một lô:
+Mỗi lô chỉ ở một trong hai trạng thái: `Đang nắm giữ` (chưa có giao dịch bán liên kết) hoặc `Đã bán` (có đúng một giao dịch bán liên kết, khối lượng còn lại bằng 0). Vì mỗi giao dịch bán luôn bán toàn bộ một lô, không cần công thức phân bổ tỉ lệ theo khối lượng.
+
+Với một lô đang nắm giữ:
 
 ```text
-Khối lượng còn lại = Khối lượng mua ban đầu - Tổng khối lượng đã bán đang hoạt động
-
-Giá vốn phần đã bán từ lô =
-  Giá vốn ban đầu của lô
-  × Khối lượng bán từ lô
-  ÷ Khối lượng mua ban đầu
-
-Giá vốn còn lại =
-  Giá vốn ban đầu của lô - Tổng giá vốn đã phân bổ cho phần bán
+Giá vốn = Tổng tiền mua
 
 Giá trị tham chiếu =
-  Khối lượng còn lại × Giá mua vào hiện tại đã quy về cùng đơn vị
+  Khối lượng của lô × Giá mua vào hiện tại đã quy về cùng đơn vị
 
 Lời/lỗ chưa thực hiện =
-  Giá trị tham chiếu - Giá vốn còn lại
+  Giá trị tham chiếu - Giá vốn
 ```
 
 Với một giao dịch bán:
 
 ```text
 Lời/lỗ đã thực hiện =
-  Tổng tiền thực nhận - Tổng giá vốn được phân bổ từ các lô đã chọn
+  Tổng tiền thực nhận - Giá vốn của lô đã bán
 ```
 
-Các phép tính tiền và khối lượng không dùng số thực nhị phân thiếu kiểm soát. Quy tắc làm tròn phải nhất quán; tiền hiển thị làm tròn tới VNĐ, còn khối lượng giữ đủ độ chính xác để tổng phần bán không vượt khối lượng mua.
+Các phép tính tiền và khối lượng không dùng số thực nhị phân thiếu kiểm soát. Quy tắc làm tròn phải nhất quán; tiền hiển thị làm tròn tới VNĐ, còn khối lượng giữ đủ độ chính xác cho mục đích đối soát.
 
 ## Luồng thêm giao dịch mua
 
-Người dùng chọn `Thêm giao dịch` rồi `Mua vàng`, nhập ngày giờ, thương hiệu/nơi mua, khối lượng, đơn vị, đơn giá mua, tổng tiền và ghi chú tùy chọn.
+Người dùng chọn `Thêm giao dịch` rồi `Mua vàng`, nhập ngày mua, thương hiệu/nơi mua (chọn từ danh sách thương hiệu đã lưu hoặc thêm thương hiệu mới), khối lượng, đơn vị, tổng tiền mua và ghi chú tùy chọn.
 
-Hệ thống tự tính tổng tiền từ khối lượng và đơn giá để hỗ trợ đối chiếu. Vì đơn vị niêm yết có thể khác đơn vị khối lượng nhập, giao diện phải nêu rõ đơn vị của đơn giá. Nếu người dùng sửa tổng tiền khác kết quả tự tính, tổng tiền đã xác nhận là giá vốn của lô và ứng dụng hiển thị cảnh báo chênh lệch trước khi lưu.
+Tổng tiền do người dùng nhập trực tiếp là giá vốn của lô; hệ thống không lưu đơn giá mua riêng, không tự tính tổng tiền từ khối lượng × đơn giá và không hiển thị cảnh báo chênh lệch.
 
 Khi lưu:
 
-1. Kiểm tra ngày, thương hiệu, khối lượng, đơn giá và tổng tiền hợp lệ.
-2. Yêu cầu khối lượng, đơn giá và tổng tiền lớn hơn 0.
+1. Kiểm tra ngày, thương hiệu, khối lượng và tổng tiền hợp lệ.
+2. Yêu cầu khối lượng và tổng tiền lớn hơn 0.
 3. Chuẩn hóa khối lượng về gram.
 4. Tạo lô mua.
 5. Tính lại tồn kho, giá vốn và số liệu tổng hợp.
 6. Lấy hoặc gắn dữ liệu giá tham chiếu mà không chặn việc lưu local.
 
+### Quản lý thương hiệu
+
+Danh sách thương hiệu/nơi mua được lưu như một danh mục riêng trong Cài đặt, dùng chung cho mọi giao dịch mua. Người dùng có thể thêm thương hiệu mới trực tiếp từ dropdown chọn thương hiệu khi đang thêm giao dịch mua, hoặc từ màn quản lý thương hiệu riêng; xóa một thương hiệu khỏi danh sách không xóa hay thay đổi các lô mua đã lưu trước đó với thương hiệu đó.
+
 ## Luồng thêm giao dịch bán
 
-Người dùng chọn `Thêm giao dịch` rồi `Bán vàng`, chọn một hoặc nhiều lô còn vàng và nhập khối lượng lấy từ từng lô. Sau đó người dùng nhập ngày giờ bán, nơi bán, đơn giá bán, tổng tiền thực nhận và ghi chú.
+Người dùng chọn `Thêm giao dịch` rồi `Bán vàng`, chọn đúng một lô đang nắm giữ từ danh sách các lô còn vàng (`Vàng đã mua`). Giao dịch bán luôn áp dụng cho toàn bộ khối lượng của lô được chọn — không nhập khối lượng bán riêng và không chọn nhiều lô trong cùng một giao dịch. Sau đó người dùng nhập ngày bán, tổng tiền thực nhận và ghi chú.
 
 Quy tắc:
 
-- Không cho bán vượt khối lượng còn lại của bất kỳ lô nào.
-- Ngày bán không được sớm hơn ngày mua của mọi lô được chọn.
-- Mỗi phân bổ bán phải có khối lượng lớn hơn 0.
-- Tổng khối lượng bán bằng tổng các phân bổ theo lô.
+- Chỉ hiển thị trong danh sách chọn các lô đang ở trạng thái `Đang nắm giữ` (chưa có giao dịch bán liên kết).
+- Ngày bán không được sớm hơn ngày mua của lô được chọn.
 - Tổng tiền thực nhận là cơ sở tính lời/lỗ đã thực hiện.
-- Trước khi xác nhận, hiển thị các lô bị trừ, khối lượng, giá vốn phân bổ và lời/lỗ dự kiến.
+- Sau khi lưu, lô chuyển sang trạng thái `Đã bán` và không còn xuất hiện trong danh sách chọn để bán tiếp.
 
-Việc lưu giao dịch bán, các liên kết lô, thay đổi tồn và change log phải cùng thành công hoặc cùng rollback trong một SQLite transaction.
+Việc lưu giao dịch bán, liên kết tới lô, thay đổi tồn và change log phải cùng thành công hoặc cùng rollback trong một SQLite transaction.
 
 ## Lịch sử và chi tiết
 
@@ -160,25 +154,9 @@ Lịch sử chung hiển thị giao dịch mua và bán theo thứ tự mới nh
 - tổng tiền;
 - lời/lỗ đã thực hiện nếu là giao dịch bán.
 
-Danh sách hỗ trợ lọc theo loại giao dịch, khoảng ngày và thương hiệu/nơi giao dịch. Chi tiết giao dịch mua hiển thị khối lượng ban đầu, đã bán, còn lại, giá vốn, giá tham chiếu và các giao dịch bán liên quan. Chi tiết giao dịch bán hiển thị từng lô nguồn, khối lượng và giá vốn được phân bổ.
+Chi tiết giao dịch mua hiển thị khối lượng, giá vốn và trạng thái lô (`Đang nắm giữ` hoặc `Đã bán`, kèm giao dịch bán liên quan nếu có). Chi tiết giao dịch bán hiển thị lô nguồn, khối lượng đã bán và lời/lỗ đã thực hiện.
 
-## Sửa giao dịch
-
-### Sửa giao dịch mua
-
-- Không cho giảm khối lượng mua xuống thấp hơn tổng khối lượng đã bán đang hoạt động.
-- Thay đổi tổng tiền mua làm tính lại giá vốn còn lại và lời/lỗ của mọi giao dịch bán liên quan.
-- Thay đổi thương hiệu/nơi mua làm hệ thống tìm lại nguồn giá tham chiếu.
-- Thay đổi ngày mua phải tiếp tục thỏa mãn ngày mua không sau ngày của giao dịch bán liên quan.
-
-### Sửa giao dịch bán
-
-- Giải phóng các phân bổ cũ trong cùng phép tính kiểm tra, sau đó kiểm tra các phân bổ mới.
-- Không cho phân bổ mới vượt lượng khả dụng của từng lô.
-- Ngày bán phải không sớm hơn ngày mua của tất cả lô mới.
-- Sau khi lưu, tính lại tồn kho, giá vốn và lời/lỗ đã thực hiện.
-
-Trước khi xác nhận sửa, giao diện hiển thị tác động dự kiến đến tồn kho và lời/lỗ. Thay đổi nghiệp vụ và change log phải nằm trong cùng SQLite transaction.
+Ngoài phạm vi MVP hiện tại (dự kiến cho phase sau, chưa có trong thiết kế UI): bộ lọc lịch sử theo loại giao dịch/khoảng ngày/thương hiệu, và sửa giao dịch mua hoặc bán đã lưu. Ở bản MVP này, một giao dịch mua hoặc bán sai chỉ có thể được xử lý bằng cách đưa vào thùng rác rồi thêm lại giao dịch mới.
 
 ## Thùng rác
 
@@ -193,24 +171,24 @@ Xóa từ lịch sử là xóa mềm: giao dịch được chuyển vào Thùng 
 ### Đưa giao dịch bán vào thùng rác
 
 - Cho phép sau hộp thoại xác nhận.
-- Các phân bổ bán ngừng hoạt động và khối lượng được trả lại đúng lô mua.
-- Tính lại tồn kho, giá vốn còn lại và lời/lỗ.
+- Liên kết bán ngừng hoạt động và lô mua nguồn trở lại trạng thái `Đang nắm giữ`.
+- Tính lại tồn kho và lời/lỗ.
 
 ## Khôi phục và xóa vĩnh viễn
 
 ### Khôi phục giao dịch mua
 
-Khôi phục lô mua và tính lại số liệu. Vì giao dịch mua chỉ được đưa vào thùng rác khi không có giao dịch bán hoạt động phụ thuộc vào nó, khôi phục không tự động khôi phục các giao dịch bán cũ.
+Khôi phục lô mua và tính lại số liệu. Vì giao dịch mua chỉ được đưa vào thùng rác khi không có giao dịch bán hoạt động phụ thuộc vào nó, khôi phục không tự động khôi phục giao dịch bán cũ.
 
 ### Khôi phục giao dịch bán
 
 Trước khi khôi phục, hệ thống kiểm tra:
 
-- tất cả lô mua liên quan đang hoạt động;
-- mỗi lô còn đủ khối lượng tại trạng thái hiện tại;
+- lô mua liên quan vẫn đang hoạt động (không nằm trong thùng rác);
+- lô mua liên quan chưa được liên kết với một giao dịch bán khác kể từ khi giao dịch này bị đưa vào thùng rác;
 - ngày bán vẫn hợp lệ so với ngày mua.
 
-Nếu bất kỳ điều kiện nào không đạt, không khôi phục một phần; hiển thị lô và lý do gây xung đột. Nếu hợp lệ, khôi phục toàn bộ giao dịch và các phân bổ trong một SQLite transaction.
+Nếu bất kỳ điều kiện nào không đạt, không khôi phục; hiển thị lô và lý do gây xung đột. Nếu hợp lệ, khôi phục toàn bộ giao dịch và liên kết trong một SQLite transaction.
 
 ### Xóa vĩnh viễn
 
@@ -222,39 +200,44 @@ Nếu bất kỳ điều kiện nào không đạt, không khôi phục một ph
 
 ## Tính lại và tính nhất quán
 
-Nguồn sự thật là các giao dịch mua, giao dịch bán và phân bổ bán đang hoạt động. Số tổng hợp không được chỉnh tay.
+Nguồn sự thật là các giao dịch mua và giao dịch bán đang hoạt động. Số tổng hợp không được chỉnh tay.
 
-Sau mọi thao tác thêm, sửa, đưa vào thùng rác, khôi phục hoặc xóa vĩnh viễn, hệ thống xác định lại:
+Sau mọi thao tác thêm, đưa vào thùng rác, khôi phục hoặc xóa vĩnh viễn, hệ thống xác định lại:
 
-1. khối lượng còn lại của từng lô;
+1. trạng thái (`Đang nắm giữ`/`Đã bán`) của từng lô;
 2. tổng khối lượng đang nắm giữ;
-3. giá vốn còn lại;
+3. tổng giá vốn đang nắm giữ;
 4. giá trị tham chiếu theo các lô có giá hợp lệ;
 5. lời/lỗ chưa thực hiện;
 6. lời/lỗ đã thực hiện.
 
-Không cho trạng thái có khối lượng lô âm, phân bổ bán mồ côi hoặc giao dịch bán thiếu giá vốn. Các cập nhật nghiệp vụ liên quan phải nguyên tử.
+Không cho trạng thái một lô bị liên kết với nhiều hơn một giao dịch bán đang hoạt động, hoặc một giao dịch bán đang hoạt động thiếu lô nguồn. Các cập nhật nghiệp vụ liên quan phải nguyên tử.
 
 ## Cấu trúc màn hình
 
 ### Tổng quan Vàng của tôi
 
+Bản UI MVP hiện tại chỉ hiển thị:
+
 - Tổng khối lượng đang nắm giữ.
-- Tổng giá vốn còn lại.
+- Tổng giá vốn.
+- Hành động `Thêm giao dịch`.
+
+Các mục sau nằm trong mục tiêu sản phẩm nhưng chưa có trong bản UI hiện tại, dự kiến bổ sung ở phase sau khi tích hợp nguồn giá tham chiếu:
+
 - Giá trị tham chiếu hiện tại.
 - Lời/lỗ chưa thực hiện.
 - Lời/lỗ đã thực hiện.
 - Trạng thái nguồn và thời điểm cập nhật giá.
 - Số lô chưa có giá hiện tại hoặc đang dùng giá thay thế.
-- Hành động `Thêm giao dịch`.
 
-Nếu chỉ một phần danh mục có giá hiện tại, giao diện không trình bày tổng tham chiếu như giá trị của toàn bộ tài sản; phải nêu rõ phần khối lượng đã và chưa được định giá.
+Khi các mục trên được bổ sung: nếu chỉ một phần danh mục có giá hiện tại, giao diện không được trình bày tổng tham chiếu như giá trị của toàn bộ tài sản; phải nêu rõ phần khối lượng đã và chưa được định giá.
 
 ### Lịch sử
 
-- Dòng thời gian mua/bán.
-- Bộ lọc loại, ngày và thương hiệu/nơi giao dịch.
-- Mở chi tiết để sửa hoặc đưa vào thùng rác.
+- Dòng thời gian mua/bán, mới nhất trước.
+- Mở chi tiết để đưa vào thùng rác.
+- Bộ lọc theo loại giao dịch, khoảng ngày và thương hiệu/nơi giao dịch: ngoài phạm vi MVP hiện tại, dự kiến cho phase sau.
 
 ### Thùng rác
 
@@ -263,49 +246,47 @@ Nếu chỉ một phần danh mục có giá hiện tại, giao diện không tr
 - Xóa vĩnh viễn.
 - Hiển thị lý do nếu giao dịch không thể khôi phục.
 
-Mọi màn hình có giá hoặc lời/lỗ phải hiển thị `Thông tin theo dõi tài sản, không phải khuyến nghị đầu tư` và `Chưa bao gồm phí và tiền công`.
+Khi màn hình có hiển thị giá tham chiếu hoặc lời/lỗ (phase sau), phải kèm nhãn `Thông tin theo dõi tài sản, không phải khuyến nghị đầu tư` và `Chưa bao gồm phí và tiền công`.
 
 ## Kiến trúc triển khai
 
-- Domain/application định nghĩa lô mua, giao dịch bán, phân bổ bán, giá tham chiếu, công thức và validation; không phụ thuộc React Native, SQLite hoặc nguồn giá cụ thể.
+- Domain/application định nghĩa lô mua, giao dịch bán, danh mục thương hiệu, giá tham chiếu, công thức và validation; không phụ thuộc React Native, SQLite hoặc nguồn giá cụ thể.
 - Repository port nằm ở application; implementation local nằm ở data layer.
 - Price provider là một port riêng. Adapter theo thương hiệu ánh xạ dữ liệu nguồn về record giá chuẩn; SJC là adapter fallback.
 - UI gọi use case/view model, không truy cập database hoặc website giá trực tiếp.
 - Mọi entity nghiệp vụ giữ metadata local-first/sync phù hợp convention hiện tại.
-- Tạo/sửa/xóa mềm/khôi phục giao dịch, phân bổ và change log phải nằm trong cùng transaction.
+- Tạo/xóa mềm/khôi phục giao dịch và change log phải nằm trong cùng transaction.
 - Làm mới giá chạy độc lập với transaction giao dịch local và không được chặn người dùng quản lý lịch sử.
 
 ## Xử lý lỗi
 
 - Dữ liệu form không hợp lệ: giữ nguyên dữ liệu đã nhập và hiển thị lỗi cạnh trường.
-- Bán vượt tồn hoặc ngày không hợp lệ: không ghi bất kỳ phần nào của giao dịch.
+- Ngày bán sớm hơn ngày mua của lô: không ghi giao dịch.
 - Nguồn giá lỗi/timeout/sai cấu trúc: giữ dữ liệu local, ghi trạng thái nguồn, thử fallback SJC.
 - Fallback SJC lỗi: hiển thị `Chưa có giá`; không tạo lời/lỗ giả.
-- Xung đột khi khôi phục: không khôi phục một phần; nêu rõ giao dịch hoặc lô gây lỗi.
-- Lỗi database giữa transaction: rollback giao dịch, phân bổ và change log.
+- Xung đột khi khôi phục: không khôi phục; nêu rõ giao dịch hoặc lô gây lỗi.
+- Lỗi database giữa transaction: rollback giao dịch và change log.
 
 ## Kiểm thử chấp nhận
 
 - Tạo giao dịch mua hợp lệ bằng lượng/cây, chỉ, phân và gram; khối lượng chuẩn hóa đúng.
-- Từ nhiều lô mua, tổng khối lượng và tổng giá vốn đúng.
+- Từ nhiều lô mua, tổng khối lượng và tổng giá vốn đang nắm giữ đúng.
 - Giá đúng thương hiệu và chiều mua vào được dùng để định giá lô.
 - Thiếu giá thương hiệu thì dùng giá mua vào nhẫn 9999 SJC và hiển thị `Giá thay thế SJC`.
 - Thiếu cả hai nguồn thì hiển thị `Chưa có giá` và không cộng lô vào tổng giá trị theo giá hiện tại.
-- Tạo giao dịch bán từ một hoặc nhiều lô và phân bổ giá vốn đúng theo tỷ lệ.
-- Không cho bán vượt lượng còn lại hoặc bán trước ngày mua.
-- Lời/lỗ chưa thực hiện và đã thực hiện đúng theo công thức đã duyệt.
-- Mọi kết quả lời/lỗ hiển thị cảnh báo chưa gồm phí/tiền công.
-- Sửa lượng mua không được thấp hơn lượng đã bán.
-- Sửa giá mua tính lại lời/lỗ của các giao dịch bán liên quan.
-- Sửa giao dịch bán giải phóng phân bổ cũ và áp dụng phân bổ mới nguyên tử.
+- Tạo giao dịch bán từ đúng một lô đang nắm giữ; lô chuyển sang trạng thái `Đã bán` và không còn xuất hiện trong danh sách chọn để bán.
+- Không cho chọn bán một lô đã ở trạng thái `Đã bán`, hoặc bán trước ngày mua của lô.
+- Lời/lỗ đã thực hiện của giao dịch bán đúng theo công thức đã duyệt (tổng tiền thực nhận trừ giá vốn của lô).
+- Mọi kết quả lời/lỗ hiển thị cảnh báo chưa gồm phí/tiền công (khi tính năng lời/lỗ được bổ sung).
 - Không cho đưa lô mua có giao dịch bán hoạt động vào thùng rác.
-- Đưa giao dịch bán vào thùng rác trả lượng về đúng lô và cập nhật số liệu.
-- Khôi phục giao dịch bán chỉ thành công khi tất cả lô còn tồn tại và đủ lượng.
+- Đưa giao dịch bán vào thùng rác trả lô nguồn về trạng thái `Đang nắm giữ` và cập nhật số liệu.
+- Khôi phục giao dịch bán chỉ thành công khi lô nguồn còn tồn tại và chưa được bán lại.
 - Giao dịch trong thùng rác không tham gia bất kỳ số tổng hợp nào.
 - Xóa vĩnh viễn yêu cầu xác nhận và giữ tombstone cần thiết cho sync.
-- Giao dịch, phân bổ và change log cùng commit hoặc cùng rollback.
-- Lịch sử lọc đúng theo loại, khoảng ngày và thương hiệu/nơi giao dịch.
-- Giá online lỗi không ngăn thêm, sửa, bán hoặc xem dữ liệu local.
+- Giao dịch và change log cùng commit hoặc cùng rollback.
+- Giá online lỗi không ngăn thêm, bán hoặc xem dữ liệu local.
+- Thêm thương hiệu mới từ dropdown chọn thương hiệu khi đang thêm giao dịch mua hoạt động đúng, và thương hiệu mới hiển thị ngay trong danh sách chọn.
+- Xóa một thương hiệu khỏi danh mục không làm thay đổi hay ẩn các lô mua đã lưu trước đó với thương hiệu đó.
 
 ## Nguồn nghiên cứu
 
