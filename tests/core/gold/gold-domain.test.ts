@@ -99,3 +99,64 @@ describe('validateGoldBrandInput', () => {
     expect(() => validateGoldBrandInput({ name: '   ' } as GoldBrandInput)).toThrow('Gold brand name must not be empty');
   });
 });
+
+import { calculateRealizedGain } from '@/core/domain/gold/gold-calculations';
+
+function syncFields(id: string) {
+  return {
+    id,
+    createdAt: '2026-08-01T00:00:00.000Z',
+    updatedAt: '2026-08-01T00:00:00.000Z',
+    deletedAt: null,
+    revision: 1,
+    originDeviceId: '550e8400-e29b-41d4-a716-446655440099',
+  };
+}
+
+describe('calculateRealizedGain', () => {
+  it('returns proceeds minus the lot cost basis (a gain)', () => {
+    const lot = {
+      ...syncFields('lot-1'),
+      brandId: 'brand-pnj',
+      purchaseDate: '2026-08-12',
+      quantity: 1,
+      unit: 'chi' as const,
+      quantityGrams: 3.75,
+      totalAmount: 8500000,
+      note: null,
+      status: 'sold' as const,
+    };
+    const sale = {
+      ...syncFields('sale-1'),
+      lotId: 'lot-1',
+      saleDate: '2026-08-25',
+      totalAmount: 8700000,
+      note: null,
+    };
+
+    expect(calculateRealizedGain(lot, sale)).toBe(200000);
+  });
+
+  it('returns a negative number for a loss', () => {
+    const lot = {
+      ...syncFields('lot-2'),
+      brandId: 'brand-sjc',
+      purchaseDate: '2026-08-12',
+      quantity: 1,
+      unit: 'chi' as const,
+      quantityGrams: 3.75,
+      totalAmount: 8500000,
+      note: null,
+      status: 'sold' as const,
+    };
+    const sale = {
+      ...syncFields('sale-2'),
+      lotId: 'lot-2',
+      saleDate: '2026-08-25',
+      totalAmount: 8000000,
+      note: null,
+    };
+
+    expect(calculateRealizedGain(lot, sale)).toBe(-500000);
+  });
+});
