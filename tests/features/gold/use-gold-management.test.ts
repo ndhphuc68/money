@@ -38,7 +38,8 @@ describe('useGoldManagement', () => {
 
   it('loads an empty overview, then adds a brand and a lot, then sells the lot', async () => {
     const dependencies = await createGoldDependencies(database);
-    const { result } = renderHook(() => useGoldManagement({ dependencies, t: makeTranslate() }));
+    const t = makeTranslate();
+    const { result } = renderHook(() => useGoldManagement({ dependencies, t }));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.heldLots).toEqual([]);
@@ -66,7 +67,8 @@ describe('useGoldManagement', () => {
 
   it('trashes a lot, sees it in trashedLots, then restores it', async () => {
     const dependencies = await createGoldDependencies(database);
-    const { result } = renderHook(() => useGoldManagement({ dependencies, t: makeTranslate() }));
+    const t = makeTranslate();
+    const { result } = renderHook(() => useGoldManagement({ dependencies, t }));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {

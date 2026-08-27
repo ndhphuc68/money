@@ -1,5 +1,5 @@
 // src/features/gold/view-models/use-gold-management.ts
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { GoldOverview } from '@/core/application/gold/get-gold-overview';
 import { GoldBrand } from '@/core/domain/gold/gold-brand';
@@ -52,8 +52,6 @@ export type GoldManagementViewModel = {
 
 export function useGoldManagement(options: { dependencies: GoldManagementDependencies; t: Translate }): GoldManagementViewModel {
   const { dependencies, t } = options;
-  const tRef = useRef(t);
-  tRef.current = t;
   const [overview, setOverview] = useState<GoldOverview | null>(null);
   const [heldLots, setHeldLots] = useState<LotHistoryRow[]>([]);
   const [trashedLots, setTrashedLots] = useState<LotHistoryRow[]>([]);
@@ -78,8 +76,8 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
       const nameFor = (brandId: string) => brandNameById.get(brandId) ?? brandId;
 
       setOverview(overviewResult);
-      setHeldLots(activeLots.map((lot) => buildLotHistoryRow(lot, nameFor(lot.brandId), tRef.current)));
-      setTrashedLots(deletedLots.map((lot) => buildLotHistoryRow(lot, nameFor(lot.brandId), tRef.current)));
+      setHeldLots(activeLots.map((lot) => buildLotHistoryRow(lot, nameFor(lot.brandId), t)));
+      setTrashedLots(deletedLots.map((lot) => buildLotHistoryRow(lot, nameFor(lot.brandId), t)));
 
       const lotById = new Map<string, GoldLot>();
       for (const lot of [...activeLots, ...deletedLots]) {
@@ -88,7 +86,7 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
       setTrashedSales(
         deletedSales.map((sale) => {
           const lot = lotById.get(sale.lotId) ?? null;
-          return buildSaleHistoryRow(sale, lot, lot ? nameFor(lot.brandId) : '', tRef.current);
+          return buildSaleHistoryRow(sale, lot, lot ? nameFor(lot.brandId) : '', t);
         }),
       );
       setBrands(brandList);
@@ -97,8 +95,7 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dependencies]);
+  }, [dependencies, t]);
 
   useEffect(() => {
     load();
