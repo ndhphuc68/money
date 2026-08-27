@@ -14,8 +14,12 @@ import { randomUUID } from 'expo-crypto';
 import { CreateGoldBrand, DeleteGoldBrand, ListGoldBrands } from '@/core/application/gold/manage-gold-brands';
 import { CreateGoldLot } from '@/core/application/gold/create-gold-lot';
 import { SellGoldLot } from '@/core/application/gold/sell-gold-lot';
+import { TrashGoldLot, TrashGoldSale } from '@/core/application/gold/trash-gold-transaction';
+import { RestoreGoldLot, RestoreGoldSale } from '@/core/application/gold/restore-gold-transaction';
+import { PurgeGoldLot, PurgeGoldSale } from '@/core/application/gold/purge-gold-transaction';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { openTestLocalDatabase } from '@/data/local/db/client';
+import { ChangeLogRepository } from '@/data/local/repositories/change-log-repository';
 import { GoldBrandRepository } from '@/data/local/repositories/gold-brand-repository';
 import { GoldLotRepository } from '@/data/local/repositories/gold-lot-repository';
 import { GoldSellTransactionRepository } from '@/data/local/repositories/gold-sell-transaction-repository';
@@ -125,6 +129,72 @@ describe('gold use cases', () => {
       await expect(sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-19', totalAmount: 8700000 })).rejects.toThrow(
         'Sale date must not be before the lot purchase date',
       );
+    });
+  });
+
+  describe('trash / restore / purge', () => {
+    it('blocks trashing a lot with an active sale, allows it once the sale is trashed, and restore round-trips', async () => {
+      const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
+      const changeLogRepository = new ChangeLogRepository(database);
+      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const trashGoldLot = new TrashGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const trashGoldSale = new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const restoreGoldLot = new RestoreGoldLot({ goldLotRepository, now, deviceId, generateId });
+      const restoreGoldSale = new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const purgeGoldLot = new PurgeGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const purgeGoldSale = new PurgeGoldSale({ goldSellTransactionRepository, now, deviceId, generateId });
+
+      const brand = await createGoldBrand.execute({ name: 'PNJ' });
+      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const sale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+
+      await expect(trashGoldLot.execute(lot.id)).rejects.toThrow('Cannot trash a gold lot with an active sell transaction');
+
+      const trashedSale = await trashGoldSale.execute(sale.id);
+      expect(trashedSale.deletedAt).not.toBeNull();
+      await expect(goldLotRepository.findById(lot.id)).resolves.toMatchObject({ status: 'held' });
+
+      const restoredSale = await restoreGoldSale.execute(sale.id);
+      expect(restoredSale.deletedAt).toBeNull();
+      await expect(goldLotRepository.findById(lot.id)).resolves.toMatchObject({ status: 'sold' });
+
+      await trashGoldSale.execute(sale.id);
+      const trashedLot = await trashGoldLot.execute(lot.id);
+      expect(trashedLot.deletedAt).not.toBeNull();
+
+      const restoredLot = await restoreGoldLot.execute(lot.id);
+      expect(restoredLot.deletedAt).toBeNull();
+
+      await trashGoldLot.execute(lot.id);
+      await purgeGoldLot.execute(lot.id);
+      const changeLogRepo = changeLogRepository;
+      await expect(changeLogRepo.listPending()).resolves.toEqual(
+        expect.arrayContaining([expect.objectContaining({ entityId: lot.id, operation: 'delete' })]),
+      );
+
+      await purgeGoldSale.execute(sale.id);
+      await expect(changeLogRepo.listPending()).resolves.toEqual(
+        expect.arrayContaining([expect.objectContaining({ entityId: sale.id, operation: 'delete' })]),
+      );
+    });
+
+    it('rejects restoring a sale whose lot has been re-sold to another sale', async () => {
+      const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
+      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const trashGoldSale = new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const restoreGoldSale = new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+
+      const brand = await createGoldBrand.execute({ name: 'SJC' });
+      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const firstSale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-20', totalAmount: 8700000 });
+      await trashGoldSale.execute(firstSale.id);
+      await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-22', totalAmount: 8600000 });
+
+      await expect(restoreGoldSale.execute(firstSale.id)).rejects.toThrow('Cannot restore: the gold lot is no longer available');
     });
   });
 });
