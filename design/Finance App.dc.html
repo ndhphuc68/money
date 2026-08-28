@@ -16,6 +16,11 @@ a{color:#2F6FED;text-decoration:none}
 a:hover{color:#1B4FC0}
 *{box-sizing:border-box;font-family:'Manrope',system-ui,sans-serif}
 ::-webkit-scrollbar{display:none}
+.asset-shortcut{appearance:none;-webkit-appearance:none;width:100%;border:0;margin:0;font:inherit;text-align:left;transition:background-color 120ms ease,box-shadow 120ms ease}
+.asset-shortcut:hover{background:#FAFBFC!important}
+.asset-shortcut:active{background:#F2F4F7!important;box-shadow:0 1px 4px rgba(16,24,40,.08)!important}
+.asset-shortcut:focus-visible{outline:3px solid rgba(47,111,237,.35);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.asset-shortcut{transition:none}}
 @keyframes vela-pulse{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 @keyframes vimo-rise{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes vimo-fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -366,30 +371,58 @@ a:hover{color:#1B4FC0}
     </sc-if>
 
     <sc-if value="{{isProfile}}" hint-placeholder-val="{{false}}">
-      <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0 22px">
-        <div style="width:76px;height:76px;border-radius:38px;background:#2F6FED;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;margin-bottom:12px">MA</div>
-        <div style="font-size:18px;font-weight:800;color:#101828">Minh Anh</div>
-        <div style="font-size:13px;color:#8B93A7;font-weight:600;margin-bottom:8px">minhanh@gmail.com</div>
-        <div style="font-size:11px;font-weight:700;color:#F2734A;background:#FCE7DE;padding:4px 10px;border-radius:10px">Tài khoản tiêu chuẩn</div>
-      </div>
+      <div style="font-size:24px;font-weight:800;color:#101828;margin-bottom:16px">Cá nhân</div>
+      <section aria-labelledby="asset-categories-title" style="margin:4px 0 20px">
+        <div id="asset-categories-title" style="font-size:12px;font-weight:800;color:#8B93A7;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Quản lý tài sản</div>
+        <button type="button" class="asset-shortcut" aria-label="Mở quản lý vàng" onClick="{{openGoldManagement}}" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+          <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#FFF4D6;color:#C98213;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0">Au</div>
+          <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828">Quản lý vàng</div>
+          <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </section>
 
-      <div style="border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,#F58B5E 0%,#D9502F 100%);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-size:14px;font-weight:800;margin-bottom:2px">Nâng cấp Premium</div>
-          <div style="font-size:12px;opacity:0.85;font-weight:600">Mở khóa báo cáo chi tiêu chi tiết</div>
+      <section aria-labelledby="app-settings-title" style="margin:4px 0 20px">
+        <div id="app-settings-title" style="font-size:12px;font-weight:800;color:#8B93A7;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Cài đặt ứng dụng</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button type="button" class="asset-shortcut" aria-label="Mở thông tin cá nhân" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+            <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#2F6FED;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="7.5" r="3.5" stroke="#fff" stroke-width="1.8"/><path d="M3.5 19c1.3-4 4.3-6 7.5-6s6.2 2 7.5 6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828;text-align:left">Thông tin cá nhân</div>
+            <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="asset-shortcut" aria-label="Mở bảo mật và mật khẩu" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+            <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#101828;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect x="5" y="10" width="12" height="8" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M7.5 10V7a3.5 3.5 0 0 1 7 0v3" stroke="#fff" stroke-width="1.8"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828;text-align:left">Bảo mật &amp; mật khẩu</div>
+            <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="asset-shortcut" aria-label="Mở tài khoản và danh mục" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+            <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#14B8A6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="12" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M3 8.5h16" stroke="#fff" stroke-width="1.8"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828;text-align:left">Tài khoản &amp; danh mục</div>
+            <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="asset-shortcut" aria-label="Mở ẩn số tiền" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+            <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#F2734A;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M2 11s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" stroke="#fff" stroke-width="1.8"/><circle cx="11" cy="11" r="2.5" stroke="#fff" stroke-width="1.8"/><path d="M4 4l14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828;text-align:left">Ẩn số tiền</div>
+            <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="asset-shortcut" aria-label="Mở dữ liệu local và sao lưu" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+            <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#7C5CFC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M4 8c0-2 3.1-3.5 7-3.5S18 6 18 8s-3.1 3.5-7 3.5S4 10 4 8z" stroke="#fff" stroke-width="1.8"/><path d="M4 8v6c0 2 3.1 3.5 7 3.5s7-1.5 7-3.5V8" stroke="#fff" stroke-width="1.8"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828;text-align:left">Dữ liệu local &amp; sao lưu</div>
+            <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
-        <div style="background:rgba(255,255,255,0.25);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;white-space:nowrap">Xem →</div>
-      </div>
+      </section>
 
-      <x-import component-from-global-scope="IOSList" from="./ios-frame.jsx" hint-size="100%,260">
-        <x-import component-from-global-scope="IOSListRow" from="./ios-frame.jsx" title="Thông tin cá nhân" icon="#2F6FED" hint-size="100%,52"></x-import>
-        <x-import component-from-global-scope="IOSListRow" from="./ios-frame.jsx" title="Bảo mật & mật khẩu" icon="#101828" hint-size="100%,52"></x-import>
-        <x-import component-from-global-scope="IOSListRow" from="./ios-frame.jsx" title="Ngân hàng liên kết" icon="#14B8A6" hint-size="100%,52"></x-import>
-        <x-import component-from-global-scope="IOSListRow" from="./ios-frame.jsx" title="Thông báo" icon="#F2734A" hint-size="100%,52"></x-import>
-        <x-import component-from-global-scope="IOSListRow" from="./ios-frame.jsx" title="Trợ giúp" icon="#7C5CFC" chevron="{{true}}" hint-size="100%,52"></x-import>
-      </x-import>
-
-      <div onClick="{{logout}}" style="cursor:pointer;text-align:center;margin-top:18px;padding:14px;font-size:14px;font-weight:700;color:#E25050">Đăng xuất</div>
+      <div onClick="{{logout}}" style="cursor:pointer;text-align:center;margin-top:4px;padding:14px;font-size:14px;font-weight:700;color:#E25050">Đăng xuất</div>
     </sc-if>
 
     </sc-if>
@@ -484,6 +517,7 @@ class Component extends DCLogic {
   }
   componentWillUnmount() { clearTimeout(this._splashTimer); }
   logout() { this.setState({ authed: false, activeTab: 'overview', onboardingActive: false }); this.startSplash(); }
+  openGoldManagement() { window.location.href = './Finance App.gold-management.dc.html'; }
 
   resetOnboardingFields() {
     const startStep = parseInt(this.props.onboardingStartStep, 10) || 1;
@@ -635,6 +669,7 @@ class Component extends DCLogic {
       isOnboarding: s.onboardingActive,
       login: () => this.login(),
       logout: () => this.logout(),
+      openGoldManagement: () => this.openGoldManagement(),
       isAddingTx: s.isAddingTx,
       isNotAddingTx: !s.isAddingTx,
       isExpenseType: !s.newTxPositive,
