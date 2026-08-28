@@ -153,7 +153,7 @@ function ConfiguredFinanceScreen({
   }
 
   if (view.name === 'reports') return <ConfiguredReportsScreen dependencies={dependencies} onBack={() => setView({ name: 'dashboard' })} t={t} />;
-  if (view.name === 'settings') return <ConfiguredSettingsScreen dependencies={dependencies} onOpenAccounts={() => setView({ name: 'accounts' })} onOpenCategories={() => setView({ name: 'categories' })} onOpenSync={() => router.push('/sync')} onBack={() => setView({ name: 'dashboard' })} t={t} />;
+  if (view.name === 'settings') return <ConfiguredSettingsScreen dependencies={dependencies} onOpenAccounts={() => setView({ name: 'accounts' })} onOpenCategories={() => setView({ name: 'categories' })} onOpenSync={() => router.push('/sync')} onBack={() => setView({ name: 'dashboard' })} setView={setView} t={t} />;
   if (view.name === 'accounts') return <ConfiguredAccountsScreen dependencies={dependencies} onBack={() => setView({ name: 'settings' })} t={t} />;
   if (view.name === 'categories') return <ConfiguredCategoriesScreen dependencies={dependencies} onBack={() => setView({ name: 'settings' })} t={t} />;
 
@@ -174,8 +174,31 @@ function ConfiguredFinanceScreen({
 function ConfiguredReportsScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) {
   return <View style={{ flex: 1 }}><ReportsScreen {...useReports({ dependencies, t })} t={t} /><Text onPress={onBack} style={{ padding: 16 }}>{t('settingsBack')}</Text></View>;
 }
-function ConfiguredSettingsScreen({ dependencies, t, onBack, onOpenAccounts, onOpenCategories, onOpenSync }: { dependencies: FinanceDependencies; t: Translate; onBack(): void; onOpenAccounts(): void; onOpenCategories(): void; onOpenSync(): void }) {
-  return <SettingsScreen {...useSettings({ dependencies, t })} onBack={onBack} onOpenAccounts={onOpenAccounts} onOpenCategories={onOpenCategories} onOpenSync={onOpenSync} t={t} />;
+function ConfiguredSettingsScreen({ dependencies, t, onBack, onOpenAccounts, onOpenCategories, onOpenSync, setView }: { dependencies: FinanceDependencies; t: Translate; onBack(): void; onOpenAccounts(): void; onOpenCategories(): void; onOpenSync(): void; setView(view: FinanceView): void }) {
+  const viewModel = useSettings({ dependencies, t });
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        <SettingsScreen {...viewModel} onBack={onBack} onOpenAccounts={onOpenAccounts} onOpenCategories={onOpenCategories} onOpenSync={onOpenSync} t={t} />
+      </View>
+      <BottomNav
+        activeKey="settings"
+        addAccessibilityLabel={t('dashboardAddTransaction')}
+        items={[
+          { key: 'overview', label: t('navOverview'), icon: 'overview' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'list' },
+          { key: 'reports', label: t('navReports'), icon: 'target' },
+          { key: 'settings', label: t('navSettings'), icon: 'profile' },
+        ]}
+        onAdd={() => setView({ name: 'form', transactionId: null })}
+        onChange={(key) => {
+          if (key === 'overview') setView({ name: 'dashboard' });
+          if (key === 'transactions') setView({ name: 'transactions' });
+          if (key === 'reports') setView({ name: 'reports' });
+        }}
+      />
+    </View>
+  );
 }
 function ConfiguredAccountsScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) { return <AccountsScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />; }
 function ConfiguredCategoriesScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) { return <CategoriesScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />; }

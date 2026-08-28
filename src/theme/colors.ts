@@ -48,6 +48,7 @@ export const colors = {
     shopping: '#7C5CFC',
     bills: '#2F6FED',
     transport: '#14B8A6',
+    gold: '#C98213',
   },
   gradient: {
     balance: ['#3A5FE5', '#182B6E'],

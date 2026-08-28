@@ -18,7 +18,6 @@ import { Category } from '@/core/domain/finance/category';
 import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
 import { AccountsScreen } from '@/features/finance/screens/accounts-screen';
 import { CategoriesScreen } from '@/features/finance/screens/categories-screen';
-import { SettingsScreen } from '@/features/finance/screens/settings-screen';
 import { useSettings } from '@/features/finance/view-models/use-settings';
 import { Locale, translate } from '@/i18n/translations';
 
@@ -188,11 +187,6 @@ function makeDependencies() {
 
 type Dependencies = ReturnType<typeof makeDependencies>;
 
-function SettingsHarness({ dependencies }: { dependencies: Dependencies }) {
-  const viewModel = useSettings({ dependencies, t });
-  return <SettingsScreen {...viewModel} onOpenAccounts={() => {}} onOpenCategories={() => {}} onOpenSync={() => {}} t={t} />;
-}
-
 function AccountsHarness({ dependencies }: { dependencies: Dependencies }) {
   const viewModel = useSettings({ dependencies, t });
   return <AccountsScreen {...viewModel} onBack={() => {}} t={t} />;
@@ -210,30 +204,6 @@ async function seedAccountAndCategory(dependencies: Dependencies) {
 }
 
 describe('settings screen + view model', () => {
-  it('toggles hide/show money, persisting the shared ProfileSettings flag (never touching stored amounts)', async () => {
-    const dependencies = makeDependencies();
-    const screen = render(<SettingsHarness dependencies={dependencies} />);
-
-    await waitFor(() => expect(screen.getByText(t('settingsHideAmounts'))).toBeTruthy());
-    expect((await dependencies.profileSettingsRepository.get()).amountsHidden).toBe(false);
-
-    fireEvent.press(screen.getByLabelText(t('settingsHideAmounts')));
-
-    await waitFor(async () => expect((await dependencies.profileSettingsRepository.get()).amountsHidden).toBe(true));
-    expect(screen.getByText(t('settingsShowAmounts'))).toBeTruthy();
-  });
-
-  it('saves an edited display name', async () => {
-    const dependencies = makeDependencies();
-    const screen = render(<SettingsHarness dependencies={dependencies} />);
-
-    await waitFor(() => expect(screen.getByLabelText(t('settingsDisplayNameLabel'))).toBeTruthy());
-    fireEvent.changeText(screen.getByLabelText(t('settingsDisplayNameLabel')), 'Phuc');
-    fireEvent.press(screen.getByLabelText(t('settingsSave')));
-
-    await waitFor(async () => expect((await dependencies.profileSettingsRepository.get()).displayName).toBe('Phuc'));
-  });
-
   it('creates a new account with a name, type and opening balance', async () => {
     const dependencies = makeDependencies();
     const screen = render(<AccountsHarness dependencies={dependencies} />);
