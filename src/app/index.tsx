@@ -4,6 +4,9 @@ import { Text, View } from 'react-native';
 
 import { useLocalDatabase } from '@/data/local/db/provider';
 import { createFinanceDependencies, FinanceDependencies } from '@/features/finance/finance-dependencies';
+import { createGoldDependencies, GoldDependencies } from '@/features/gold/gold-dependencies';
+import { GoldManagementScreen } from '@/features/gold/screens/gold-management-screen';
+import { useGoldManagement } from '@/features/gold/view-models/use-gold-management';
 import { DashboardScreen } from '@/features/finance/screens/dashboard-screen';
 import { OnboardingScreen } from '@/features/finance/screens/onboarding-screen';
 import { SplashScreen } from '@/features/finance/screens/splash-screen';
@@ -26,7 +29,7 @@ import { createMobileSyncDependencies } from '@/infrastructure/expo/sync/create-
 import { Locale, Translate, translate } from '@/i18n/translations';
 
 /** Which finance screen the root route shows once onboarding is complete. */
-type FinanceView = { name: 'dashboard' } | { name: 'transactions' } | { name: 'reports' } | { name: 'settings' } | { name: 'accounts' } | { name: 'categories' } | { name: 'form'; transactionId: string | null };
+type FinanceView = { name: 'dashboard' } | { name: 'transactions' } | { name: 'reports' } | { name: 'settings' } | { name: 'accounts' } | { name: 'categories' } | { name: 'gold' } | { name: 'form'; transactionId: string | null };
 
 export default function RootScreen() {
   const database = useLocalDatabase();
@@ -156,6 +159,9 @@ function ConfiguredFinanceScreen({
   if (view.name === 'settings') return <ConfiguredSettingsScreen dependencies={dependencies} onOpenAccounts={() => setView({ name: 'accounts' })} onOpenCategories={() => setView({ name: 'categories' })} onOpenSync={() => router.push('/sync')} onBack={() => setView({ name: 'dashboard' })} setView={setView} t={t} />;
   if (view.name === 'accounts') return <ConfiguredAccountsScreen dependencies={dependencies} onBack={() => setView({ name: 'settings' })} t={t} />;
   if (view.name === 'categories') return <ConfiguredCategoriesScreen dependencies={dependencies} onBack={() => setView({ name: 'settings' })} t={t} />;
+  if (view.name === 'gold') {
+    return <ConfiguredGoldManagementScreen onBack={() => setView({ name: 'settings' })} t={t} />;
+  }
 
   return (
     <ConfiguredDashboardScreen
@@ -179,7 +185,7 @@ function ConfiguredSettingsScreen({ dependencies, t, onBack, onOpenAccounts, onO
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        <SettingsScreen {...viewModel} onBack={onBack} onOpenAccounts={onOpenAccounts} onOpenCategories={onOpenCategories} onOpenSync={onOpenSync} t={t} />
+        <SettingsScreen {...viewModel} onBack={onBack} onOpenAccounts={onOpenAccounts} onOpenCategories={onOpenCategories} onOpenGoldManagement={() => setView({ name: 'gold' })} onOpenSync={onOpenSync} t={t} />
       </View>
       <BottomNav
         activeKey="settings"
@@ -202,6 +208,45 @@ function ConfiguredSettingsScreen({ dependencies, t, onBack, onOpenAccounts, onO
 }
 function ConfiguredAccountsScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) { return <AccountsScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />; }
 function ConfiguredCategoriesScreen({ dependencies, t, onBack }: { dependencies: FinanceDependencies; t: Translate; onBack(): void }) { return <CategoriesScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />; }
+
+/**
+ * Owns the gold feature's own dependency container (separate from
+ * `FinanceDependencies`, mirroring how `createFinanceDependencies` is
+ * created once via a ref-based effect in `RootScreen` above) since gold
+ * repositories are independent of the finance ones.
+ */
+function ConfiguredGoldManagementScreen({ t, onBack }: { t: Translate; onBack(): void }) {
+  const database = useLocalDatabase();
+  const [goldDependencies, setGoldDependencies] = useState<GoldDependencies | null>(null);
+  const databaseRef = useRef(database);
+  databaseRef.current = database;
+
+  useEffect(() => {
+    let cancelled = false;
+    createGoldDependencies(databaseRef.current).then((deps) => {
+      if (!cancelled) setGoldDependencies(deps);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!goldDependencies) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Text style={{ padding: 16 }}>{t('dashboardLoading')}</Text>
+      </View>
+    );
+  }
+
+  return <GoldManagementScreenWithViewModel dependencies={goldDependencies} onBack={onBack} t={t} />;
+}
+
+function GoldManagementScreenWithViewModel({ dependencies, t, onBack }: { dependencies: GoldDependencies; t: Translate; onBack(): void }) {
+  const viewModel = useGoldManagement({ dependencies, t });
+  return <GoldManagementScreen {...viewModel} onBack={onBack} t={t} />;
+}
 
 function ConfiguredDashboardScreen({
   dependencies,
