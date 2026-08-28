@@ -207,10 +207,63 @@ a:hover{color:#1B4FC0}
         <input ref="{{noteRef}}" type="text" placeholder="Ví dụ: Ăn trưa với đồng nghiệp" style="width:100%;border:none;outline:none;font-size:14px;font-weight:600;color:#101828"/>
       </div>
 
+      <sc-if value="{{isExpenseType}}" hint-placeholder-val="{{true}}">
+        <div style="background:#fff;border-radius:18px;padding:4px 16px;box-shadow:0 2px 10px rgba(16,24,40,0.05);margin-bottom:14px">
+          <div style="min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div><div style="font-size:13px;font-weight:800;color:#101828">Định kỳ</div><div style="font-size:11px;color:#8B93A7;font-weight:600;margin-top:3px">{{recurringToggleHint}}</div></div>
+            <button type="button" onClick="{{toggleRecurring}}" aria-label="Bật hoặc tắt định kỳ" style="{{recurringTrackStyle}};border:0;cursor:pointer"><span style="{{recurringKnobStyle}}"></span></button>
+          </div>
+          <sc-if value="{{recurringEnabled}}" hint-placeholder-val="{{false}}">
+            <div style="border-top:1px solid rgba(16,24,40,.06)">
+              <div style="min-height:54px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;color:#667085;font-weight:600">Chu kỳ</span><select onChange="{{setRecurringFrequency}}" style="border:0;background:transparent;color:#101828;font-size:13px;font-weight:800;outline:0"><option>Hàng tháng</option><option>Hàng tuần</option><option>Hàng quý</option><option>Hàng năm</option></select></div>
+              <div style="min-height:54px;border-top:1px solid rgba(16,24,40,.06);display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;color:#667085;font-weight:600">Nhắc trước</span><span style="font-size:13px;color:#101828;font-weight:800">1 ngày ›</span></div>
+              <div style="min-height:54px;border-top:1px solid rgba(16,24,40,.06);display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;color:#667085;font-weight:600">Kết thúc</span><span style="font-size:13px;color:#101828;font-weight:800">Không giới hạn ›</span></div>
+            </div>
+          </sc-if>
+        </div>
+        <sc-if value="{{recurringEnabled}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;gap:8px;color:#667085;font-size:11px;line-height:17px;font-weight:600;margin:0 2px 16px"><span style="width:17px;height:17px;border-radius:9px;background:#DFE8FF;color:#2F6FED;display:flex;align-items:center;justify-content:center;flex:none;font-size:10px;font-weight:800">i</span><span>Giao dịch này là kỳ đầu tiên. Các kỳ sau chỉ ảnh hưởng số dư khi bạn xác nhận.</span></div>
+        </sc-if>
+      </sc-if>
+
       <div onClick="{{saveTransaction}}" style="cursor:pointer;text-align:center;padding:15px;border-radius:14px;background:#101828;color:#fff;font-size:15px;font-weight:800">Lưu giao dịch</div>
     </sc-if>
 
     <sc-if value="{{isNotAddingTx}}" hint-placeholder-val="{{true}}">
+    <sc-if value="{{isRecurringList}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button type="button" onClick="{{closeRecurring}}" style="width:40px;height:40px;border:0;border-radius:20px;background:#fff;box-shadow:0 2px 8px rgba(16,24,40,.06);cursor:pointer"><svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5l-6 6 6 6" stroke="#101828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div style="flex:1"><div style="font-size:20px;font-weight:800">Chi tiêu định kỳ</div><div style="font-size:11px;color:#8B93A7;font-weight:600;margin-top:2px">Kỳ dự kiến không tính vào số dư</div></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px"><span style="padding:8px 12px;border-radius:99px;background:#DFE8FF;color:#2F6FED;font-size:11px;font-weight:800">Sắp tới 2</span><span style="padding:8px 12px;border-radius:99px;background:#FEE4E2;color:#B42318;font-size:11px;font-weight:800">Quá hạn 1</span></div>
+      <div style="font-size:12px;font-weight:800;color:#8B93A7;text-transform:uppercase;letter-spacing:.06em;margin:14px 2px 8px">Cần xử lý</div>
+      <button type="button" onClick="{{openRecurringDetail}}" style="width:100%;border:0;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 2px 10px rgba(16,24,40,.05);display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer">
+        <div style="width:42px;height:42px;border-radius:21px;background:#2F6FED;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none">HĐ</div><div style="flex:1"><div style="font-size:14px;font-weight:800">YouTube Premium</div><div style="font-size:11px;color:#8B93A7;font-weight:600;margin-top:3px">Đến hạn hôm qua · Ví chính</div><span style="display:inline-flex;margin-top:6px;padding:4px 8px;border-radius:99px;background:#FEE4E2;color:#B42318;font-size:10px;font-weight:800">Quá hạn</span></div><div style="font-size:13px;font-weight:800">179.000 ₫ ›</div>
+      </button>
+      <div style="font-size:12px;font-weight:800;color:#8B93A7;text-transform:uppercase;letter-spacing:.06em;margin:20px 2px 8px">Sắp tới</div>
+      <div style="background:#fff;border-radius:18px;padding:4px 16px;box-shadow:0 2px 10px rgba(16,24,40,.05)"><div style="padding:12px 0;display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:20px;background:#7C5CFC;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">HĐ</div><div style="flex:1"><div style="font-size:14px;font-weight:800">Shopee VIP</div><div style="font-size:11px;color:#8B93A7;font-weight:600">3 thg 9 · Còn 6 ngày</div></div><b style="font-size:13px">29.000 ₫</b></div></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 20px 34px;background:linear-gradient(180deg,rgba(244,245,250,0) 0%,#F4F5FA 22%);z-index:8">
+        <button type="button" onClick="{{openAddRecurring}}" aria-label="Thêm chi tiêu định kỳ" style="width:100%;min-height:60px;border:0;border-radius:16px;padding:12px 16px;background:#101828;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 8px 18px rgba(16,24,40,.16);cursor:pointer;text-align:left">
+          <div><div style="font-size:14px;line-height:20px;font-weight:800">Thêm chi tiêu định kỳ</div><div style="font-size:12px;line-height:17px;color:#D0D5DD;margin-top:4px;font-weight:600">Tạo khoản chi và lịch cho các kỳ tiếp theo</div></div>
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 22 22" fill="none" style="flex-shrink:0"><path d="M11 3v16M3 11h16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isRecurringDetail}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button type="button" onClick="{{openRecurringList}}" style="width:40px;height:40px;border:0;border-radius:20px;background:#fff;box-shadow:0 2px 8px rgba(16,24,40,.06);cursor:pointer"><svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5l-6 6 6 6" stroke="#101828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div><div style="font-size:20px;font-weight:800">YouTube Premium</div><div style="font-size:11px;color:#8B93A7;font-weight:600">Kỳ chi dự kiến</div></div></div>
+      <div style="padding:12px 14px;border-radius:14px;background:#FFF6E8;color:#8A4B08;font-size:11px;line-height:17px;font-weight:700;margin-bottom:14px">Quá hạn 1 ngày · Khoản này chưa ảnh hưởng số dư hoặc báo cáo.</div>
+      <div style="border-radius:22px;padding:20px;color:#fff;background:linear-gradient(135deg,#3A5FE5,#182B6E);box-shadow:0 12px 24px rgba(30,60,180,.25);margin-bottom:16px"><div style="font-size:11px;font-weight:700;opacity:.8">SỐ TIỀN DỰ KIẾN</div><div style="font-size:29px;font-weight:800;margin:7px 0 14px">189.000 ₫</div><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;opacity:.86"><span>Đến hạn 27 thg 8</span><span>Hàng tháng</span></div></div>
+      <div style="background:#fff;border-radius:18px;padding:4px 16px;box-shadow:0 2px 10px rgba(16,24,40,.05);margin-bottom:14px"><div style="min-height:54px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(16,24,40,.06)"><span style="font-size:13px;color:#667085;font-weight:600">So với lịch</span><b style="font-size:13px;color:#2F6FED">+10.000 ₫</b></div><div style="min-height:54px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(16,24,40,.06)"><span style="font-size:13px;color:#667085;font-weight:600">Danh mục</span><b style="font-size:13px">Hóa đơn ›</b></div><div style="min-height:54px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;color:#667085;font-weight:600">Ngày ghi nhận</span><b style="font-size:13px">Hôm nay ›</b></div></div>
+      <button type="button" onClick="{{confirmRecurring}}" style="width:100%;border:0;border-radius:15px;padding:15px;background:#2F6FED;color:#fff;font-size:14px;font-weight:800;cursor:pointer">Xác nhận đã chi</button><button type="button" onClick="{{skipRecurring}}" style="width:100%;border:1px solid #D0D5DD;border-radius:15px;padding:14px;background:#fff;color:#344054;font-size:13px;font-weight:800;margin-top:10px;cursor:pointer">Bỏ qua kỳ này</button>
+    </sc-if>
+
+    <sc-if value="{{isRecurringSuccess}}" hint-placeholder-val="{{false}}">
+      <div style="text-align:center;padding:72px 18px 0"><div style="width:72px;height:72px;border-radius:24px;background:#ECFDF3;margin:0 auto 22px;display:flex;align-items:center;justify-content:center"><svg width="34" height="34" viewBox="0 0 34 34" fill="none"><path d="m8 17 6 6L27 10" stroke="#067647" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div style="font-size:22px;font-weight:800">Đã xác nhận khoản chi</div><div style="font-size:13px;line-height:20px;color:#667085;font-weight:600;margin:8px 0 24px">189.000 ₫ đã được ghi vào giao dịch. Kỳ tiếp theo là 27 thg 9.</div><div style="background:#fff;border-radius:18px;padding:6px 16px;text-align:left;box-shadow:0 2px 10px rgba(16,24,40,.05);margin-bottom:16px"><div style="padding:13px 0;display:flex;justify-content:space-between;border-bottom:1px solid rgba(16,24,40,.06)"><span style="font-size:13px;color:#667085">Lịch hiện tại</span><b style="font-size:13px">189.000 ₫</b></div><div style="padding:13px 0;display:flex;justify-content:space-between"><span style="font-size:13px;color:#667085">Kỳ tiếp theo</span><b style="font-size:13px">27 thg 9</b></div></div><button type="button" onClick="{{openRecurringList}}" style="width:100%;border:0;border-radius:15px;padding:15px;background:#101828;color:#fff;font-size:14px;font-weight:800;cursor:pointer">Về danh sách định kỳ</button></div>
+    </sc-if>
+
+    <sc-if value="{{isRecurringScope}}" hint-placeholder-val="{{false}}">
+      <div style="padding-top:160px"><div style="font-size:20px;font-weight:800;margin-bottom:6px">Áp dụng thay đổi thế nào?</div><div style="font-size:12px;line-height:18px;color:#667085;font-weight:600;margin-bottom:18px">Số tiền kỳ này khác 10.000 ₫ so với lịch hiện tại.</div><button type="button" onClick="{{applyOnlyThisOccurrence}}" style="width:100%;text-align:left;border:1px solid #E4E7EC;border-radius:16px;background:#fff;padding:14px;margin-bottom:10px;cursor:pointer"><b style="display:block;font-size:13px">Chỉ kỳ này</b><span style="display:block;font-size:11px;line-height:17px;color:#667085;margin-top:3px">Ghi nhận 189.000 ₫, các kỳ sau vẫn là 179.000 ₫.</span></button><button type="button" onClick="{{applyFutureOccurrences}}" style="width:100%;text-align:left;border:1px solid #84ADFF;border-radius:16px;background:#F5F8FF;padding:14px;margin-bottom:10px;cursor:pointer"><b style="display:block;font-size:13px;color:#1849A9">Kỳ này và các kỳ sau</b><span style="display:block;font-size:11px;line-height:17px;color:#667085;margin-top:3px">Ghi nhận kỳ này và cập nhật lịch thành 189.000 ₫.</span></button><button type="button" onClick="{{openRecurringDetail}}" style="width:100%;border:1px solid #D0D5DD;border-radius:15px;padding:14px;background:#fff;color:#344054;font-size:13px;font-weight:800;cursor:pointer">Quay lại chỉnh sửa</button></div>
+    </sc-if>
+
+    <sc-if value="{{isMainView}}" hint-placeholder-val="{{true}}">
 
     <sc-if value="{{isOverview}}" hint-placeholder-val="{{true}}">
       <div style="position:sticky;top:-58px;z-index:5;background:#F4F5FA;margin:-58px -20px 20px;padding:58px 20px 14px;display:flex;align-items:center;justify-content:space-between">
@@ -405,6 +458,11 @@ a:hover{color:#1B4FC0}
             <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:#101828;text-align:left">Tài khoản &amp; danh mục</div>
             <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none" style="flex-shrink:0"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
+          <button type="button" class="asset-shortcut" aria-label="Mở chi tiêu định kỳ" onClick="{{openRecurringList}}" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
+            <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#2F6FED;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M16 7a6 6 0 1 0 .2 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M16 3v4h-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div style="flex:1;min-width:0;text-align:left"><div style="font-size:14px;font-weight:800;color:#101828">Chi tiêu định kỳ</div><div style="font-size:11px;color:#8B93A7;font-weight:600;margin-top:3px">Kỳ sắp tới, quá hạn và lịch đang chạy</div></div>
+            <svg aria-hidden="true" width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="#8B93A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
           <button type="button" class="asset-shortcut" aria-label="Mở ẩn số tiền" style="min-height:72px;cursor:pointer;background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(16,24,40,0.05)">
             <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#F2734A;display:flex;align-items:center;justify-content:center;flex-shrink:0">
               <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M2 11s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" stroke="#fff" stroke-width="1.8"/><circle cx="11" cy="11" r="2.5" stroke="#fff" stroke-width="1.8"/><path d="M4 4l14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -426,9 +484,11 @@ a:hover{color:#1B4FC0}
     </sc-if>
 
     </sc-if>
+    </sc-if>
 
   </div>
 
+  <sc-if value="{{showBottomNav}}" hint-placeholder-val="{{true}}">
   <div style="flex:none;display:flex;align-items:center;justify-content:space-around;padding:10px 8px 26px;background:#FFFFFF;border-top:1px solid rgba(16,24,40,0.06)">
     <div onClick="{{goOverview}}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;width:56px">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7.5" stroke="{{overviewIconColor}}" stroke-width="1.8"/><circle cx="11" cy="11" r="2.5" fill="{{overviewIconColor}}"/></svg>
@@ -450,6 +510,7 @@ a:hover{color:#1B4FC0}
       <span style="font-size:10px;font-weight:700;color:{{profileTextColor}}">Cá nhân</span>
     </div>
   </div>
+  </sc-if>
 
 </div>
 </sc-if>
@@ -457,7 +518,7 @@ a:hover{color:#1B4FC0}
 </div>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;startLoggedIn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;initialTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;overview&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;overview&quot;,&quot;transactions&quot;,&quot;goals&quot;,&quot;profile&quot;],&quot;section&quot;:&quot;Behavior&quot;},&quot;balanceHiddenDefault&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;txFilterDefault&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;all&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;all&quot;,&quot;income&quot;,&quot;expense&quot;],&quot;section&quot;:&quot;Behavior&quot;},&quot;onboardingStartStep&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;],&quot;section&quot;:&quot;Behavior&quot;},&quot;forceOnboarding&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;forceAddTx&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;forceSplash&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;startLoggedIn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;initialTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;overview&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;overview&quot;,&quot;transactions&quot;,&quot;goals&quot;,&quot;profile&quot;],&quot;section&quot;:&quot;Behavior&quot;},&quot;balanceHiddenDefault&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;txFilterDefault&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;all&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;all&quot;,&quot;income&quot;,&quot;expense&quot;],&quot;section&quot;:&quot;Behavior&quot;},&quot;onboardingStartStep&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;],&quot;section&quot;:&quot;Behavior&quot;},&quot;forceOnboarding&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;forceAddTx&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;forceSplash&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;initialRecurringView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;none&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;none&quot;,&quot;list&quot;,&quot;detail&quot;,&quot;scope&quot;,&quot;success&quot;],&quot;section&quot;:&quot;Behavior&quot;}}">
 class Component extends DCLogic {
   amountRef = React.createRef();
   noteRef = React.createRef();
@@ -482,6 +543,9 @@ class Component extends DCLogic {
     isAddingTx: false,
     newTxPositive: false,
     selectedCategory: 'Ăn uống',
+    recurringEnabled: false,
+    recurringFrequency: 'Hàng tháng',
+    recurringView: null,
     transactions: [
       { id:1, name:'Lương tháng 8', category:'Thu nhập', time:'07:00', amountDisplay:'+18.000.000 ₫', positive:true, icon:'TN', iconBg:'#1FAA59', group:'Hôm nay' },
       { id:2, name:'Circle K', category:'Ăn uống', time:'08:30', amountDisplay:'-45.000 ₫', positive:false, icon:'AU', iconBg:'#F2734A', group:'Hôm nay' },
@@ -501,7 +565,7 @@ class Component extends DCLogic {
     'Khác': { icon:'KH', bg:'#8B93A7' },
   };
 
-  goTab(tab) { this.setState({ activeTab: tab }); }
+  goTab(tab) { this.setState({ activeTab: tab, recurringView: null }); }
   toggleBalance() { this.setState(s => ({ balanceHidden: !s.balanceHidden })); }
   setFilter(f) { this.setState({ txFilter: f }); }
   login() {
@@ -513,6 +577,7 @@ class Component extends DCLogic {
     if (this.props.forceSplash) { return; }
     if (this.props.forceOnboarding) { this.resetOnboardingFields(); this.setState({ onboardingActive: true, authed: false }); return; }
     if (this.props.startLoggedIn && this.props.forceAddTx) { this.setState({ authed: true, isAddingTx: true }); return; }
+    if (this.props.startLoggedIn && this.props.initialRecurringView && this.props.initialRecurringView !== 'none') { this.setState({ authed: true, activeTab: 'transactions', recurringView: this.props.initialRecurringView }); return; }
     this.startSplash();
   }
   componentWillUnmount() { clearTimeout(this._splashTimer); }
@@ -557,10 +622,20 @@ class Component extends DCLogic {
   }
   skipCategories() { this.finishOnboarding(); }
   finishOnboarding() { this.setState({ onboardingActive: false, authed: true, onboardingDone: true }); }
-  openAdd() { this.setState({ isAddingTx: true, newTxPositive: false, selectedCategory: 'Ăn uống' }); }
-  closeAdd() { this.setState({ isAddingTx: false }); }
-  setNewTxPositive(v) { this.setState({ newTxPositive: v }); }
+  openAdd() { this.setState({ isAddingTx: true, newTxPositive: false, selectedCategory: 'Ăn uống', recurringEnabled: false, recurringView: null }); }
+  closeAdd() { this.setState({ isAddingTx: false, recurringEnabled: false }); }
+  setNewTxPositive(v) { this.setState({ newTxPositive: v, recurringEnabled: v ? false : this.state.recurringEnabled }); }
   selectCategory(cat) { this.setState({ selectedCategory: cat }); }
+  toggleRecurring() { this.setState(s => ({ recurringEnabled: !s.recurringEnabled })); }
+  setRecurringFrequency(event) { this.setState({ recurringFrequency: event && event.target ? event.target.value : 'Hàng tháng' }); }
+  openRecurringList() { this.setState({ recurringView: 'list', isAddingTx: false, activeTab: 'transactions' }); }
+  openAddRecurring() { this.setState({ recurringView: null, isAddingTx: true, newTxPositive: false, selectedCategory: 'Hóa đơn', recurringEnabled: true }); }
+  openRecurringDetail() { this.setState({ recurringView: 'detail' }); }
+  closeRecurring() { this.setState({ recurringView: null }); }
+  confirmRecurring() { this.setState({ recurringView: 'scope' }); }
+  applyOnlyThisOccurrence() { this.setState({ recurringView: 'success' }); }
+  applyFutureOccurrences() { this.setState({ recurringView: 'success' }); }
+  skipRecurring() { this.setState({ recurringView: 'list' }); }
   saveTransaction() {
     const amountRaw = this.amountRef.current ? this.amountRef.current.value : '';
     const digits = amountRaw.replace(/\D/g, '');
@@ -581,7 +656,8 @@ class Component extends DCLogic {
       iconBg: meta.bg,
       group: 'Hôm nay',
     };
-    this.setState(s => ({ transactions: [newTx, ...s.transactions], isAddingTx: false, activeTab: 'overview' }));
+    const nextView = this.state.recurringEnabled && !positive ? 'list' : null;
+    this.setState(s => ({ transactions: [newTx, ...s.transactions], isAddingTx: false, activeTab: nextView ? 'transactions' : 'overview', recurringView: nextView, recurringEnabled: false }));
     if (this.amountRef.current) this.amountRef.current.value = '';
     if (this.noteRef.current) this.noteRef.current.value = '';
   }
@@ -672,6 +748,12 @@ class Component extends DCLogic {
       openGoldManagement: () => this.openGoldManagement(),
       isAddingTx: s.isAddingTx,
       isNotAddingTx: !s.isAddingTx,
+      isMainView: !s.recurringView,
+      isRecurringList: s.recurringView === 'list',
+      isRecurringDetail: s.recurringView === 'detail',
+      isRecurringScope: s.recurringView === 'scope',
+      isRecurringSuccess: s.recurringView === 'success',
+      showBottomNav: !s.isAddingTx && !s.recurringView,
       isExpenseType: !s.newTxPositive,
       openAdd: () => this.openAdd(),
       closeAdd: () => this.closeAdd(),
@@ -683,6 +765,20 @@ class Component extends DCLogic {
       amountRef: this.amountRef,
       noteRef: this.noteRef,
       saveTransaction: () => this.saveTransaction(),
+      recurringEnabled: s.recurringEnabled,
+      recurringToggleHint: s.recurringEnabled ? 'Đang tạo lịch cho các kỳ tiếp theo' : 'Tắt · Lưu như giao dịch bình thường',
+      recurringTrackStyle: `width:48px;height:28px;border-radius:14px;position:relative;flex-shrink:0;background:${s.recurringEnabled ? '#2F6FED' : '#D9DDE6'}`,
+      recurringKnobStyle: `display:block;width:22px;height:22px;border-radius:11px;background:#fff;position:absolute;top:3px;left:${s.recurringEnabled ? '23px' : '3px'};box-shadow:0 1px 3px rgba(16,24,40,.18)`,
+      toggleRecurring: () => this.toggleRecurring(),
+      setRecurringFrequency: (event) => this.setRecurringFrequency(event),
+      openRecurringList: () => this.openRecurringList(),
+      openAddRecurring: () => this.openAddRecurring(),
+      openRecurringDetail: () => this.openRecurringDetail(),
+      closeRecurring: () => this.closeRecurring(),
+      confirmRecurring: () => this.confirmRecurring(),
+      applyOnlyThisOccurrence: () => this.applyOnlyThisOccurrence(),
+      applyFutureOccurrences: () => this.applyFutureOccurrences(),
+      skipRecurring: () => this.skipRecurring(),
       isStep1: step === 1,
       isStep2: step === 2,
       isStep3: step === 3,

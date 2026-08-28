@@ -32,7 +32,7 @@ a:hover{color:#1B4FC0}
           <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
             <div style="font-size:14px;font-weight:800;color:#101828">{{screen.label}}</div>
             <sc-if value="{{screen.isFinanceApp}}">
-              <dc-import name="Finance App" start-logged-in="{{screen.startLoggedIn}}" force-onboarding="{{screen.forceOnboarding}}" onboarding-start-step="{{screen.onboardingStartStep}}" initial-tab="{{screen.initialTab}}" force-add-tx="{{screen.forceAddTx}}" force-splash="{{screen.forceSplash}}" hint-size="402,874"></dc-import>
+              <dc-import name="Finance App" start-logged-in="{{screen.startLoggedIn}}" force-onboarding="{{screen.forceOnboarding}}" onboarding-start-step="{{screen.onboardingStartStep}}" initial-tab="{{screen.initialTab}}" force-add-tx="{{screen.forceAddTx}}" force-splash="{{screen.forceSplash}}" initial-recurring-view="{{screen.initialRecurringView}}" hint-size="402,874"></dc-import>
             </sc-if>
             <sc-if value="{{screen.isGoldProfile}}">
               <dc-import name="Finance App.gold" start-logged-in="{{screen.startLoggedIn}}" initial-tab="{{screen.initialTab}}" hint-size="402,874"></dc-import>
@@ -71,6 +71,15 @@ class Component extends DCLogic {
             { label: 'Mục tiêu', isFinanceApp: true, startLoggedIn: true, initialTab: 'goals' },
             { label: 'Cài đặt', isGoldProfile: true, startLoggedIn: true, initialTab: 'profile' },
             { label: 'Quản lý vàng', isGoldManagement: true },
+          ],
+        },
+        {
+          title: 'Chi tiêu định kỳ',
+          screens: [
+            { label: 'Danh sách kỳ', isFinanceApp: true, startLoggedIn: true, initialRecurringView: 'list' },
+            { label: 'Chi tiết kỳ', isFinanceApp: true, startLoggedIn: true, initialRecurringView: 'detail' },
+            { label: 'Phạm vi cập nhật', isFinanceApp: true, startLoggedIn: true, initialRecurringView: 'scope' },
+            { label: 'Xác nhận thành công', isFinanceApp: true, startLoggedIn: true, initialRecurringView: 'success' },
           ],
         },
         {
