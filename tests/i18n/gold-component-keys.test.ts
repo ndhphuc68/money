@@ -42,6 +42,21 @@ const goldComponentKeys = [
   'goldRestoreLabel',
   'goldPurgeConfirmMessage',
   'goldTrashBlockedMessage',
+  'goldBackLabel',
+  'goldEmptyHistory',
+  'goldDeleteBrandLabel',
+  'goldCloseLabel',
+  'goldRealizedGainLabel',
+  'goldRemainingLabel',
+  'goldPurgeLabel',
+  'goldSellDisabledHint',
+  'goldLotAlreadySoldError',
+  'goldLotNotFoundError',
+  'goldSaleDateBeforePurchaseError',
+  'goldRestoreUnavailableError',
+  'goldAmountRequiredError',
+  'goldBrandRequiredError',
+  'goldLotRequiredError',
 ] as const;
 
 describe('gold component translations', () => {
