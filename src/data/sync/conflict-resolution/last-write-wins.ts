@@ -15,7 +15,10 @@ export class LastWriteWinsConflictResolver implements ConflictResolver {
     const deviceOrder = compareDeviceIds(incoming.originDeviceId, local.originDeviceId);
     const contentOrder = compareCanonicalContent(incoming, local);
 
-    if (timestampOrder > 0 || (timestampOrder === 0 && (deviceOrder > 0 || (deviceOrder === 0 && contentOrder > 0)))) {
+    if (
+      timestampOrder > 0 ||
+      (timestampOrder === 0 && (deviceOrder > 0 || (deviceOrder === 0 && contentOrder > 0)))
+    ) {
       return { winner: 'incoming', record: incoming };
     }
 
@@ -46,7 +49,9 @@ function stableJson(value: unknown): string {
     return `[${value.map(stableJson).join(',')}]`;
   }
 
-  const entries = Object.entries(value as Record<string, unknown>).sort(([left], [right]) => (left > right ? 1 : -1));
+  const entries = Object.entries(value as Record<string, unknown>).sort(([left], [right]) =>
+    left > right ? 1 : -1,
+  );
   return `{${entries.map(([key, entryValue]) => `${JSON.stringify(key)}:${stableJson(entryValue)}`).join(',')}}`;
 }
 

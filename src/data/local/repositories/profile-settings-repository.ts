@@ -1,7 +1,10 @@
 import { eq } from 'drizzle-orm';
 
 import { ProfileSettingsRepository as ProfileSettingsRepositoryPort } from '@/core/application/ports/finance-repositories';
-import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
+import {
+  createDefaultProfileSettings,
+  ProfileSettings,
+} from '@/core/domain/finance/profile-settings';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { profileSettings } from '@/data/local/schema';
 

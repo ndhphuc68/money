@@ -1,6 +1,9 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { buildGoldCalendarCells, formatGoldCalendarMonthLabel } from '@/features/gold/view-models/gold-calendar';
+import {
+  buildGoldCalendarCells,
+  formatGoldCalendarMonthLabel,
+} from '@/features/gold/view-models/gold-calendar';
 import { colors, radius, spacing, typography } from '@/theme';
 
 export type GoldCalendarModalProps = {
@@ -52,7 +55,9 @@ export function GoldCalendarModal({
           </View>
           <View style={styles.weekdayRow}>
             {weekdayLabels.map((label) => (
-              <Text key={label} style={styles.weekdayLabel}>{label}</Text>
+              <Text key={label} style={styles.weekdayLabel}>
+                {label}
+              </Text>
             ))}
           </View>
           <View style={styles.grid}>
@@ -62,9 +67,10 @@ export function GoldCalendarModal({
                 disabled={cell.iso === null}
                 key={cell.key}
                 onPress={cell.iso ? () => onSelectDate(cell.iso as string) : undefined}
-                style={[styles.cell, cell.isSelected && styles.cellSelected]}
-              >
-                <Text style={[styles.cellText, cell.isSelected && styles.cellTextSelected]}>{cell.label}</Text>
+                style={[styles.cell, cell.isSelected && styles.cellSelected]}>
+                <Text style={[styles.cellText, cell.isSelected && styles.cellTextSelected]}>
+                  {cell.label}
+                </Text>
               </Pressable>
             ))}
           </View>

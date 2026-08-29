@@ -1,6 +1,10 @@
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { CreateGoldLotInput, GoldLotListFilter, GoldLotRepository as GoldLotRepositoryPort } from '@/core/application/ports/gold-repositories';
+import {
+  CreateGoldLotInput,
+  GoldLotListFilter,
+  GoldLotRepository as GoldLotRepositoryPort,
+} from '@/core/application/ports/gold-repositories';
 import { WriteContext } from '@/core/application/ports/finance-repositories';
 import { GoldLot, validateGoldLotInput } from '@/core/domain/gold/gold-lot';
 import { normalizeGoldWeightToGrams } from '@/core/domain/gold/gold-weight';
@@ -11,7 +15,10 @@ import { changeLog, goldLots } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toGoldLotEntity, toGoldLotRowValues } from './gold-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class GoldLotRepository implements GoldLotRepositoryPort {
   constructor(private readonly database: LocalDatabaseClient) {}
@@ -82,7 +89,9 @@ export class GoldLotRepository implements GoldLotRepositoryPort {
     }
 
     const query = this.database.db.select().from(goldLots);
-    const rows = (conditions.length > 0 ? query.where(and(...conditions)) : query).orderBy(goldLots.purchaseDate).all();
+    const rows = (conditions.length > 0 ? query.where(and(...conditions)) : query)
+      .orderBy(goldLots.purchaseDate)
+      .all();
     return rows.map(toGoldLotEntity);
   }
 
@@ -92,7 +101,11 @@ export class GoldLotRepository implements GoldLotRepositoryPort {
     const values = toGoldLotRowValues(canonicalRecord);
 
     this.database.db.transaction((transaction) => {
-      transaction.insert(goldLots).values(values).onConflictDoUpdate({ target: goldLots.id, set: values }).run();
+      transaction
+        .insert(goldLots)
+        .values(values)
+        .onConflictDoUpdate({ target: goldLots.id, set: values })
+        .run();
       transaction.insert(changeLog).values(toChangeLogValues(canonicalOperation)).run();
     });
   }

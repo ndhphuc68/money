@@ -1,4 +1,8 @@
-import { AccountRepository, CategoryRepository, ProfileSettingsRepository } from '@/core/application/ports/finance-repositories';
+import {
+  AccountRepository,
+  CategoryRepository,
+  ProfileSettingsRepository,
+} from '@/core/application/ports/finance-repositories';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { ProfileSettings } from '@/core/domain/finance/profile-settings';
@@ -124,7 +128,6 @@ export class Onboarding {
 
     const created: Category[] = [];
     for (const category of selection) {
-      // eslint-disable-next-line no-await-in-loop
       const record = await this.deps.categoryRepository.create({
         id: this.deps.generateId(),
         operationId: this.deps.generateId(),

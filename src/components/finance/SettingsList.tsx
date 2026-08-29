@@ -22,11 +22,26 @@ export function SettingsList({ items, onSelect }: SettingsListProps) {
           accessibilityRole="button"
           key={`${item.label}-${index}`}
           onPress={() => onSelect?.(index)}
-          style={({ pressed }) => [styles.row, index < items.length - 1 && styles.divider, pressed && styles.rowPressed]}
-        >
-          <View accessibilityElementsHidden importantForAccessibility="no" style={[styles.icon, { backgroundColor: item.iconColor }]} />
-          <Text numberOfLines={1} style={styles.label}>{item.label}</Text>
-          <ChevronRight accessibilityElementsHidden color="rgba(60, 60, 67, 0.3)" importantForAccessibility="no" size={22} strokeWidth={2.2} />
+          style={({ pressed }) => [
+            styles.row,
+            index < items.length - 1 && styles.divider,
+            pressed && styles.rowPressed,
+          ]}>
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            style={[styles.icon, { backgroundColor: item.iconColor }]}
+          />
+          <Text numberOfLines={1} style={styles.label}>
+            {item.label}
+          </Text>
+          <ChevronRight
+            accessibilityElementsHidden
+            color="rgba(60, 60, 67, 0.3)"
+            importantForAccessibility="no"
+            size={22}
+            strokeWidth={2.2}
+          />
         </Pressable>
       ))}
     </View>

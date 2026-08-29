@@ -1,4 +1,7 @@
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 
 export type PurgeGoldLotDeps = {

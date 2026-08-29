@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { AccountRepository, CategoryRepository, TransactionRepository } from '@/core/application/ports/finance-repositories';
+import type {
+  AccountRepository,
+  CategoryRepository,
+  TransactionRepository,
+} from '@/core/application/ports/finance-repositories';
 import type { CreateTransaction } from '@/core/application/finance/create-transaction';
 import type { UpdateTransaction } from '@/core/application/finance/update-transaction';
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
-import { TransactionInput, TransactionType, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  TransactionInput,
+  TransactionType,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 import type { Translate } from '@/i18n/translations';
 
 import { todayIsoDate } from './transaction-presentation';
@@ -89,7 +97,13 @@ function emptyValues(today: string): TransactionFormValues {
  * editing (see the Task 8 report for why `TransactionForm` itself isn't
  * reused here).
  */
-export function useTransactionForm({ dependencies, transactionId, t, onSaved, now }: UseTransactionFormOptions): TransactionFormViewModel {
+export function useTransactionForm({
+  dependencies,
+  transactionId,
+  t,
+  onSaved,
+  now,
+}: UseTransactionFormOptions): TransactionFormViewModel {
   const today = todayIsoDate(now?.() ?? new Date());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -119,7 +133,8 @@ export function useTransactionForm({ dependencies, transactionId, t, onSaved, no
             amount: existing.amount,
             name: existing.name,
             accountId: existing.accountId,
-            destinationAccountId: existing.type === 'transfer' ? existing.destinationAccountId : null,
+            destinationAccountId:
+              existing.type === 'transfer' ? existing.destinationAccountId : null,
             categoryId: existing.type === 'transfer' ? null : existing.categoryId,
             date: existing.date,
             note: existing.note ?? '',
@@ -144,15 +159,28 @@ export function useTransactionForm({ dependencies, transactionId, t, onSaved, no
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencies, transactionId]);
 
-  const setType = useCallback((type: TransactionType) => setValues((current) => ({ ...current, type })), []);
-  const setAmount = useCallback((amount: number | null) => setValues((current) => ({ ...current, amount })), []);
-  const setName = useCallback((name: string) => setValues((current) => ({ ...current, name })), []);
-  const setAccountId = useCallback((accountId: string | null) => setValues((current) => ({ ...current, accountId })), []);
-  const setDestinationAccountId = useCallback(
-    (destinationAccountId: string | null) => setValues((current) => ({ ...current, destinationAccountId })),
+  const setType = useCallback(
+    (type: TransactionType) => setValues((current) => ({ ...current, type })),
     [],
   );
-  const setCategoryId = useCallback((categoryId: string | null) => setValues((current) => ({ ...current, categoryId })), []);
+  const setAmount = useCallback(
+    (amount: number | null) => setValues((current) => ({ ...current, amount })),
+    [],
+  );
+  const setName = useCallback((name: string) => setValues((current) => ({ ...current, name })), []);
+  const setAccountId = useCallback(
+    (accountId: string | null) => setValues((current) => ({ ...current, accountId })),
+    [],
+  );
+  const setDestinationAccountId = useCallback(
+    (destinationAccountId: string | null) =>
+      setValues((current) => ({ ...current, destinationAccountId })),
+    [],
+  );
+  const setCategoryId = useCallback(
+    (categoryId: string | null) => setValues((current) => ({ ...current, categoryId })),
+    [],
+  );
   const setDate = useCallback((date: string) => setValues((current) => ({ ...current, date })), []);
   const setNote = useCallback((note: string) => setValues((current) => ({ ...current, note })), []);
 
@@ -210,7 +238,9 @@ export function useTransactionForm({ dependencies, transactionId, t, onSaved, no
     try {
       validateTransactionInput(input);
     } catch (cause) {
-      setErrors({ form: cause instanceof Error ? cause.message : t('transactionFormGenericError') });
+      setErrors({
+        form: cause instanceof Error ? cause.message : t('transactionFormGenericError'),
+      });
       return;
     }
 
@@ -223,7 +253,9 @@ export function useTransactionForm({ dependencies, transactionId, t, onSaved, no
       }
       onSaved();
     } catch (cause) {
-      setErrors({ form: cause instanceof Error ? cause.message : t('transactionFormGenericError') });
+      setErrors({
+        form: cause instanceof Error ? cause.message : t('transactionFormGenericError'),
+      });
     } finally {
       setSubmitting(false);
     }

@@ -1,4 +1,7 @@
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
 import { GoldError } from '@/core/domain/gold/gold-error';
 import { GoldLot } from '@/core/domain/gold/gold-lot';
 import { GoldSellTransaction } from '@/core/domain/gold/gold-sell-transaction';
@@ -43,7 +46,10 @@ export class RestoreGoldSale {
     const lotStillAvailable = lot && lot.deletedAt === null && lot.status === 'held';
     const dateStillValid = lot ? sale.saleDate >= lot.purchaseDate : false;
     if (!lotStillAvailable || !dateStillValid) {
-      throw new GoldError('lotNoLongerAvailable', 'Cannot restore: the gold lot is no longer available');
+      throw new GoldError(
+        'lotNoLongerAvailable',
+        'Cannot restore: the gold lot is no longer available',
+      );
     }
 
     const restored = await this.deps.goldSellTransactionRepository.restore(id, {

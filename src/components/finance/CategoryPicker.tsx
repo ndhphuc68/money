@@ -34,7 +34,11 @@ export function CategoryPicker({
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <View style={styles.list}>
         {allowUnselect && allLabel ? (
-          <PickerChip active={selectedId === null} label={allLabel} onPress={() => onSelect(null)} />
+          <PickerChip
+            active={selectedId === null}
+            label={allLabel}
+            onPress={() => onSelect(null)}
+          />
         ) : null}
         {visible.map((category) => (
           <PickerChip
@@ -54,15 +58,26 @@ export function CategoryPicker({
   );
 }
 
-function PickerChip({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
+function PickerChip({
+  active,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && !active && styles.chipPressed]}
-    >
+      style={({ pressed }) => [
+        styles.chip,
+        active && styles.chipActive,
+        pressed && !active && styles.chipPressed,
+      ]}>
       <Text numberOfLines={1} style={[styles.chipText, active && styles.chipTextActive]}>
         {label}
       </Text>

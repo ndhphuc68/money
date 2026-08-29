@@ -3,7 +3,11 @@ import { randomUUID } from 'expo-crypto';
 
 import { CreateGoldLot } from '@/core/application/gold/create-gold-lot';
 import { GetGoldOverview } from '@/core/application/gold/get-gold-overview';
-import { CreateGoldBrand, DeleteGoldBrand, ListGoldBrands } from '@/core/application/gold/manage-gold-brands';
+import {
+  CreateGoldBrand,
+  DeleteGoldBrand,
+  ListGoldBrands,
+} from '@/core/application/gold/manage-gold-brands';
 import { PurgeGoldLot, PurgeGoldSale } from '@/core/application/gold/purge-gold-transaction';
 import { RestoreGoldLot, RestoreGoldSale } from '@/core/application/gold/restore-gold-transaction';
 import { SellGoldLot } from '@/core/application/gold/sell-gold-lot';
@@ -38,7 +42,9 @@ export type GoldDependencies = {
  * (`src/features/finance/finance-dependencies.ts`). Async because resolving
  * a stable device identity touches secure storage.
  */
-export async function createGoldDependencies(database: LocalDatabaseClient): Promise<GoldDependencies> {
+export async function createGoldDependencies(
+  database: LocalDatabaseClient,
+): Promise<GoldDependencies> {
   const now = () => new Date().toISOString();
   const generateId = () => randomUUID();
   const deviceId = await new DeviceIdentity().get();
@@ -58,9 +64,17 @@ export async function createGoldDependencies(database: LocalDatabaseClient): Pro
     deleteGoldBrand: new DeleteGoldBrand({ goldBrandRepository, ...shared }),
     sellGoldLot: new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, ...shared }),
     trashGoldLot: new TrashGoldLot({ goldLotRepository, goldSellTransactionRepository, ...shared }),
-    trashGoldSale: new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, ...shared }),
+    trashGoldSale: new TrashGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      ...shared,
+    }),
     restoreGoldLot: new RestoreGoldLot({ goldLotRepository, ...shared }),
-    restoreGoldSale: new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, ...shared }),
+    restoreGoldSale: new RestoreGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      ...shared,
+    }),
     purgeGoldLot: new PurgeGoldLot({ goldLotRepository, goldSellTransactionRepository, ...shared }),
     purgeGoldSale: new PurgeGoldSale({ goldSellTransactionRepository, ...shared }),
     getGoldOverview: new GetGoldOverview({ goldLotRepository }),

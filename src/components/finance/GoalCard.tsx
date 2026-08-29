@@ -13,7 +13,16 @@ type GoalCardProps = {
   accessibilityLabel: string;
 };
 
-export function GoalCard({ name, initials, color = colors.brand.primary, due, percent, saved, target, accessibilityLabel }: GoalCardProps) {
+export function GoalCard({
+  name,
+  initials,
+  color = colors.brand.primary,
+  due,
+  percent,
+  saved,
+  target,
+  accessibilityLabel,
+}: GoalCardProps) {
   const normalizedPercent = Math.max(0, Math.min(percent, 100));
 
   return (
@@ -23,17 +32,25 @@ export function GoalCard({ name, initials, color = colors.brand.primary, due, pe
           <Text style={styles.avatarText}>{initials}</Text>
         </View>
         <View style={styles.copy}>
-          <Text numberOfLines={1} style={styles.name}>{name}</Text>
+          <Text numberOfLines={1} style={styles.name}>
+            {name}
+          </Text>
           <Text style={styles.due}>{due}</Text>
         </View>
         <Text style={styles.percent}>{normalizedPercent}%</Text>
       </View>
       <View accessibilityLabel={accessibilityLabel} style={styles.track}>
-        <View style={[styles.progress, { backgroundColor: color, width: `${normalizedPercent}%` }]} />
+        <View
+          style={[styles.progress, { backgroundColor: color, width: `${normalizedPercent}%` }]}
+        />
       </View>
       <View style={styles.footer}>
-        <Text numberOfLines={1} style={styles.footerText}>{saved}</Text>
-        <Text numberOfLines={1} style={styles.footerText}>{target}</Text>
+        <Text numberOfLines={1} style={styles.footerText}>
+          {saved}
+        </Text>
+        <Text numberOfLines={1} style={styles.footerText}>
+          {target}
+        </Text>
       </View>
     </View>
   );

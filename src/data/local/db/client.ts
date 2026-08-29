@@ -20,7 +20,9 @@ export async function migrateLocalDatabase(database: LocalDatabase): Promise<voi
   await migrate(database, migrations);
 }
 
-export async function openLocalDatabase(databaseName = 'offline-first-sync.db'): Promise<LocalDatabaseClient> {
+export async function openLocalDatabase(
+  databaseName = 'offline-first-sync.db',
+): Promise<LocalDatabaseClient> {
   const sqliteDatabase = SQLite.openDatabaseSync(databaseName);
   sqliteDatabase.prepareSync('PRAGMA foreign_keys = ON;').executeSync();
   const db = createLocalDatabase(sqliteDatabase);

@@ -31,7 +31,9 @@ function isValidCalendarDate(value: unknown): boolean {
   }
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -50,11 +52,19 @@ export function validateGoldLotInput(input: GoldLotInput): void {
   if (!isValidCalendarDate(input.purchaseDate)) {
     throw new Error('Gold lot purchaseDate must be a valid ISO calendar date (YYYY-MM-DD)');
   }
-  if (typeof input.quantity !== 'number' || !Number.isFinite(input.quantity) || input.quantity <= 0) {
+  if (
+    typeof input.quantity !== 'number' ||
+    !Number.isFinite(input.quantity) ||
+    input.quantity <= 0
+  ) {
     throw new Error('Gold lot quantity must be a positive number');
   }
   normalizeGoldWeightToGrams(input.quantity, input.unit);
-  if (typeof input.totalAmount !== 'number' || !Number.isInteger(input.totalAmount) || input.totalAmount <= 0) {
+  if (
+    typeof input.totalAmount !== 'number' ||
+    !Number.isInteger(input.totalAmount) ||
+    input.totalAmount <= 0
+  ) {
     throw new Error('Gold lot totalAmount must be a positive integer');
   }
 }

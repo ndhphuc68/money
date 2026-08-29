@@ -1,4 +1,7 @@
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
 import { GoldError } from '@/core/domain/gold/gold-error';
 import { GoldLot } from '@/core/domain/gold/gold-lot';
 import { GoldSellTransaction } from '@/core/domain/gold/gold-sell-transaction';
@@ -17,7 +20,10 @@ export class TrashGoldLot {
   async execute(id: string): Promise<GoldLot> {
     const activeSale = await this.deps.goldSellTransactionRepository.findActiveByLotId(id);
     if (activeSale) {
-      throw new GoldError('lotHasActiveSale', 'Cannot trash a gold lot with an active sell transaction');
+      throw new GoldError(
+        'lotHasActiveSale',
+        'Cannot trash a gold lot with an active sell transaction',
+      );
     }
     return this.deps.goldLotRepository.softDelete(id, {
       originDeviceId: this.deps.deviceId,

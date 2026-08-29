@@ -12,7 +12,14 @@ export type GoldOverviewCardProps = {
   costBasisValue: string;
 };
 
-export function GoldOverviewCard({ title, subtitle, quantityLabel, quantityValue, costBasisLabel, costBasisValue }: GoldOverviewCardProps) {
+export function GoldOverviewCard({
+  title,
+  subtitle,
+  quantityLabel,
+  quantityValue,
+  costBasisLabel,
+  costBasisValue,
+}: GoldOverviewCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -27,11 +34,15 @@ export function GoldOverviewCard({ title, subtitle, quantityLabel, quantityValue
       <View style={styles.stats}>
         <View style={styles.stat}>
           <Text style={styles.statLabel}>{quantityLabel}</Text>
-          <Text numberOfLines={1} style={styles.statValue}>{quantityValue}</Text>
+          <Text numberOfLines={1} style={styles.statValue}>
+            {quantityValue}
+          </Text>
         </View>
         <View style={styles.stat}>
           <Text style={styles.statLabel}>{costBasisLabel}</Text>
-          <Text numberOfLines={1} style={styles.statValue}>{costBasisValue}</Text>
+          <Text numberOfLines={1} style={styles.statValue}>
+            {costBasisValue}
+          </Text>
         </View>
       </View>
     </View>

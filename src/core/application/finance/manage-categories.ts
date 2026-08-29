@@ -1,4 +1,8 @@
-import { CategoryRepository, UpdateCategoryInput, WriteContext } from '@/core/application/ports/finance-repositories';
+import {
+  CategoryRepository,
+  UpdateCategoryInput,
+  WriteContext,
+} from '@/core/application/ports/finance-repositories';
 import { Category, CategoryType } from '@/core/domain/finance/category';
 
 export type ManageCategoriesDeps = {

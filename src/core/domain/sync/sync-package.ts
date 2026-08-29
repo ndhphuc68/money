@@ -1,4 +1,10 @@
-import { canonicalizeUuid, isIsoTimestamp, isUuid, parseSyncOperation, SyncOperation } from './sync-operation';
+import {
+  canonicalizeUuid,
+  isIsoTimestamp,
+  isUuid,
+  parseSyncOperation,
+  SyncOperation,
+} from './sync-operation';
 
 export type SyncPackageContent = {
   format: 'app-sync';
@@ -49,7 +55,11 @@ export function parseSyncPackageContent(value: unknown): SyncPackageContent {
   if (typeof value.appVersion !== 'string' || value.appVersion.trim() === '') {
     throw new Error('Sync package appVersion must not be empty');
   }
-  if (typeof value.schemaVersion !== 'number' || !Number.isInteger(value.schemaVersion) || value.schemaVersion < 0) {
+  if (
+    typeof value.schemaVersion !== 'number' ||
+    !Number.isInteger(value.schemaVersion) ||
+    value.schemaVersion < 0
+  ) {
     throw new Error('Sync package schemaVersion must be a non-negative integer');
   }
   if (!isUuid(value.sourceDeviceId) || !isIsoTimestamp(value.exportedAt)) {

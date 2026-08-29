@@ -7,7 +7,10 @@ import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, exampleRecords } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class ExampleRecordRepository implements Repository {
   constructor(private readonly database: LocalDatabaseClient) {}

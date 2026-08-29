@@ -16,7 +16,13 @@ type SettingsScreenProps = SettingsViewModel & {
   onOpenLocalBackup?: () => void;
 };
 
-export function SettingsScreen({ t, onOpenAccounts, onOpenGoldManagement, onOpenPersonalInfo, onOpenLocalBackup }: SettingsScreenProps) {
+export function SettingsScreen({
+  t,
+  onOpenAccounts,
+  onOpenGoldManagement,
+  onOpenPersonalInfo,
+  onOpenLocalBackup,
+}: SettingsScreenProps) {
   return (
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -76,7 +82,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Row({ accessibilityLabel, badgeColor, icon, label, onPress }: { accessibilityLabel: string; badgeColor: string; icon: React.ReactNode; label: string; onPress?: () => void }) {
+function Row({
+  accessibilityLabel,
+  badgeColor,
+  icon,
+  label,
+  onPress,
+}: {
+  accessibilityLabel: string;
+  badgeColor: string;
+  icon: React.ReactNode;
+  label: string;
+  onPress?: () => void;
+}) {
   const disabled = !onPress;
   return (
     <Pressable
@@ -85,10 +103,15 @@ function Row({ accessibilityLabel, badgeColor, icon, label, onPress }: { accessi
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, disabled && styles.rowDisabled, pressed && !disabled && styles.rowPressed]}
-    >
+      style={({ pressed }) => [
+        styles.row,
+        disabled && styles.rowDisabled,
+        pressed && !disabled && styles.rowPressed,
+      ]}>
       <View style={[styles.badge, { backgroundColor: badgeColor }]}>{icon}</View>
-      <Text numberOfLines={1} style={styles.rowLabel}>{label}</Text>
+      <Text numberOfLines={1} style={styles.rowLabel}>
+        {label}
+      </Text>
       <ChevronRight color={colors.content.faint} size={18} strokeWidth={2.2} />
     </Pressable>
   );

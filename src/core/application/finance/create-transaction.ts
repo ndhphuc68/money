@@ -1,5 +1,9 @@
 import { TransactionRepository } from '@/core/application/ports/finance-repositories';
-import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  Transaction,
+  TransactionInput,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 
 export type CreateTransactionDeps = {
   transactionRepository: TransactionRepository;

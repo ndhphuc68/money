@@ -13,7 +13,13 @@ import type { Category } from '@/core/domain/finance/category';
 import type { Translate } from '@/i18n/translations';
 import type { TransactionTypeFilter } from '@/components/finance';
 
-import { buildTransactionListItem, currentMonth, formatDateLabel, indexById, TransactionListItem } from './transaction-presentation';
+import {
+  buildTransactionListItem,
+  currentMonth,
+  formatDateLabel,
+  indexById,
+  TransactionListItem,
+} from './transaction-presentation';
 
 /** The subset of `FinanceDependencies` (Task 7) this view model drives. */
 export type TransactionsDependencies = {
@@ -87,7 +93,11 @@ function groupByDate(items: TransactionListItem[]): TransactionGroup[] {
  * drives the delete-then-undo flow (`UndoBanner`, Task 6) by soft-deleting
  * immediately and restoring on Undo.
  */
-export function useTransactions({ dependencies, t, now }: UseTransactionsOptions): TransactionsViewModel {
+export function useTransactions({
+  dependencies,
+  t,
+  now,
+}: UseTransactionsOptions): TransactionsViewModel {
   const [loading, setLoading] = useState(true);
   const [amountsHidden, setAmountsHidden] = useState(false);
   const [filters, setFilters] = useState<TransactionsFilters>({
@@ -106,20 +116,21 @@ export function useTransactions({ dependencies, t, now }: UseTransactionsOptions
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [transactions, activeAccounts, expenseCategories, incomeCategories, settings] = await Promise.all([
-        dependencies.transactionRepository.list({
-          month: filters.month,
-          type: filters.type === 'all' ? undefined : filters.type,
-          categoryId: filters.categoryId ?? undefined,
-          accountId: filters.accountId ?? undefined,
-          query: filters.search.trim() === '' ? undefined : filters.search.trim(),
-          includeDeleted: false,
-        }),
-        dependencies.accountRepository.listActive(),
-        dependencies.categoryRepository.listActiveByType('expense'),
-        dependencies.categoryRepository.listActiveByType('income'),
-        dependencies.profileSettingsRepository.get(),
-      ]);
+      const [transactions, activeAccounts, expenseCategories, incomeCategories, settings] =
+        await Promise.all([
+          dependencies.transactionRepository.list({
+            month: filters.month,
+            type: filters.type === 'all' ? undefined : filters.type,
+            categoryId: filters.categoryId ?? undefined,
+            accountId: filters.accountId ?? undefined,
+            query: filters.search.trim() === '' ? undefined : filters.search.trim(),
+            includeDeleted: false,
+          }),
+          dependencies.accountRepository.listActive(),
+          dependencies.categoryRepository.listActiveByType('expense'),
+          dependencies.categoryRepository.listActiveByType('income'),
+          dependencies.profileSettingsRepository.get(),
+        ]);
 
       const allCategories = [...incomeCategories, ...expenseCategories];
       const accountsById = indexById(activeAccounts);
@@ -128,8 +139,12 @@ export function useTransactions({ dependencies, t, now }: UseTransactionsOptions
 
       const items = transactions
         .slice()
-        .sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)))
-        .map((transaction) => buildTransactionListItem(transaction, accountsById, categoriesById, hidden, t));
+        .sort((a, b) =>
+          a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date),
+        )
+        .map((transaction) =>
+          buildTransactionListItem(transaction, accountsById, categoriesById, hidden, t),
+        );
 
       setAmountsHidden(hidden);
       setAccounts(activeAccounts);
@@ -138,18 +153,32 @@ export function useTransactions({ dependencies, t, now }: UseTransactionsOptions
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencies, filters, t]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const setMonth = useCallback((month: string) => setFilters((current) => ({ ...current, month })), []);
-  const setType = useCallback((type: TransactionTypeFilter) => setFilters((current) => ({ ...current, type })), []);
-  const setCategoryId = useCallback((categoryId: string | null) => setFilters((current) => ({ ...current, categoryId })), []);
-  const setAccountId = useCallback((accountId: string | null) => setFilters((current) => ({ ...current, accountId })), []);
-  const setSearch = useCallback((search: string) => setFilters((current) => ({ ...current, search })), []);
+  const setMonth = useCallback(
+    (month: string) => setFilters((current) => ({ ...current, month })),
+    [],
+  );
+  const setType = useCallback(
+    (type: TransactionTypeFilter) => setFilters((current) => ({ ...current, type })),
+    [],
+  );
+  const setCategoryId = useCallback(
+    (categoryId: string | null) => setFilters((current) => ({ ...current, categoryId })),
+    [],
+  );
+  const setAccountId = useCallback(
+    (accountId: string | null) => setFilters((current) => ({ ...current, accountId })),
+    [],
+  );
+  const setSearch = useCallback(
+    (search: string) => setFilters((current) => ({ ...current, search })),
+    [],
+  );
 
   const deleteTransactionById = useCallback(
     async (id: string) => {
@@ -158,7 +187,7 @@ export function useTransactions({ dependencies, t, now }: UseTransactionsOptions
       setUndoMessage(t('transactionsDeleteUndoMessage'));
       await load();
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [dependencies, load, t],
   );
 
@@ -170,7 +199,6 @@ export function useTransactions({ dependencies, t, now }: UseTransactionsOptions
     setLastDeletedId(null);
     setUndoMessage(null);
     await load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencies, lastDeletedId, load]);
 
   const dismissUndo = useCallback(() => {

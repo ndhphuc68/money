@@ -1,7 +1,11 @@
 import { asc, eq, isNull } from 'drizzle-orm';
 
 import { ChangeLogRepository as ChangeLogPort } from '@/core/application/ports/repository';
-import { canonicalizeUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
+import {
+  canonicalizeUuid,
+  parseSyncOperation,
+  SyncOperation,
+} from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog } from '@/data/local/schema';
 
@@ -11,7 +15,10 @@ export class ChangeLogRepository implements ChangeLogPort {
   constructor(private readonly database: LocalDatabaseClient) {}
 
   async append(operation: SyncOperation): Promise<void> {
-    this.database.db.insert(changeLog).values(toChangeLogValues(canonicalizeSyncOperationIdentifiers(operation))).run();
+    this.database.db
+      .insert(changeLog)
+      .values(toChangeLogValues(canonicalizeSyncOperationIdentifiers(operation)))
+      .run();
   }
 
   async hasOperation(operationId: string): Promise<boolean> {
@@ -32,16 +39,18 @@ export class ChangeLogRepository implements ChangeLogPort {
       .orderBy(asc(changeLog.createdAt))
       .all();
 
-    return rows.map((row) => parseSyncOperation({
-      operationId: row.operationId,
-      entityType: row.entityType,
-      entityId: row.entityId,
-      operation: row.operation,
-      payload: JSON.parse(row.payload),
-      originDeviceId: row.originDeviceId,
-      revision: row.revision,
-      createdAt: row.createdAt,
-    }));
+    return rows.map((row) =>
+      parseSyncOperation({
+        operationId: row.operationId,
+        entityType: row.entityType,
+        entityId: row.entityId,
+        operation: row.operation,
+        payload: JSON.parse(row.payload),
+        originDeviceId: row.originDeviceId,
+        revision: row.revision,
+        createdAt: row.createdAt,
+      }),
+    );
   }
 }
 

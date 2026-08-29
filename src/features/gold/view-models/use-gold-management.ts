@@ -8,7 +8,12 @@ import { GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transacti
 import { GoldDependencies } from '@/features/gold/gold-dependencies';
 import { Translate } from '@/i18n/translations';
 
-import { buildLotHistoryRow, buildSaleHistoryRow, LotHistoryRow, SaleHistoryRow } from './gold-presentation';
+import {
+  buildLotHistoryRow,
+  buildSaleHistoryRow,
+  LotHistoryRow,
+  SaleHistoryRow,
+} from './gold-presentation';
 
 export type GoldManagementDependencies = Pick<
   GoldDependencies,
@@ -51,7 +56,10 @@ export type GoldManagementViewModel = {
   purgeSale(id: string): Promise<void>;
 };
 
-export function useGoldManagement(options: { dependencies: GoldManagementDependencies; t: Translate }): GoldManagementViewModel {
+export function useGoldManagement(options: {
+  dependencies: GoldManagementDependencies;
+  t: Translate;
+}): GoldManagementViewModel {
   const { dependencies, t } = options;
   const [overview, setOverview] = useState<GoldOverview | null>(null);
   const [heldLots, setHeldLots] = useState<LotHistoryRow[]>([]);
@@ -69,7 +77,9 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
       const [overviewResult, activeLots, deletedLots, allSales, brandList] = await Promise.all([
         dependencies.getGoldOverview.execute(),
         dependencies.goldLotRepository.list({ status: 'held' }),
-        dependencies.goldLotRepository.list({ includeDeleted: true }).then((lots: GoldLot[]) => lots.filter((lot) => lot.deletedAt !== null)),
+        dependencies.goldLotRepository
+          .list({ includeDeleted: true })
+          .then((lots: GoldLot[]) => lots.filter((lot) => lot.deletedAt !== null)),
         dependencies.goldSellTransactionRepository.list({ includeDeleted: true }),
         dependencies.listGoldBrands.execute(),
       ]);

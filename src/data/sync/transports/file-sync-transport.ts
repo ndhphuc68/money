@@ -30,7 +30,9 @@ export class FileSyncTransport implements SyncTransport {
   }
 
   importChanges(pkg: SyncPackage): Promise<ImportSummary> {
-    if (!this.authenticationProvider.verify(this.serializer.authenticationInput(pkg), pkg.authTag)) {
+    if (
+      !this.authenticationProvider.verify(this.serializer.authenticationInput(pkg), pkg.authTag)
+    ) {
       throw new Error('Sync package authentication failed');
     }
 

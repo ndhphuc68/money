@@ -7,7 +7,11 @@ import {
   UpdateTransactionInput,
   WriteContext,
 } from '@/core/application/ports/finance-repositories';
-import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  Transaction,
+  TransactionInput,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, transactions } from '@/data/local/schema';
@@ -15,7 +19,10 @@ import { changeLog, transactions } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toTransactionEntity, toTransactionRowValues } from './finance-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 type TransactionMeta = {
   createdAt: string;
@@ -54,7 +61,11 @@ export class TransactionRepository implements TransactionRepositoryPort {
     return transaction;
   }
 
-  async update(id: string, changes: UpdateTransactionInput, context: WriteContext): Promise<Transaction> {
+  async update(
+    id: string,
+    changes: UpdateTransactionInput,
+    context: WriteContext,
+  ): Promise<Transaction> {
     const existing = await this.requireById(id);
     const merged = mergeTransactionInput(existing, changes);
     validateTransactionInput(merged);
@@ -148,7 +159,10 @@ export class TransactionRepository implements TransactionRepositoryPort {
     }
     if (filter.accountId) {
       conditions.push(
-        or(eq(transactions.accountId, filter.accountId), eq(transactions.destinationAccountId, filter.accountId)),
+        or(
+          eq(transactions.accountId, filter.accountId),
+          eq(transactions.destinationAccountId, filter.accountId),
+        ),
       );
     }
     if (filter.query) {
@@ -199,7 +213,11 @@ export class TransactionRepository implements TransactionRepositoryPort {
   }
 }
 
-function toTransactionFromInput(id: string, input: TransactionInput, meta: TransactionMeta): Transaction {
+function toTransactionFromInput(
+  id: string,
+  input: TransactionInput,
+  meta: TransactionMeta,
+): Transaction {
   const base = {
     id,
     amount: input.amount,
@@ -227,9 +245,13 @@ function toTransactionFromInput(id: string, input: TransactionInput, meta: Trans
   };
 }
 
-function mergeTransactionInput(existing: Transaction, changes: UpdateTransactionInput): TransactionInput {
+function mergeTransactionInput(
+  existing: Transaction,
+  changes: UpdateTransactionInput,
+): TransactionInput {
   const type = changes.type ?? existing.type;
-  const existingDestinationAccountId = existing.type === 'transfer' ? existing.destinationAccountId : null;
+  const existingDestinationAccountId =
+    existing.type === 'transfer' ? existing.destinationAccountId : null;
   const existingCategoryId = existing.type === 'transfer' ? null : existing.categoryId;
 
   const destinationAccountId =
@@ -239,7 +261,11 @@ function mergeTransactionInput(existing: Transaction, changes: UpdateTransaction
         ? existingDestinationAccountId
         : null;
   const categoryId =
-    changes.categoryId !== undefined ? changes.categoryId : type === 'transfer' ? null : existingCategoryId;
+    changes.categoryId !== undefined
+      ? changes.categoryId
+      : type === 'transfer'
+        ? null
+        : existingCategoryId;
 
   return {
     type,

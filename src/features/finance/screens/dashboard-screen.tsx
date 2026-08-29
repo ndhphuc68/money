@@ -68,7 +68,13 @@ export function DashboardScreen(props: DashboardScreenProps) {
             <Text style={styles.displayName}>{displayNameLabel}</Text>
           </View>
         </View>
-        <Pressable accessibilityLabel={t('dashboardNotifications')} accessibilityRole="button" style={({ pressed }) => [styles.notificationButton, pressed && styles.notificationButtonPressed]}>
+        <Pressable
+          accessibilityLabel={t('dashboardNotifications')}
+          accessibilityRole="button"
+          style={({ pressed }) => [
+            styles.notificationButton,
+            pressed && styles.notificationButtonPressed,
+          ]}>
           <Bell color={colors.content.primary} size={17} strokeWidth={2} />
         </Pressable>
       </View>
@@ -90,17 +96,23 @@ export function DashboardScreen(props: DashboardScreenProps) {
 
       <Section
         action={
-          <Pressable accessibilityLabel={t('dashboardViewAllTransactions')} accessibilityRole="button" onPress={onOpenTransactions}>
+          <Pressable
+            accessibilityLabel={t('dashboardViewAllTransactions')}
+            accessibilityRole="button"
+            onPress={onOpenTransactions}>
             <Text style={styles.sectionAction}>{t('dashboardViewAllTransactions')}</Text>
           </Pressable>
         }
-        title={t('dashboardRecentTransactionsTitle')}
-      >
+        title={t('dashboardRecentTransactionsTitle')}>
         {recentTransactions.length === 0 ? (
           <Text style={styles.emptyText}>{t('dashboardRecentTransactionsEmpty')}</Text>
         ) : (
           recentTransactions.map((item, index) => (
-            <Pressable accessibilityLabel={`${item.name} · ${item.amountLabel}`} accessibilityRole="button" key={item.id} onPress={() => onSelectTransaction(item.id)}>
+            <Pressable
+              accessibilityLabel={`${item.name} · ${item.amountLabel}`}
+              accessibilityRole="button"
+              key={item.id}
+              onPress={() => onSelectTransaction(item.id)}>
               <TransactionRow
                 amount={item.amountLabel}
                 category={item.categoryLabel}
@@ -121,23 +133,38 @@ export function DashboardScreen(props: DashboardScreenProps) {
         ) : (
           categorySpending.map((entry) => (
             <View key={entry.id} style={styles.categoryRow}>
-              <Text numberOfLines={1} style={styles.categoryLabel}>{entry.label}</Text>
+              <Text numberOfLines={1} style={styles.categoryLabel}>
+                {entry.label}
+              </Text>
               <Text style={styles.categoryAmount}>{entry.amountLabel}</Text>
             </View>
           ))
         )}
       </Section>
-
     </ScrollView>
   );
 }
 
 function getInitials(name: string): string {
-  const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('');
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('');
   return initials.toUpperCase() || 'V';
 }
 
-function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+function Section({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>

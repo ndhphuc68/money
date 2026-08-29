@@ -38,8 +38,7 @@ export function DateField({ value, onChange, label }: DateFieldProps) {
         accessibilityLabel={`${label}: ${formatted}`}
         accessibilityRole="button"
         onPress={() => setShowPicker(true)}
-        style={({ pressed }) => [styles.field, pressed && styles.fieldPressed]}
-      >
+        style={({ pressed }) => [styles.field, pressed && styles.fieldPressed]}>
         <Text style={styles.value}>{formatted}</Text>
       </Pressable>
       {showPicker ? (

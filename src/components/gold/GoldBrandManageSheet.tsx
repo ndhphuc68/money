@@ -49,24 +49,31 @@ export function GoldBrandManageSheet({
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.subtitle}>{subtitle}</Text>
               </View>
-              <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
+              <Pressable
+                accessibilityLabel={closeLabel}
+                accessibilityRole="button"
+                onPress={onClose}
+                style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>×</Text>
               </Pressable>
             </View>
 
             <View style={styles.card}>
               {brands.map((brand, index) => (
-                <View key={brand.id} style={[styles.row, index < brands.length - 1 && styles.rowDivider]}>
+                <View
+                  key={brand.id}
+                  style={[styles.row, index < brands.length - 1 && styles.rowDivider]}>
                   <View style={styles.rowBadge}>
                     <Text style={styles.rowBadgeText}>{brand.name.slice(0, 2).toUpperCase()}</Text>
                   </View>
-                  <Text numberOfLines={1} style={styles.rowText}>{brand.name}</Text>
+                  <Text numberOfLines={1} style={styles.rowText}>
+                    {brand.name}
+                  </Text>
                   <Pressable
                     accessibilityLabel={deleteBrandLabel}
                     accessibilityRole="button"
                     onPress={() => onDeleteBrand(brand.id)}
-                    style={styles.deleteButton}
-                  >
+                    style={styles.deleteButton}>
                     <Text style={styles.deleteButtonText}>×</Text>
                   </Pressable>
                 </View>
@@ -90,8 +97,7 @@ export function GoldBrandManageSheet({
               accessibilityState={{ disabled: addDisabled }}
               disabled={addDisabled}
               onPress={onAddBrand}
-              style={[styles.saveButton, addDisabled && styles.saveButtonDisabled]}
-            >
+              style={[styles.saveButton, addDisabled && styles.saveButtonDisabled]}>
               <Text style={styles.saveButtonText}>{saveBrandLabel}</Text>
             </Pressable>
           </ScrollView>

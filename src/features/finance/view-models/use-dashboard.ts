@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { AccountRepository, CategoryRepository, ProfileSettingsRepository } from '@/core/application/ports/finance-repositories';
+import type {
+  AccountRepository,
+  CategoryRepository,
+  ProfileSettingsRepository,
+} from '@/core/application/ports/finance-repositories';
 import type { GetDashboard } from '@/core/application/finance/get-dashboard';
 import { formatVnd } from '@/core/domain/finance/money';
 import type { Translate } from '@/i18n/translations';
 
-import { buildTransactionListItem, currentMonth, indexById, maskAmountText, todayIsoDate, TransactionListItem } from './transaction-presentation';
+import {
+  buildTransactionListItem,
+  currentMonth,
+  indexById,
+  maskAmountText,
+  todayIsoDate,
+  TransactionListItem,
+} from './transaction-presentation';
 
 /** The subset of `FinanceDependencies` (Task 7) this view model drives. */
 export type DashboardDependencies = {
@@ -79,7 +90,12 @@ const EMPTY_STATE: DashboardState = {
  * labels, and applies `ProfileSettings.amountsHidden` masking purely at the
  * presentation layer (the underlying totals are never altered).
  */
-export function useDashboard({ dependencies, t, month, now }: UseDashboardOptions): DashboardViewModel {
+export function useDashboard({
+  dependencies,
+  t,
+  month,
+  now,
+}: UseDashboardOptions): DashboardViewModel {
   const resolvedMonth = month ?? currentMonth(now?.() ?? new Date());
   const [loading, setLoading] = useState(true);
   const [amountsHidden, setAmountsHidden] = useState(false);
@@ -99,11 +115,13 @@ export function useDashboard({ dependencies, t, month, now }: UseDashboardOption
       const categoriesById = indexById(expenseCategories);
       const accountsById = indexById(accounts);
 
-      const categorySpending: DashboardCategorySpendingItem[] = dashboard.categorySpending.map((entry) => ({
-        id: entry.id,
-        label: categoriesById.get(entry.id)?.name ?? t('transactionUncategorized'),
-        amountLabel: maskAmountText(hidden, formatVnd(entry.amount)),
-      }));
+      const categorySpending: DashboardCategorySpendingItem[] = dashboard.categorySpending.map(
+        (entry) => ({
+          id: entry.id,
+          label: categoriesById.get(entry.id)?.name ?? t('transactionUncategorized'),
+          amountLabel: maskAmountText(hidden, formatVnd(entry.amount)),
+        }),
+      );
 
       const recentTransactions = dashboard.recentTransactions.map((transaction) =>
         buildTransactionListItem(transaction, accountsById, categoriesById, hidden, t),
@@ -134,9 +152,11 @@ export function useDashboard({ dependencies, t, month, now }: UseDashboardOption
 
   const toggleAmountsHidden = useCallback(async () => {
     const settings = await dependencies.profileSettingsRepository.get();
-    await dependencies.profileSettingsRepository.save({ ...settings, amountsHidden: !settings.amountsHidden });
+    await dependencies.profileSettingsRepository.save({
+      ...settings,
+      amountsHidden: !settings.amountsHidden,
+    });
     await load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencies, load]);
 
   return {

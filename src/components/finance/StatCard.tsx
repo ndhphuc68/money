@@ -12,7 +12,13 @@ export function StatCard({ label, value, tone = 'positive' }: StatCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={[styles.value, { color: tone === 'positive' ? colors.status.positive : colors.status.negative }]}>{value}</Text>
+      <Text
+        style={[
+          styles.value,
+          { color: tone === 'positive' ? colors.status.positive : colors.status.negative },
+        ]}>
+        {value}
+      </Text>
     </View>
   );
 }

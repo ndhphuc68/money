@@ -8,6 +8,6 @@ export class SystemFilePicker {
       multiple: false,
     });
 
-    return result.canceled ? null : result.assets[0]?.uri ?? null;
+    return result.canceled ? null : (result.assets[0]?.uri ?? null);
   }
 }

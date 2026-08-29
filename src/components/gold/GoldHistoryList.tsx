@@ -23,7 +23,14 @@ export type GoldHistoryListProps = {
   onOpenTrash(): void;
 };
 
-export function GoldHistoryList({ items, emptyLabel, historyTitle, trashLabel, onSelectItem, onOpenTrash }: GoldHistoryListProps) {
+export function GoldHistoryList({
+  items,
+  emptyLabel,
+  historyTitle,
+  trashLabel,
+  onSelectItem,
+  onOpenTrash,
+}: GoldHistoryListProps) {
   return (
     <View>
       <View style={styles.header}>
@@ -47,18 +54,30 @@ export function GoldHistoryList({ items, emptyLabel, historyTitle, trashLabel, o
                 styles.row,
                 index < items.length - 1 && styles.rowDivider,
                 pressed && styles.rowPressed,
-              ]}
-            >
-              <View style={[styles.rowBadge, item.kind === 'sale' ? styles.rowBadgeSale : styles.rowBadgeLot]}>
-                <Text style={[styles.rowBadgeText, item.kind === 'sale' && styles.rowBadgeTextSale]}>
+              ]}>
+              <View
+                style={[
+                  styles.rowBadge,
+                  item.kind === 'sale' ? styles.rowBadgeSale : styles.rowBadgeLot,
+                ]}>
+                <Text
+                  style={[styles.rowBadgeText, item.kind === 'sale' && styles.rowBadgeTextSale]}>
                   {item.kind === 'sale' ? '↗' : 'Au'}
                 </Text>
               </View>
               <View style={styles.rowText}>
-                <Text numberOfLines={1} style={styles.rowTitle}>{item.title}</Text>
-                <Text numberOfLines={1} style={styles.rowSubtitle}>{item.subtitle}</Text>
+                <Text numberOfLines={1} style={styles.rowTitle}>
+                  {item.title}
+                </Text>
+                <Text numberOfLines={1} style={styles.rowSubtitle}>
+                  {item.subtitle}
+                </Text>
               </View>
-              <Text style={[styles.rowAmount, item.amountTone === 'positive' && styles.rowAmountPositive]}>
+              <Text
+                style={[
+                  styles.rowAmount,
+                  item.amountTone === 'positive' && styles.rowAmountPositive,
+                ]}>
                 {item.amountLabel}
               </Text>
             </Pressable>

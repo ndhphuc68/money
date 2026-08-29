@@ -1,4 +1,8 @@
-import { SyncPackage, SyncPackageContent, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
+import {
+  SyncPackage,
+  SyncPackageContent,
+  SyncPackageWithoutAuth,
+} from '@/core/domain/sync/sync-package';
 
 export interface ChecksumCalculator {
   calculate(content: string): string;

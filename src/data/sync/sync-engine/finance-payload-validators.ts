@@ -1,6 +1,10 @@
 import { Account, AccountType } from '@/core/domain/finance/account';
 import { Category, CategoryType } from '@/core/domain/finance/category';
-import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  Transaction,
+  TransactionInput,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 import { canonicalizeUuid, isIsoTimestamp, isUuid } from '@/core/domain/sync/sync-operation';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 
@@ -20,7 +24,10 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim() !== '';
 }
 
-function parseSyncableEnvelope(value: unknown): { fields: Record<string, unknown>; base: SyncableRecord } {
+function parseSyncableEnvelope(value: unknown): {
+  fields: Record<string, unknown>;
+  base: SyncableRecord;
+} {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error('Sync operation payload must be a syncable record');
   }

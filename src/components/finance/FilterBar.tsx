@@ -78,29 +78,31 @@ export function FilterBar({
     transfer: labels.transfer,
   };
   const categoryType = type === 'all' ? 'all' : type === 'income' ? 'income' : 'expense';
-  const visibleOptions = compact ? TYPE_OPTIONS.filter((option) => option !== 'transfer') : TYPE_OPTIONS;
+  const visibleOptions = compact
+    ? TYPE_OPTIONS.filter((option) => option !== 'transfer')
+    : TYPE_OPTIONS;
 
   return (
     <View style={compact ? styles.compactContainer : styles.container}>
-      {!compact ? <View style={styles.monthRow}>
-        <Pressable
-          accessibilityLabel={labels.previousMonth}
-          accessibilityRole="button"
-          onPress={() => onMonthChange(shiftMonth(month, -1))}
-          style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}
-        >
-          <ChevronLeft color={colors.content.primary} size={20} />
-        </Pressable>
-        <Text style={styles.monthLabel}>{formatMonth(month, labels.month)}</Text>
-        <Pressable
-          accessibilityLabel={labels.nextMonth}
-          accessibilityRole="button"
-          onPress={() => onMonthChange(shiftMonth(month, 1))}
-          style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}
-        >
-          <ChevronRight color={colors.content.primary} size={20} />
-        </Pressable>
-      </View> : null}
+      {!compact ? (
+        <View style={styles.monthRow}>
+          <Pressable
+            accessibilityLabel={labels.previousMonth}
+            accessibilityRole="button"
+            onPress={() => onMonthChange(shiftMonth(month, -1))}
+            style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}>
+            <ChevronLeft color={colors.content.primary} size={20} />
+          </Pressable>
+          <Text style={styles.monthLabel}>{formatMonth(month, labels.month)}</Text>
+          <Pressable
+            accessibilityLabel={labels.nextMonth}
+            accessibilityRole="button"
+            onPress={() => onMonthChange(shiftMonth(month, 1))}
+            style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}>
+            <ChevronRight color={colors.content.primary} size={20} />
+          </Pressable>
+        </View>
+      ) : null}
 
       <View style={compact ? styles.compactTypeRow : styles.typeRow}>
         {visibleOptions.map((option) => {
@@ -112,9 +114,15 @@ export function FilterBar({
               accessibilityState={{ selected: active }}
               key={option}
               onPress={() => onTypeChange(option)}
-              style={({ pressed }) => [styles.typeChip, compact && styles.compactTypeChip, active && styles.typeChipActive, pressed && !active && styles.typeChipPressed]}
-            >
-              <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>{typeLabels[option]}</Text>
+              style={({ pressed }) => [
+                styles.typeChip,
+                compact && styles.compactTypeChip,
+                active && styles.typeChipActive,
+                pressed && !active && styles.typeChipPressed,
+              ]}>
+              <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>
+                {typeLabels[option]}
+              </Text>
             </Pressable>
           );
         })}
@@ -126,8 +134,7 @@ export function FilterBar({
           accessibilityRole="button"
           accessibilityState={{ expanded: advancedOpen }}
           onPress={() => setAdvancedOpen((open) => !open)}
-          style={({ pressed }) => [styles.advancedToggle, pressed && styles.advancedTogglePressed]}
-        >
+          style={({ pressed }) => [styles.advancedToggle, pressed && styles.advancedTogglePressed]}>
           <ListChecks color={colors.content.muted} size={16} strokeWidth={2} />
           <Text style={styles.advancedToggleText}>{labels.advanced ?? 'Bộ lọc nâng cao'}</Text>
           <Text style={styles.advancedToggleValue}>{advancedOpen ? 'Ẩn' : 'Hiện'}</Text>
@@ -146,23 +153,27 @@ export function FilterBar({
         />
       ) : null}
 
-      {(!compact || advancedOpen) ? <AccountPicker
-        allLabel={labels.all}
-        allowUnselect
-        accounts={accounts}
-        label={labels.account}
-        onSelect={onAccountChange}
-        selectedId={accountId}
-      /> : null}
+      {!compact || advancedOpen ? (
+        <AccountPicker
+          allLabel={labels.all}
+          allowUnselect
+          accounts={accounts}
+          label={labels.account}
+          onSelect={onAccountChange}
+          selectedId={accountId}
+        />
+      ) : null}
 
-      {(!compact || advancedOpen) ? <TextInput
-        accessibilityLabel={labels.searchLabel}
-        onChangeText={onSearchChange}
-        placeholder={labels.searchPlaceholder}
-        placeholderTextColor={colors.content.placeholder}
-        style={styles.searchInput}
-        value={search}
-      /> : null}
+      {!compact || advancedOpen ? (
+        <TextInput
+          accessibilityLabel={labels.searchLabel}
+          onChangeText={onSearchChange}
+          placeholder={labels.searchPlaceholder}
+          placeholderTextColor={colors.content.placeholder}
+          style={styles.searchInput}
+          value={search}
+        />
+      ) : null}
     </View>
   );
 }

@@ -14,15 +14,32 @@ type TransactionRowProps = {
   showDivider?: boolean;
 };
 
-export function TransactionRow({ name, category, meta, amount, positive, icon, showDivider = true }: TransactionRowProps) {
+export function TransactionRow({
+  name,
+  category,
+  meta,
+  amount,
+  positive,
+  icon,
+  showDivider = true,
+}: TransactionRowProps) {
   return (
     <View style={[styles.row, showDivider && styles.divider]}>
       <CategoryIcon name={icon} />
       <View style={styles.copy}>
-        <Text numberOfLines={1} style={styles.name}>{name}</Text>
-        <Text numberOfLines={1} style={styles.meta}>{category} · {meta}</Text>
+        <Text numberOfLines={1} style={styles.name}>
+          {name}
+        </Text>
+        <Text numberOfLines={1} style={styles.meta}>
+          {category} · {meta}
+        </Text>
       </View>
-      <Text numberOfLines={1} style={[styles.amount, { color: positive ? colors.status.positive : colors.status.negative }]}>
+      <Text
+        numberOfLines={1}
+        style={[
+          styles.amount,
+          { color: positive ? colors.status.positive : colors.status.negative },
+        ]}>
         {amount}
       </Text>
     </View>

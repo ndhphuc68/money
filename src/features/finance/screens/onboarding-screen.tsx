@@ -1,5 +1,32 @@
-import { AccessibilityInfo, ActivityIndicator, Animated, Easing, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { BriefcaseBusiness, CarFront, CircleDollarSign, Gamepad2, Gift, HeartPulse, House, ListChecks, MoreHorizontal, ReceiptText, ShoppingBag, Utensils, WalletCards } from 'lucide-react-native';
+import {
+  AccessibilityInfo,
+  ActivityIndicator,
+  Animated,
+  Easing,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import {
+  BriefcaseBusiness,
+  CarFront,
+  CircleDollarSign,
+  Gamepad2,
+  Gift,
+  HeartPulse,
+  House,
+  ListChecks,
+  MoreHorizontal,
+  ReceiptText,
+  ShoppingBag,
+  Utensils,
+  WalletCards,
+} from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
 
@@ -25,11 +52,18 @@ const ACCOUNT_TYPE_KEYS: Record<AccountType, TranslationKey> = {
   other: 'onboardingAccountTypeOther',
 };
 
-const CATEGORY_COLORS = [colors.category.income, colors.category.shopping, colors.category.food, colors.category.transport, colors.brand.primary, colors.content.muted];
+const CATEGORY_COLORS = [
+  colors.category.income,
+  colors.category.shopping,
+  colors.category.food,
+  colors.category.transport,
+  colors.brand.primary,
+  colors.content.muted,
+];
 
 const DEFAULT_CATEGORY_ICONS: Record<string, typeof WalletCards> = {
-  'Lương': BriefcaseBusiness,
-  'Thưởng': Gift,
+  Lương: BriefcaseBusiness,
+  Thưởng: Gift,
   'Thu nhập khác': WalletCards,
   'Ăn uống': Utensils,
   'Di chuyển': CarFront,
@@ -73,8 +107,18 @@ export function OnboardingScreen(props: OnboardingScreenProps) {
 
     logoProgress.setValue(0.96);
     Animated.sequence([
-      Animated.timing(logoProgress, { duration: 180, easing: Easing.out(Easing.cubic), toValue: 1.04, useNativeDriver: true }),
-      Animated.timing(logoProgress, { duration: 140, easing: Easing.out(Easing.cubic), toValue: 1, useNativeDriver: true }),
+      Animated.timing(logoProgress, {
+        duration: 180,
+        easing: Easing.out(Easing.cubic),
+        toValue: 1.04,
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoProgress, {
+        duration: 140,
+        easing: Easing.out(Easing.cubic),
+        toValue: 1,
+        useNativeDriver: true,
+      }),
     ]).start();
   }, [logoProgress, reduceMotion, step]);
 
@@ -89,7 +133,9 @@ export function OnboardingScreen(props: OnboardingScreenProps) {
   const content = (
     <>
       <Progress step={step} t={t} />
-      <Animated.View key={step} style={[styles.stepTransition, reduceMotion ? null : { opacity: logoProgress }]}>
+      <Animated.View
+        key={step}
+        style={[styles.stepTransition, reduceMotion ? null : { opacity: logoProgress }]}>
         {step === 'display-name' ? <DisplayNameStep {...props} /> : null}
         {step === 'first-account' ? <WalletStep {...props} /> : null}
         {step === 'opening-balance' ? <OpeningBalanceStep {...props} /> : null}
@@ -99,13 +145,21 @@ export function OnboardingScreen(props: OnboardingScreenProps) {
   );
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.keyboardAvoiding}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.keyboardAvoiding}>
       {step === 'confirm-categories' ? (
-        <View style={[styles.scroll, containerStyle, styles.fixedContainer]} testID="onboarding-root">
+        <View
+          style={[styles.scroll, containerStyle, styles.fixedContainer]}
+          testID="onboarding-root">
           {content}
         </View>
       ) : (
-        <ScrollView contentContainerStyle={containerStyle} keyboardShouldPersistTaps="handled" style={styles.scroll} testID="onboarding-root">
+        <ScrollView
+          contentContainerStyle={containerStyle}
+          keyboardShouldPersistTaps="handled"
+          style={styles.scroll}
+          testID="onboarding-root">
           {content}
         </ScrollView>
       )}
@@ -114,13 +168,23 @@ export function OnboardingScreen(props: OnboardingScreenProps) {
 }
 
 function Progress({ step, t }: { step: OnboardingViewModel['step']; t: Translate }) {
-  const current = step === 'display-name' ? 1 : step === 'first-account' ? 2 : step === 'opening-balance' ? 3 : 4;
+  const current =
+    step === 'display-name' ? 1 : step === 'first-account' ? 2 : step === 'opening-balance' ? 3 : 4;
   const total = 4;
   return (
-    <View accessibilityLabel={t('onboardingStepProgress', { current, total })} style={styles.progressBlock} testID="onboarding-progress">
+    <View
+      accessibilityLabel={t('onboardingStepProgress', { current, total })}
+      style={styles.progressBlock}
+      testID="onboarding-progress">
       <View style={styles.progressTrack}>
         {[1, 2, 3, 4].map((index) => (
-          <View key={index} style={[styles.progressDot, index <= current ? styles.progressDotActive : styles.progressDotInactive]} />
+          <View
+            key={index}
+            style={[
+              styles.progressDot,
+              index <= current ? styles.progressDotActive : styles.progressDotInactive,
+            ]}
+          />
         ))}
       </View>
       <Text style={styles.eyebrow}>{t('onboardingStepProgress', { current, total })}</Text>
@@ -128,7 +192,14 @@ function Progress({ step, t }: { step: OnboardingViewModel['step']; t: Translate
   );
 }
 
-function DisplayNameStep({ displayName, setDisplayName, continueDisplayName, skipDisplayName, submitting, t }: OnboardingScreenProps) {
+function DisplayNameStep({
+  displayName,
+  setDisplayName,
+  continueDisplayName,
+  skipDisplayName,
+  submitting,
+  t,
+}: OnboardingScreenProps) {
   return (
     <View style={styles.step} testID="onboarding-step-card">
       <View>
@@ -162,7 +233,15 @@ function DisplayNameStep({ displayName, setDisplayName, continueDisplayName, ski
   );
 }
 
-function WalletStep({ accountForm, setAccountName, setAccountType, continueWallet, errors, submitting, t }: OnboardingScreenProps) {
+function WalletStep({
+  accountForm,
+  setAccountName,
+  setAccountType,
+  continueWallet,
+  errors,
+  submitting,
+  t,
+}: OnboardingScreenProps) {
   return (
     <View style={styles.step} testID="onboarding-step-card">
       <StepIcon icon={WalletCards} />
@@ -181,7 +260,11 @@ function WalletStep({ accountForm, setAccountName, setAccountType, continueWalle
           value={accountForm.name}
         />
       </View>
-      {errors.accountName ? <Text accessibilityRole="alert" style={styles.error}>{errors.accountName}</Text> : null}
+      {errors.accountName ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errors.accountName}
+        </Text>
+      ) : null}
 
       <Text style={styles.accountTypeLabel}>{t('onboardingAccountTypeLabel')}</Text>
       <View accessibilityRole="tablist" style={styles.typeRow}>
@@ -195,21 +278,38 @@ function WalletStep({ accountForm, setAccountName, setAccountType, continueWalle
               accessibilityState={{ selected }}
               key={type}
               onPress={() => setAccountType(type)}
-              style={({ pressed }) => [styles.typeOption, selected && styles.typeOptionSelected, pressed && styles.pressed]}
-            >
-              <Text style={[styles.typeOptionText, selected && styles.typeOptionTextSelected]}>{label}</Text>
+              style={({ pressed }) => [
+                styles.typeOption,
+                selected && styles.typeOptionSelected,
+                pressed && styles.pressed,
+              ]}>
+              <Text style={[styles.typeOptionText, selected && styles.typeOptionTextSelected]}>
+                {label}
+              </Text>
             </Pressable>
           );
         })}
       </View>
 
       <View style={styles.flexSpacer} />
-      <ActionStack primaryLabel={t('onboardingContinue')} submitting={submitting} onPrimary={continueWallet} />
+      <ActionStack
+        primaryLabel={t('onboardingContinue')}
+        submitting={submitting}
+        onPrimary={continueWallet}
+      />
     </View>
   );
 }
 
-function OpeningBalanceStep({ accountForm, setOpeningBalance, continueOpeningBalance, skipOpeningBalance, errors, submitting, t }: OnboardingScreenProps) {
+function OpeningBalanceStep({
+  accountForm,
+  setOpeningBalance,
+  continueOpeningBalance,
+  skipOpeningBalance,
+  errors,
+  submitting,
+  t,
+}: OnboardingScreenProps) {
   const walletName = accountForm.name || t('onboardingWalletFallback');
   return (
     <View style={styles.step} testID="onboarding-step-card">
@@ -224,7 +324,11 @@ function OpeningBalanceStep({ accountForm, setOpeningBalance, continueOpeningBal
         placeholder={t('amountPlaceholder')}
         value={accountForm.openingBalance}
       />
-      {errors.form ? <Text accessibilityRole="alert" style={styles.error}>{errors.form}</Text> : null}
+      {errors.form ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errors.form}
+        </Text>
+      ) : null}
       <View style={styles.flexSpacer} />
       <ActionStack
         primaryLabel={t('onboardingContinue')}
@@ -237,7 +341,16 @@ function OpeningBalanceStep({ accountForm, setOpeningBalance, continueOpeningBal
   );
 }
 
-function CategoryToggleStep({ categories, categoryToggles, toggleCategory, finishOnboarding, skipCategories, errors, submitting, t }: OnboardingScreenProps) {
+function CategoryToggleStep({
+  categories,
+  categoryToggles,
+  toggleCategory,
+  finishOnboarding,
+  skipCategories,
+  errors,
+  submitting,
+  t,
+}: OnboardingScreenProps) {
   return (
     <View style={styles.step} testID="onboarding-step-card">
       <StepIcon icon={ListChecks} muted />
@@ -247,34 +360,50 @@ function CategoryToggleStep({ categories, categoryToggles, toggleCategory, finis
         contentContainerStyle={styles.categoryPanelContent}
         keyboardShouldPersistTaps="handled"
         style={styles.categoryPanel}
-        testID="onboarding-category-scroll"
-      >
+        testID="onboarding-category-scroll">
         {categories.map((category, index) => {
           const enabled = categoryToggles[category.name] !== false;
           const isLast = index === categories.length - 1;
           return (
-            <View key={`${category.type}-${category.name}`} style={[styles.categoryToggleRow, isLast && styles.categoryToggleRowLast]}>
-              <View style={[styles.categoryIcon, { backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }]}>
+            <View
+              key={`${category.type}-${category.name}`}
+              style={[styles.categoryToggleRow, isLast && styles.categoryToggleRowLast]}>
+              <View
+                style={[
+                  styles.categoryIcon,
+                  { backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] },
+                ]}>
                 {(() => {
                   const Icon = getDefaultCategoryIcon(category.name, category.type);
                   return <Icon color={colors.content.inverse} size={18} />;
                 })()}
               </View>
-              <Text numberOfLines={1} style={styles.categoryName}>{category.name}</Text>
+              <Text numberOfLines={1} style={styles.categoryName}>
+                {category.name}
+              </Text>
               <Pressable
                 accessibilityLabel={category.name}
                 accessibilityRole="switch"
                 accessibilityState={{ checked: enabled }}
                 onPress={() => toggleCategory(index)}
-                style={({ pressed }) => [styles.switchTrack, enabled ? styles.switchTrackOn : styles.switchTrackOff, pressed && styles.pressed]}
-              >
-                <View style={[styles.switchKnob, enabled ? styles.switchKnobOn : styles.switchKnobOff]} />
+                style={({ pressed }) => [
+                  styles.switchTrack,
+                  enabled ? styles.switchTrackOn : styles.switchTrackOff,
+                  pressed && styles.pressed,
+                ]}>
+                <View
+                  style={[styles.switchKnob, enabled ? styles.switchKnobOn : styles.switchKnobOff]}
+                />
               </Pressable>
             </View>
           );
         })}
       </ScrollView>
-      {errors.form ? <Text accessibilityRole="alert" style={styles.error}>{errors.form}</Text> : null}
+      {errors.form ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errors.form}
+        </Text>
+      ) : null}
       <ActionStack
         primaryLabel={t('onboardingFinish')}
         secondaryLabel={t('onboardingSkip')}
@@ -302,7 +431,12 @@ function ActionStack({
   return (
     <View style={styles.actionsStack}>
       {secondaryLabel && onSecondary ? (
-        <Pressable accessibilityLabel={secondaryLabel} accessibilityRole="button" disabled={submitting} onPress={onSecondary} style={({ pressed }) => [styles.skipAction, pressed && styles.pressed]}>
+        <Pressable
+          accessibilityLabel={secondaryLabel}
+          accessibilityRole="button"
+          disabled={submitting}
+          onPress={onSecondary}
+          style={({ pressed }) => [styles.skipAction, pressed && styles.pressed]}>
           <Text style={styles.skipActionText}>{secondaryLabel}</Text>
         </Pressable>
       ) : null}
@@ -313,9 +447,12 @@ function ActionStack({
         disabled={submitting}
         onPress={onPrimary}
         style={({ pressed }) => [styles.primaryAction, pressed && styles.primaryActionPressed]}
-        testID="onboarding-primary-action"
-      >
-        {submitting ? <ActivityIndicator color={colors.content.inverse} /> : <Text style={styles.primaryActionText}>{primaryLabel}</Text>}
+        testID="onboarding-primary-action">
+        {submitting ? (
+          <ActivityIndicator color={colors.content.inverse} />
+        ) : (
+          <Text style={styles.primaryActionText}>{primaryLabel}</Text>
+        )}
       </Pressable>
     </View>
   );
@@ -324,7 +461,11 @@ function ActionStack({
 function StepIcon({ icon: Icon, muted = false }: { icon: typeof WalletCards; muted?: boolean }) {
   return (
     <View style={[styles.stepIcon, muted && styles.stepIconMuted]}>
-      <Icon color={muted ? colors.brand.primary : colors.content.inverse} size={26} strokeWidth={2.2} />
+      <Icon
+        color={muted ? colors.brand.primary : colors.content.inverse}
+        size={26}
+        strokeWidth={2.2}
+      />
     </View>
   );
 }

@@ -1,4 +1,9 @@
-import { canonicalizeUuid, isUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
+import {
+  canonicalizeUuid,
+  isUuid,
+  parseSyncOperation,
+  SyncOperation,
+} from '@/core/domain/sync/sync-operation';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 
 export function assertValidSyncableRecordIdentifiers(record: SyncableRecord): void {

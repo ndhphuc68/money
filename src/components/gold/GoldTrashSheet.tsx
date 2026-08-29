@@ -70,22 +70,39 @@ export function GoldTrashSheet({
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.subtitle}>{subtitle}</Text>
               </View>
-              <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
+              <Pressable
+                accessibilityLabel={closeLabel}
+                accessibilityRole="button"
+                onPress={onClose}
+                style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>×</Text>
               </Pressable>
             </View>
 
             <View style={styles.card}>
               {rows.map((row, index) => (
-                <View key={row.key} style={[styles.row, index < rows.length - 1 && styles.rowDivider]}>
+                <View
+                  key={row.key}
+                  style={[styles.row, index < rows.length - 1 && styles.rowDivider]}>
                   <View style={styles.rowText}>
-                    <Text numberOfLines={1} style={styles.rowTitle}>{row.title}</Text>
-                    <Text numberOfLines={1} style={styles.rowSubtitle}>{row.subtitle}</Text>
+                    <Text numberOfLines={1} style={styles.rowTitle}>
+                      {row.title}
+                    </Text>
+                    <Text numberOfLines={1} style={styles.rowSubtitle}>
+                      {row.subtitle}
+                    </Text>
                   </View>
-                  <Pressable accessibilityRole="button" onPress={row.onRestore} style={styles.restoreButton}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={row.onRestore}
+                    style={styles.restoreButton}>
                     <Text style={styles.restoreButtonText}>{restoreLabel}</Text>
                   </Pressable>
-                  <Pressable accessibilityLabel={purgeLabel} accessibilityRole="button" onPress={row.onPurge} style={styles.purgeButton}>
+                  <Pressable
+                    accessibilityLabel={purgeLabel}
+                    accessibilityRole="button"
+                    onPress={row.onPurge}
+                    style={styles.purgeButton}>
                     <Text style={styles.purgeButtonText}>×</Text>
                   </Pressable>
                 </View>

@@ -72,8 +72,13 @@ function Dropdown({
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{fieldLabel}</Text>
-      <Pressable accessibilityRole="button" onPress={onToggle} style={[styles.dropdownField, open && styles.dropdownFieldOpen]}>
-        <Text numberOfLines={1} style={styles.dropdownValue}>{valueLabel}</Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onToggle}
+        style={[styles.dropdownField, open && styles.dropdownFieldOpen]}>
+        <Text numberOfLines={1} style={styles.dropdownValue}>
+          {valueLabel}
+        </Text>
         <Text style={styles.chevron}>{open ? '︿' : '﹀'}</Text>
       </Pressable>
       {open ? (
@@ -83,16 +88,23 @@ function Dropdown({
               accessibilityRole="button"
               key={option.key}
               onPress={() => onSelect(option.key)}
-              style={styles.dropdownOption}
-            >
-              <Text style={[styles.dropdownOptionText, option.isActive && styles.dropdownOptionTextActive]} numberOfLines={1}>
+              style={styles.dropdownOption}>
+              <Text
+                style={[
+                  styles.dropdownOptionText,
+                  option.isActive && styles.dropdownOptionTextActive,
+                ]}
+                numberOfLines={1}>
                 {option.label}
               </Text>
               {option.isActive ? <Text style={styles.dropdownCheck}>✓</Text> : null}
             </Pressable>
           ))}
           {extraOption ? (
-            <Pressable accessibilityRole="button" onPress={extraOption.onSelect} style={styles.dropdownOption}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={extraOption.onSelect}
+              style={styles.dropdownOption}>
               <Text style={styles.dropdownAddNew}>{extraOption.label}</Text>
             </Pressable>
           ) : null}
@@ -116,14 +128,21 @@ export function GoldFormSheet(props: GoldFormSheetProps) {
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.subtitle}>{subtitle}</Text>
               </View>
-              <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
+              <Pressable
+                accessibilityLabel={closeLabel}
+                accessibilityRole="button"
+                onPress={onClose}
+                style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>×</Text>
               </Pressable>
             </View>
 
             <View style={styles.field}>
               <Text style={styles.label}>{props.dateLabel}</Text>
-              <Pressable accessibilityRole="button" onPress={props.onOpenCalendar} style={styles.dateField}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={props.onOpenCalendar}
+                style={styles.dateField}>
                 <Text style={styles.dropdownValue}>{props.dateValueLabel}</Text>
               </Pressable>
             </View>

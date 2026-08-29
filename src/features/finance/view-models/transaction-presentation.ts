@@ -29,7 +29,10 @@ export function maskAmountText(hidden: boolean, formatted: string): string {
  * free-text (Task 1), so this is a heuristic on the category name, not a
  * stored field.
  */
-export function resolveCategoryIcon(transactionType: Transaction['type'], category: Category | null): CategoryIconName {
+export function resolveCategoryIcon(
+  transactionType: Transaction['type'],
+  category: Category | null,
+): CategoryIconName {
   if (transactionType === 'transfer') {
     return 'transport';
   }
@@ -82,9 +85,15 @@ export function buildTransactionListItem(
   t: Translate,
 ): TransactionListItem {
   const account = accountsById.get(transaction.accountId) ?? null;
-  const category = transaction.type === 'transfer' ? null : (categoriesById.get(transaction.categoryId) ?? null);
-  const categoryLabel = transaction.type === 'transfer' ? t('transactionTypeTransfer') : (category?.name ?? t('transactionUncategorized'));
-  const meta = account ? `${formatDateLabel(transaction.date)} · ${account.name}` : formatDateLabel(transaction.date);
+  const category =
+    transaction.type === 'transfer' ? null : (categoriesById.get(transaction.categoryId) ?? null);
+  const categoryLabel =
+    transaction.type === 'transfer'
+      ? t('transactionTypeTransfer')
+      : (category?.name ?? t('transactionUncategorized'));
+  const meta = account
+    ? `${formatDateLabel(transaction.date)} · ${account.name}`
+    : formatDateLabel(transaction.date);
   const positive = transaction.type === 'income';
   const sign = transaction.type === 'income' ? '+' : '-';
   const amountLabel = maskAmountText(amountsHidden, `${sign}${formatVnd(transaction.amount)}`);

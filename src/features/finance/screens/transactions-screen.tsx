@@ -40,7 +40,11 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
       t('transactionsDeleteConfirmMessage', { name }),
       [
         { text: t('transactionsDeleteConfirmCancel'), style: 'cancel' },
-        { text: t('transactionsDeleteConfirmConfirm'), style: 'destructive', onPress: () => deleteTransaction(id) },
+        {
+          text: t('transactionsDeleteConfirmConfirm'),
+          style: 'destructive',
+          onPress: () => deleteTransaction(id),
+        },
       ],
     );
   }
@@ -94,8 +98,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
                       accessibilityLabel={t('transactionsEditLabel', { name: item.name })}
                       accessibilityRole="button"
                       onPress={() => onSelectTransaction(item.id)}
-                      style={styles.rowPressable}
-                    >
+                      style={styles.rowPressable}>
                       <TransactionRow
                         amount={item.amountLabel}
                         category={item.categoryLabel}
@@ -110,8 +113,10 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
                       accessibilityLabel={t('transactionsDeleteLabel', { name: item.name })}
                       accessibilityRole="button"
                       onPress={() => confirmDelete(item.id, item.name)}
-                      style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
-                    >
+                      style={({ pressed }) => [
+                        styles.deleteButton,
+                        pressed && styles.deleteButtonPressed,
+                      ]}>
                       <X color={colors.status.negative} size={20} strokeWidth={2.4} />
                     </Pressable>
                   </View>
@@ -122,7 +127,14 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
         )}
       </ScrollView>
 
-      {undoMessage ? <UndoBanner message={undoMessage} onExpire={dismissUndo} onUndo={undoDelete} undoLabel={t('undoAction')} /> : null}
+      {undoMessage ? (
+        <UndoBanner
+          message={undoMessage}
+          onExpire={dismissUndo}
+          onUndo={undoDelete}
+          undoLabel={t('undoAction')}
+        />
+      ) : null}
     </View>
   );
 }

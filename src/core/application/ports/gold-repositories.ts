@@ -1,7 +1,10 @@
 import { WriteContext } from '@/core/application/ports/finance-repositories';
 import { GoldBrand, GoldBrandInput } from '@/core/domain/gold/gold-brand';
 import { GoldLot, GoldLotInput, GoldLotStatus } from '@/core/domain/gold/gold-lot';
-import { GoldSellTransaction, GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  GoldSellTransaction,
+  GoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 
 export type CreateGoldLotInput = WriteContext & GoldLotInput & { id: string };
@@ -25,7 +28,8 @@ export interface GoldLotRepository {
   saveWithOperation(record: GoldLot, operation: SyncOperation): Promise<void>;
 }
 
-export type CreateGoldSellTransactionInput = WriteContext & GoldSellTransactionInput & { id: string };
+export type CreateGoldSellTransactionInput = WriteContext &
+  GoldSellTransactionInput & { id: string };
 
 export type GoldSellTransactionListFilter = {
   includeDeleted?: boolean;

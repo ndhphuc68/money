@@ -1,4 +1,7 @@
-import { TransactionRepository, UpdateTransactionInput } from '@/core/application/ports/finance-repositories';
+import {
+  TransactionRepository,
+  UpdateTransactionInput,
+} from '@/core/application/ports/finance-repositories';
 import { Transaction } from '@/core/domain/finance/transaction';
 
 export type UpdateTransactionDeps = {

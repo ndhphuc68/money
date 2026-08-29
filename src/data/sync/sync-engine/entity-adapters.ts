@@ -20,10 +20,26 @@ import {
   toGoldLotRowValues,
   toGoldSellTransactionRowValues,
 } from '@/data/local/repositories/gold-record-mappers';
-import { accounts, categories, exampleRecords, goldBrands, goldLots, goldSellTransactions, transactions } from '@/data/local/schema';
+import {
+  accounts,
+  categories,
+  exampleRecords,
+  goldBrands,
+  goldLots,
+  goldSellTransactions,
+  transactions,
+} from '@/data/local/schema';
 
-import { parseAccountPayload, parseCategoryPayload, parseTransactionPayload } from './finance-payload-validators';
-import { parseGoldBrandPayload, parseGoldLotPayload, parseGoldSellTransactionPayload } from './gold-payload-validators';
+import {
+  parseAccountPayload,
+  parseCategoryPayload,
+  parseTransactionPayload,
+} from './finance-payload-validators';
+import {
+  parseGoldBrandPayload,
+  parseGoldLotPayload,
+  parseGoldSellTransactionPayload,
+} from './gold-payload-validators';
 
 /**
  * The object `LocalDatabaseClient['db'].transaction()` hands its callback —
@@ -66,7 +82,12 @@ function toSyncableRecordValues(record: SyncableRecord) {
 
 export const exampleRecordSyncAdapter: SyncEntityAdapter<SyncableRecord> = {
   parsePayload: parseSyncableRecord,
-  readLocal: (tx, id) => tx.select().from(exampleRecords).where(eq(exampleRecords.id, canonicalizeUuid(id))).get(),
+  readLocal: (tx, id) =>
+    tx
+      .select()
+      .from(exampleRecords)
+      .where(eq(exampleRecords.id, canonicalizeUuid(id)))
+      .get(),
   upsert: (tx, record) => {
     tx.insert(exampleRecords)
       .values(record)
@@ -77,55 +98,99 @@ export const exampleRecordSyncAdapter: SyncEntityAdapter<SyncableRecord> = {
 
 export const accountSyncAdapter: SyncEntityAdapter<Account> = {
   parsePayload: parseAccountPayload,
-  readLocal: (tx, id) => tx.select().from(accounts).where(eq(accounts.id, canonicalizeUuid(id))).get(),
+  readLocal: (tx, id) =>
+    tx
+      .select()
+      .from(accounts)
+      .where(eq(accounts.id, canonicalizeUuid(id)))
+      .get(),
   upsert: (tx, record) => {
     const values = toAccountRowValues(record);
-    tx.insert(accounts).values(values).onConflictDoUpdate({ target: accounts.id, set: values }).run();
+    tx.insert(accounts)
+      .values(values)
+      .onConflictDoUpdate({ target: accounts.id, set: values })
+      .run();
   },
 };
 
 export const categorySyncAdapter: SyncEntityAdapter<Category> = {
   parsePayload: parseCategoryPayload,
-  readLocal: (tx, id) => tx.select().from(categories).where(eq(categories.id, canonicalizeUuid(id))).get(),
+  readLocal: (tx, id) =>
+    tx
+      .select()
+      .from(categories)
+      .where(eq(categories.id, canonicalizeUuid(id)))
+      .get(),
   upsert: (tx, record) => {
     const values = toCategoryRowValues(record);
-    tx.insert(categories).values(values).onConflictDoUpdate({ target: categories.id, set: values }).run();
+    tx.insert(categories)
+      .values(values)
+      .onConflictDoUpdate({ target: categories.id, set: values })
+      .run();
   },
 };
 
 export const transactionSyncAdapter: SyncEntityAdapter<Transaction> = {
   parsePayload: parseTransactionPayload,
   readLocal: (tx, id) => {
-    const row = tx.select().from(transactions).where(eq(transactions.id, canonicalizeUuid(id))).get();
+    const row = tx
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, canonicalizeUuid(id)))
+      .get();
     return row === undefined ? undefined : toTransactionEntity(row);
   },
   upsert: (tx, record) => {
     const values = toTransactionRowValues(record);
-    tx.insert(transactions).values(values).onConflictDoUpdate({ target: transactions.id, set: values }).run();
+    tx.insert(transactions)
+      .values(values)
+      .onConflictDoUpdate({ target: transactions.id, set: values })
+      .run();
   },
 };
 
 export const goldBrandSyncAdapter: SyncEntityAdapter<GoldBrand> = {
   parsePayload: parseGoldBrandPayload,
-  readLocal: (tx, id) => tx.select().from(goldBrands).where(eq(goldBrands.id, canonicalizeUuid(id))).get(),
+  readLocal: (tx, id) =>
+    tx
+      .select()
+      .from(goldBrands)
+      .where(eq(goldBrands.id, canonicalizeUuid(id)))
+      .get(),
   upsert: (tx, record) => {
     const values = toGoldBrandRowValues(record);
-    tx.insert(goldBrands).values(values).onConflictDoUpdate({ target: goldBrands.id, set: values }).run();
+    tx.insert(goldBrands)
+      .values(values)
+      .onConflictDoUpdate({ target: goldBrands.id, set: values })
+      .run();
   },
 };
 
 export const goldLotSyncAdapter: SyncEntityAdapter<GoldLot> = {
   parsePayload: parseGoldLotPayload,
-  readLocal: (tx, id) => tx.select().from(goldLots).where(eq(goldLots.id, canonicalizeUuid(id))).get(),
+  readLocal: (tx, id) =>
+    tx
+      .select()
+      .from(goldLots)
+      .where(eq(goldLots.id, canonicalizeUuid(id)))
+      .get(),
   upsert: (tx, record) => {
     const values = toGoldLotRowValues(record);
-    tx.insert(goldLots).values(values).onConflictDoUpdate({ target: goldLots.id, set: values }).run();
+    tx.insert(goldLots)
+      .values(values)
+      .onConflictDoUpdate({ target: goldLots.id, set: values })
+      .run();
   },
 };
 
 export const goldSellTransactionSyncAdapter: SyncEntityAdapter<GoldSellTransaction> = {
   parsePayload: parseGoldSellTransactionPayload,
-  readLocal: (tx, id) => tx.select().from(goldSellTransactions).where(eq(goldSellTransactions.id, canonicalizeUuid(id))).get(),
+  readLocal: (tx, id) =>
+    tx
+      .select()
+      .from(goldSellTransactions)
+      .where(eq(goldSellTransactions.id, canonicalizeUuid(id)))
+      .get(),
   upsert: (tx, record) => {
     const values = toGoldSellTransactionRowValues(record);
     tx.insert(goldSellTransactions)

@@ -69,20 +69,38 @@ export function SplashScreen({ t }: SplashScreenProps) {
     return () => animation.stop();
   }, [loaderProgress, logoProgress, reduceMotion, textProgress]);
 
-  const logoAnimatedStyle = reduceMotion === false ? {
-    opacity: logoProgress,
-    transform: [
-      { translateY: logoProgress.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) },
-      { scale: logoProgress.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) },
-    ],
-  } : null;
-  const textAnimatedStyle = reduceMotion === false ? {
-    opacity: textProgress,
-    transform: [{ translateY: textProgress.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }],
-  } : null;
-  const loaderAnimatedStyle = reduceMotion === false ? {
-    transform: [{ translateX: loaderProgress.interpolate({ inputRange: [0, 1], outputRange: [-52, 122] }) }],
-  } : null;
+  const logoAnimatedStyle =
+    reduceMotion === false
+      ? {
+          opacity: logoProgress,
+          transform: [
+            { translateY: logoProgress.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) },
+            { scale: logoProgress.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) },
+          ],
+        }
+      : null;
+  const textAnimatedStyle =
+    reduceMotion === false
+      ? {
+          opacity: textProgress,
+          transform: [
+            { translateY: textProgress.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) },
+          ],
+        }
+      : null;
+  const loaderAnimatedStyle =
+    reduceMotion === false
+      ? {
+          transform: [
+            {
+              translateX: loaderProgress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-52, 122],
+              }),
+            },
+          ],
+        }
+      : null;
 
   return (
     <View style={styles.container} testID="splash-root">
@@ -103,7 +121,10 @@ export function SplashScreen({ t }: SplashScreenProps) {
       </View>
 
       <View style={styles.footer}>
-        <View accessibilityLabel={t('splashLoading')} style={styles.loaderTrack} testID="splash-loader">
+        <View
+          accessibilityLabel={t('splashLoading')}
+          style={styles.loaderTrack}
+          testID="splash-loader">
           <Animated.View style={[styles.loaderValue, loaderAnimatedStyle]}>
             <View style={styles.loaderValuePrimary} />
             <View style={styles.loaderValueAccent} />

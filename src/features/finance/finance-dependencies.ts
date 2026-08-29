@@ -5,7 +5,12 @@ import { CreateTransaction } from '@/core/application/finance/create-transaction
 import { DeleteTransaction } from '@/core/application/finance/delete-transaction';
 import { GetDashboard } from '@/core/application/finance/get-dashboard';
 import { GetReport } from '@/core/application/finance/get-report';
-import { CreateCategory, HideCategory, ListCategories, UpdateCategory } from '@/core/application/finance/manage-categories';
+import {
+  CreateCategory,
+  HideCategory,
+  ListCategories,
+  UpdateCategory,
+} from '@/core/application/finance/manage-categories';
 import { Onboarding } from '@/core/application/finance/onboarding';
 import { RestoreTransaction } from '@/core/application/finance/restore-transaction';
 import { UpdateTransaction } from '@/core/application/finance/update-transaction';
@@ -56,7 +61,9 @@ export type FinanceDependencies = {
  * device identity via `DeviceIdentity.get()` touches secure storage; callers
  * should call this once per database instance and reuse the result.
  */
-export async function createFinanceDependencies(database: LocalDatabaseClient): Promise<FinanceDependencies> {
+export async function createFinanceDependencies(
+  database: LocalDatabaseClient,
+): Promise<FinanceDependencies> {
   const now = () => new Date().toISOString();
   const generateId = () => randomUUID();
   const deviceId = await new DeviceIdentity().get();
@@ -83,7 +90,16 @@ export async function createFinanceDependencies(database: LocalDatabaseClient): 
     updateCategory: new UpdateCategory({ categoryRepository, ...shared }),
     hideCategory: new HideCategory({ categoryRepository, ...shared }),
     listCategories: new ListCategories({ categoryRepository }),
-    onboarding: new Onboarding({ accountRepository, categoryRepository, profileSettingsRepository, ...shared }),
-    buildWriteContext: (): WriteContext => ({ originDeviceId: deviceId, operationId: generateId(), now: now() }),
+    onboarding: new Onboarding({
+      accountRepository,
+      categoryRepository,
+      profileSettingsRepository,
+      ...shared,
+    }),
+    buildWriteContext: (): WriteContext => ({
+      originDeviceId: deviceId,
+      operationId: generateId(),
+      now: now(),
+    }),
   };
 }

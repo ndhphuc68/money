@@ -8,7 +8,11 @@ type SegmentedControlProps<T extends string> = {
   onChange?: (value: T) => void;
 };
 
-export function SegmentedControl<T extends string>({ options, value, onChange }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+}: SegmentedControlProps<T>) {
   return (
     <View accessibilityRole="tablist" style={styles.container}>
       {options.map((option) => {
@@ -21,8 +25,11 @@ export function SegmentedControl<T extends string>({ options, value, onChange }:
             accessibilityState={{ selected: active }}
             key={option}
             onPress={() => onChange?.(option)}
-            style={({ pressed }) => [styles.option, active && styles.optionActive, pressed && !active && styles.optionPressed]}
-          >
+            style={({ pressed }) => [
+              styles.option,
+              active && styles.optionActive,
+              pressed && !active && styles.optionPressed,
+            ]}>
             <Text style={[styles.optionText, active && styles.optionTextActive]}>{option}</Text>
           </Pressable>
         );

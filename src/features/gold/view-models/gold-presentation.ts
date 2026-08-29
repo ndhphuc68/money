@@ -49,7 +49,12 @@ export type SaleHistoryRow = {
   amountLabel: string;
 };
 
-export function buildSaleHistoryRow(sale: GoldSellTransaction, lot: GoldLot | null, brandName: string, t: Translate): SaleHistoryRow {
+export function buildSaleHistoryRow(
+  sale: GoldSellTransaction,
+  lot: GoldLot | null,
+  brandName: string,
+  t: Translate,
+): SaleHistoryRow {
   const weightLabel = lot ? formatGoldWeight(lot.quantity, lot.unit, t) : '';
   return {
     id: sale.id,

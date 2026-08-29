@@ -34,16 +34,21 @@ export function BalanceCard({
           accessibilityLabel={masked ? showBalanceLabel : hideBalanceLabel}
           accessibilityRole="button"
           onPress={onToggleMask}
-          style={({ pressed }) => [styles.maskButton, pressed && styles.maskButtonPressed]}
-        >
-          {masked ? <Eye color={colors.content.inverse} size={18} /> : <EyeOff color={colors.content.inverse} size={18} />}
+          style={({ pressed }) => [styles.maskButton, pressed && styles.maskButtonPressed]}>
+          {masked ? (
+            <Eye color={colors.content.inverse} size={18} />
+          ) : (
+            <EyeOff color={colors.content.inverse} size={18} />
+          )}
         </Pressable>
       </View>
       <Text adjustsFontSizeToFit numberOfLines={1} style={styles.balance}>
         {masked ? maskedText : balance}
       </Text>
       <View style={styles.footer}>
-        <Text numberOfLines={1} style={styles.cardNumber}>{cardNumber}</Text>
+        <Text numberOfLines={1} style={styles.cardNumber}>
+          {cardNumber}
+        </Text>
         <Text style={styles.expiry}>{expiry}</Text>
       </View>
     </View>

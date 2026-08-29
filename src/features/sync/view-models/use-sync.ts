@@ -30,35 +30,45 @@ type UseSyncOptions = {
   t: Translate;
 };
 
-export function useSync({ dependencies, passphrase, setPassphrase, t }: UseSyncOptions): SyncViewModel {
+export function useSync({
+  dependencies,
+  passphrase,
+  setPassphrase,
+  t,
+}: UseSyncOptions): SyncViewModel {
   const [isWorking, setIsWorking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isConfigured = dependencies !== null;
 
-  const run = useCallback(async (operation: (configuredDependencies: SyncDependencies) => Promise<string>) => {
-    if (dependencies === null) {
-      setError(t('passphraseRequired'));
-      return;
-    }
+  const run = useCallback(
+    async (operation: (configuredDependencies: SyncDependencies) => Promise<string>) => {
+      if (dependencies === null) {
+        setError(t('passphraseRequired'));
+        return;
+      }
 
-    setIsWorking(true);
-    setResult(null);
-    setError(null);
+      setIsWorking(true);
+      setResult(null);
+      setError(null);
 
-    try {
-      setResult(await operation(dependencies));
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : t('syncActionFailed'));
-    } finally {
-      setIsWorking(false);
-    }
-  }, [dependencies, t]);
+      try {
+        setResult(await operation(dependencies));
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : t('syncActionFailed'));
+      } finally {
+        setIsWorking(false);
+      }
+    },
+    [dependencies, t],
+  );
 
   const exportPackage = useCallback(async () => {
     await run(async (configuredDependencies) => {
-      await configuredDependencies.exportFile(await configuredDependencies.exportSyncPackage.execute());
+      await configuredDependencies.exportFile(
+        await configuredDependencies.exportSyncPackage.execute(),
+      );
       return t('exportComplete');
     });
   }, [run, t]);
@@ -75,5 +85,14 @@ export function useSync({ dependencies, passphrase, setPassphrase, t }: UseSyncO
     });
   }, [run, t]);
 
-  return { exportPackage, importPackage, isWorking, result, error, passphrase, setPassphrase, isConfigured };
+  return {
+    exportPackage,
+    importPackage,
+    isWorking,
+    result,
+    error,
+    passphrase,
+    setPassphrase,
+    isConfigured,
+  };
 }

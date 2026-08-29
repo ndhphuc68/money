@@ -31,18 +31,28 @@ export function SyncScreen({
           accessibilityLabel={t('vietnamese')}
           accessibilityState={{ selected: locale === 'vi' }}
           onPress={() => setLocale('vi')}
-          style={[styles.languageOption, locale === 'vi' && styles.languageOptionSelected]}
-        >
-          <Text style={[styles.languageOptionText, locale === 'vi' && styles.languageOptionTextSelected]}>{t('vietnamese')}</Text>
+          style={[styles.languageOption, locale === 'vi' && styles.languageOptionSelected]}>
+          <Text
+            style={[
+              styles.languageOptionText,
+              locale === 'vi' && styles.languageOptionTextSelected,
+            ]}>
+            {t('vietnamese')}
+          </Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('english')}
           accessibilityState={{ selected: locale === 'en' }}
           onPress={() => setLocale('en')}
-          style={[styles.languageOption, locale === 'en' && styles.languageOptionSelected]}
-        >
-          <Text style={[styles.languageOptionText, locale === 'en' && styles.languageOptionTextSelected]}>{t('english')}</Text>
+          style={[styles.languageOption, locale === 'en' && styles.languageOptionSelected]}>
+          <Text
+            style={[
+              styles.languageOptionText,
+              locale === 'en' && styles.languageOptionTextSelected,
+            ]}>
+            {t('english')}
+          </Text>
         </Pressable>
       </View>
       <Text style={styles.title}>{t('appTitle')}</Text>
@@ -59,7 +69,11 @@ export function SyncScreen({
         style={styles.passphraseInput}
         value={passphrase}
       />
-      {!isConfigured ? <Text accessibilityRole="alert" style={styles.error}>{t('passphraseRequired')}</Text> : null}
+      {!isConfigured ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {t('passphraseRequired')}
+        </Text>
+      ) : null}
       <View style={styles.actions}>
         <Pressable
           accessibilityRole="button"
@@ -67,8 +81,10 @@ export function SyncScreen({
           accessibilityState={{ disabled: isWorking || !isConfigured }}
           disabled={isWorking || !isConfigured}
           onPress={exportPackage}
-          style={({ pressed }) => [styles.primaryAction, (pressed || isWorking) && styles.primaryActionPressed]}
-        >
+          style={({ pressed }) => [
+            styles.primaryAction,
+            (pressed || isWorking) && styles.primaryActionPressed,
+          ]}>
           <Text style={styles.primaryActionText}>{t('exportPackage')}</Text>
         </Pressable>
         <Pressable
@@ -77,14 +93,28 @@ export function SyncScreen({
           accessibilityState={{ disabled: isWorking || !isConfigured }}
           disabled={isWorking || !isConfigured}
           onPress={importPackage}
-          style={({ pressed }) => [styles.secondaryAction, (pressed || isWorking) && styles.secondaryActionPressed]}
-        >
+          style={({ pressed }) => [
+            styles.secondaryAction,
+            (pressed || isWorking) && styles.secondaryActionPressed,
+          ]}>
           <Text style={styles.secondaryActionText}>{t('importPackage')}</Text>
         </Pressable>
       </View>
-      {isWorking ? <Text accessibilityLiveRegion="polite" style={styles.status}>{t('working')}</Text> : null}
-      {result !== null ? <Text accessibilityLiveRegion="polite" style={styles.status}>{result}</Text> : null}
-      {error !== null ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+      {isWorking ? (
+        <Text accessibilityLiveRegion="polite" style={styles.status}>
+          {t('working')}
+        </Text>
+      ) : null}
+      {result !== null ? (
+        <Text accessibilityLiveRegion="polite" style={styles.status}>
+          {result}
+        </Text>
+      ) : null}
+      {error !== null ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }

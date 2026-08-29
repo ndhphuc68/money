@@ -24,7 +24,8 @@ export type OnboardingErrors = {
   form?: string;
 };
 
-export type OnboardingUiStep = 'display-name' | 'first-account' | 'opening-balance' | 'confirm-categories' | 'completed';
+export type OnboardingUiStep =
+  'display-name' | 'first-account' | 'opening-balance' | 'confirm-categories' | 'completed';
 
 export type OnboardingViewModel = {
   loading: boolean;
@@ -76,14 +77,24 @@ function createDefaultCategoryToggles() {
  * keystroke. Re-entry behavior stays in `Onboarding`: completed profiles
  * leave the wizard; incomplete profiles restart from display name.
  */
-export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOptions): OnboardingViewModel {
+export function useOnboarding({
+  onboarding,
+  t,
+  onComplete,
+}: UseOnboardingOptions): OnboardingViewModel {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState<OnboardingUiStep>('display-name');
   const [displayName, setDisplayName] = useState('');
-  const [accountForm, setAccountForm] = useState<AccountFormValues>({ name: '', type: 'cash', openingBalance: null });
+  const [accountForm, setAccountForm] = useState<AccountFormValues>({
+    name: '',
+    type: 'cash',
+    openingBalance: null,
+  });
   const [categories, setCategories] = useState<DefaultCategory[]>(DEFAULT_CATEGORIES);
-  const [categoryToggles, setCategoryToggles] = useState<Record<string, boolean>>(createDefaultCategoryToggles);
+  const [categoryToggles, setCategoryToggles] = useState<Record<string, boolean>>(
+    createDefaultCategoryToggles,
+  );
   const [errors, setErrors] = useState<OnboardingErrors>({});
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -106,7 +117,6 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onboarding]);
 
   const continueDisplayName = useCallback(async () => {
@@ -151,22 +161,22 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
 
   const createAccountAndAdvance = useCallback(
     async (openingBalance: number) => {
-    const request: CreateAccountRequest = {
-      name: accountForm.name.trim(),
-      type: accountForm.type,
-      openingBalance,
-    };
+      const request: CreateAccountRequest = {
+        name: accountForm.name.trim(),
+        type: accountForm.type,
+        openingBalance,
+      };
 
-    setSubmitting(true);
-    try {
-      await onboarding.createFirstAccount(request);
-      setErrors({});
-      setStep('confirm-categories');
-    } catch (cause) {
-      setErrors({ form: cause instanceof Error ? cause.message : t('onboardingGenericError') });
-    } finally {
-      setSubmitting(false);
-    }
+      setSubmitting(true);
+      try {
+        await onboarding.createFirstAccount(request);
+        setErrors({});
+        setStep('confirm-categories');
+      } catch (cause) {
+        setErrors({ form: cause instanceof Error ? cause.message : t('onboardingGenericError') });
+      } finally {
+        setSubmitting(false);
+      }
     },
     [accountForm.name, accountForm.type, onboarding, t],
   );
@@ -181,22 +191,27 @@ export function useOnboarding({ onboarding, t, onComplete }: UseOnboardingOption
   }, [createAccountAndAdvance]);
 
   const updateCategoryName = useCallback((index: number, name: string) => {
-    setCategories((current) => current.map((category, i) => (i === index ? { ...category, name } : category)));
+    setCategories((current) =>
+      current.map((category, i) => (i === index ? { ...category, name } : category)),
+    );
   }, []);
 
   const removeCategory = useCallback((index: number) => {
     setCategories((current) => current.filter((_, i) => i !== index));
   }, []);
 
-  const toggleCategory = useCallback((index: number) => {
-    setCategoryToggles((current) => {
-      const category = categories[index];
-      if (!category) {
-        return current;
-      }
-      return { ...current, [category.name]: !current[category.name] };
-    });
-  }, [categories]);
+  const toggleCategory = useCallback(
+    (index: number) => {
+      setCategoryToggles((current) => {
+        const category = categories[index];
+        if (!category) {
+          return current;
+        }
+        return { ...current, [category.name]: !current[category.name] };
+      });
+    },
+    [categories],
+  );
 
   const complete = useCallback(
     async (selection?: DefaultCategory[]) => {

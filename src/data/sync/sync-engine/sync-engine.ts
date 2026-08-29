@@ -3,13 +3,23 @@ import { eq } from 'drizzle-orm';
 import { ChangeLogRepository as ChangeLogRepositoryPort } from '@/core/application/ports/repository';
 import { SyncPackageSerializer } from '@/core/application/ports/sync-package-serializer';
 import { ImportSummary } from '@/core/application/ports/sync-transport';
-import { canonicalizeUuid, parseSyncOperation, SyncOperation } from '@/core/domain/sync/sync-operation';
-import { parseSyncPackageWithoutAuth, SyncPackageWithoutAuth } from '@/core/domain/sync/sync-package';
+import {
+  canonicalizeUuid,
+  parseSyncOperation,
+  SyncOperation,
+} from '@/core/domain/sync/sync-operation';
+import {
+  parseSyncPackageWithoutAuth,
+  SyncPackageWithoutAuth,
+} from '@/core/domain/sync/sync-package';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { toChangeLogValues } from '@/data/local/repositories/change-log-repository';
 import { changeLog } from '@/data/local/schema';
-import { ConflictResolver, LastWriteWinsConflictResolver } from '@/data/sync/conflict-resolution/last-write-wins';
+import {
+  ConflictResolver,
+  LastWriteWinsConflictResolver,
+} from '@/data/sync/conflict-resolution/last-write-wins';
 
 import { defaultSyncEntityAdapters, SyncEntityAdapter } from './entity-adapters';
 
@@ -95,7 +105,10 @@ export class SyncEngine {
         const adapter = this.entityAdapters[operation.entityType];
         const incoming = incomingRecords[index];
         const local = adapter.readLocal(transaction, incoming.id);
-        const resolution = local === undefined ? { winner: 'incoming' as const, record: incoming } : this.conflictResolver.resolve(local, incoming);
+        const resolution =
+          local === undefined
+            ? { winner: 'incoming' as const, record: incoming }
+            : this.conflictResolver.resolve(local, incoming);
 
         if (resolution.winner === 'incoming') {
           adapter.upsert(transaction, incoming);
@@ -158,7 +171,9 @@ function compareOperations(left: SyncOperation, right: SyncOperation): number {
 
 function rejectedSummary(value: unknown): ImportSummary {
   const rejected =
-    typeof value === 'object' && value !== null && Array.isArray((value as { changes?: unknown }).changes)
+    typeof value === 'object' &&
+    value !== null &&
+    Array.isArray((value as { changes?: unknown }).changes)
       ? (value as { changes: unknown[] }).changes.length
       : 1;
 

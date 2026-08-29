@@ -1,6 +1,9 @@
 import { GoldBrand, validateGoldBrandInput } from '@/core/domain/gold/gold-brand';
 import { GoldLot, GoldLotStatus, validateGoldLotInput } from '@/core/domain/gold/gold-lot';
-import { GoldSellTransaction, validateGoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  GoldSellTransaction,
+  validateGoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 import { GoldWeightUnit } from '@/core/domain/gold/gold-weight';
 import { canonicalizeUuid, isIsoTimestamp, isUuid } from '@/core/domain/sync/sync-operation';
 import { SyncableRecord } from '@/core/domain/sync/syncable-record';
@@ -16,7 +19,10 @@ import { SyncableRecord } from '@/core/domain/sync/syncable-record';
 const GOLD_LOT_STATUSES: readonly GoldLotStatus[] = ['held', 'sold'];
 const GOLD_WEIGHT_UNITS: readonly GoldWeightUnit[] = ['luong', 'chi', 'phan', 'gram'];
 
-function parseSyncableEnvelope(value: unknown): { fields: Record<string, unknown>; base: SyncableRecord } {
+function parseSyncableEnvelope(value: unknown): {
+  fields: Record<string, unknown>;
+  base: SyncableRecord;
+} {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error('Sync operation payload must be a syncable record');
   }
@@ -78,10 +84,17 @@ export function parseGoldLotPayload(value: unknown): GoldLot {
     note: (fields.note as string | null | undefined) ?? null,
   });
 
-  if (typeof fields.quantityGrams !== 'number' || !Number.isFinite(fields.quantityGrams) || fields.quantityGrams <= 0) {
+  if (
+    typeof fields.quantityGrams !== 'number' ||
+    !Number.isFinite(fields.quantityGrams) ||
+    fields.quantityGrams <= 0
+  ) {
     throw new Error('Gold lot payload quantityGrams must be a positive number');
   }
-  if (typeof fields.status !== 'string' || !GOLD_LOT_STATUSES.includes(fields.status as GoldLotStatus)) {
+  if (
+    typeof fields.status !== 'string' ||
+    !GOLD_LOT_STATUSES.includes(fields.status as GoldLotStatus)
+  ) {
     throw new Error('Gold lot payload status is invalid');
   }
   if (fields.note !== null && typeof fields.note !== 'string') {

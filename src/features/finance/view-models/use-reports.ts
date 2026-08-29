@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { AccountRepository, CategoryRepository } from '@/core/application/ports/finance-repositories';
+import type {
+  AccountRepository,
+  CategoryRepository,
+} from '@/core/application/ports/finance-repositories';
 import { shiftMonth } from '@/core/application/finance/get-dashboard';
 import type { GetReport } from '@/core/application/finance/get-report';
 import { formatVnd } from '@/core/domain/finance/money';
@@ -81,7 +84,9 @@ const EMPTY_STATE: ReportState = {
  * mirroring `use-dashboard.ts`'s category-label lookup.
  */
 export function useReports({ dependencies, t, month, now }: UseReportsOptions): ReportsViewModel {
-  const [currentMonthValue, setCurrentMonthValue] = useState(month ?? currentMonth(now?.() ?? new Date()));
+  const [currentMonthValue, setCurrentMonthValue] = useState(
+    month ?? currentMonth(now?.() ?? new Date()),
+  );
   const [loading, setLoading] = useState(true);
   const [state, setState] = useState<ReportState>(EMPTY_STATE);
 
@@ -93,13 +98,21 @@ export function useReports({ dependencies, t, month, now }: UseReportsOptions): 
       const categoryTotals = await Promise.all(
         report.categoryTotals.map(async (entry): Promise<ReportTotalItem> => {
           const category = await dependencies.categoryRepository.findById(entry.id);
-          return { id: entry.id, label: category?.name ?? t('transactionUncategorized'), amountLabel: formatVnd(entry.amount) };
+          return {
+            id: entry.id,
+            label: category?.name ?? t('transactionUncategorized'),
+            amountLabel: formatVnd(entry.amount),
+          };
         }),
       );
       const accountTotals = await Promise.all(
         report.accountTotals.map(async (entry): Promise<ReportTotalItem> => {
           const account = await dependencies.accountRepository.findById(entry.id);
-          return { id: entry.id, label: account?.name ?? t('transactionUncategorized'), amountLabel: formatVnd(entry.amount) };
+          return {
+            id: entry.id,
+            label: account?.name ?? t('transactionUncategorized'),
+            amountLabel: formatVnd(entry.amount),
+          };
         }),
       );
 
@@ -114,7 +127,6 @@ export function useReports({ dependencies, t, month, now }: UseReportsOptions): 
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencies, currentMonthValue, t]);
 
   useEffect(() => {

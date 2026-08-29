@@ -24,21 +24,22 @@ export function createMobileSyncDependencies(
   const identity = new DeviceIdentity();
   const authenticationProvider = new HmacSha256AuthenticationProvider(passphrase);
 
-  const createTransport = async () => new FileSyncTransport(
-    new SyncEngine({
-      database,
-      records: defaultSyncEntityAdapters,
-      changes: new ChangeLogRepository(database),
+  const createTransport = async () =>
+    new FileSyncTransport(
+      new SyncEngine({
+        database,
+        records: defaultSyncEntityAdapters,
+        changes: new ChangeLogRepository(database),
+        serializer,
+        appVersion: '1.0.0',
+        schemaVersion: 1,
+        sourceDeviceId: await identity.get(),
+        now: () => new Date().toISOString(),
+      }),
+      packageFile,
       serializer,
-      appVersion: '1.0.0',
-      schemaVersion: 1,
-      sourceDeviceId: await identity.get(),
-      now: () => new Date().toISOString(),
-    }),
-    packageFile,
-    serializer,
-    authenticationProvider,
-  );
+      authenticationProvider,
+    );
 
   return {
     exportSyncPackage: new ExportSyncPackage({

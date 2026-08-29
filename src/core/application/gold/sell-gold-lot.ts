@@ -1,6 +1,12 @@
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
 import { GoldError } from '@/core/domain/gold/gold-error';
-import { GoldSellTransaction, GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  GoldSellTransaction,
+  GoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 
 export type SellGoldLotDeps = {
   goldLotRepository: GoldLotRepository;
@@ -22,7 +28,10 @@ export class SellGoldLot {
       throw new GoldError('lotNotAvailableToSell', 'Gold lot is not available to sell');
     }
     if (input.saleDate < lot.purchaseDate) {
-      throw new GoldError('saleDateBeforePurchase', 'Sale date must not be before the lot purchase date');
+      throw new GoldError(
+        'saleDateBeforePurchase',
+        'Sale date must not be before the lot purchase date',
+      );
     }
 
     const sale = await this.deps.goldSellTransactionRepository.create({

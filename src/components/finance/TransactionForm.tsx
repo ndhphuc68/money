@@ -3,7 +3,11 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
-import { validateTransactionInput, type TransactionInput, type TransactionType } from '@/core/domain/finance/transaction';
+import {
+  validateTransactionInput,
+  type TransactionInput,
+  type TransactionType,
+} from '@/core/domain/finance/transaction';
 import type { Translate } from '@/i18n/translations';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 
@@ -39,7 +43,13 @@ function todayIso(): string {
   return `${year}-${month}-${day}`;
 }
 
-export function TransactionForm({ accounts, categories, initialDate, onSubmit, t }: TransactionFormProps) {
+export function TransactionForm({
+  accounts,
+  categories,
+  initialDate,
+  onSubmit,
+  t,
+}: TransactionFormProps) {
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState<number | null>(null);
   const [name, setName] = useState('');
@@ -107,7 +117,9 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit, t
     try {
       validateTransactionInput(input);
     } catch (error) {
-      setErrors({ form: error instanceof Error ? error.message : t('transactionFormGenericError') });
+      setErrors({
+        form: error instanceof Error ? error.message : t('transactionFormGenericError'),
+      });
       return;
     }
 
@@ -117,14 +129,33 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit, t
   return (
     <View style={styles.container}>
       <SegmentedControl
-        onChange={(option: string) => setType((Object.keys(typeLabels) as TransactionType[]).find((key) => typeLabels[key] === option) ?? 'expense')}
+        onChange={(option: string) =>
+          setType(
+            (Object.keys(typeLabels) as TransactionType[]).find(
+              (key) => typeLabels[key] === option,
+            ) ?? 'expense',
+          )
+        }
         options={Object.values(typeLabels)}
         value={typeLabels[type]}
       />
 
-      <NameField errorMessage={errors.name} label={t('transactionFormNameLabel')} onChange={setName} placeholder={t('transactionFormNamePlaceholder')} value={name} />
+      <NameField
+        errorMessage={errors.name}
+        label={t('transactionFormNameLabel')}
+        onChange={setName}
+        placeholder={t('transactionFormNamePlaceholder')}
+        value={name}
+      />
 
-      <AmountInput errorMessage={amount === null ? (errors.amount ?? null) : null} invalidMessage={t('amountInvalid')} label={t('transactionFormAmountLabel')} onChange={setAmount} placeholder={t('amountPlaceholder')} value={amount} />
+      <AmountInput
+        errorMessage={amount === null ? (errors.amount ?? null) : null}
+        invalidMessage={t('amountInvalid')}
+        label={t('transactionFormAmountLabel')}
+        onChange={setAmount}
+        placeholder={t('amountPlaceholder')}
+        value={amount}
+      />
 
       <AccountPicker
         accounts={accounts}
@@ -155,7 +186,12 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit, t
 
       <DateField label={t('dateTransactionLabel')} onChange={setDate} value={date} />
 
-      <NoteField label={t('transactionFormNoteLabel')} onChange={setNote} placeholder={t('transactionFormNoteLabel')} value={note} />
+      <NoteField
+        label={t('transactionFormNoteLabel')}
+        onChange={setNote}
+        placeholder={t('transactionFormNoteLabel')}
+        value={note}
+      />
 
       {errors.form ? (
         <Text accessibilityRole="alert" style={styles.error}>
@@ -167,15 +203,26 @@ export function TransactionForm({ accounts, categories, initialDate, onSubmit, t
         accessibilityLabel={t('transactionFormSave')}
         accessibilityRole="button"
         onPress={handleSubmit}
-        style={({ pressed }) => [styles.saveButton, pressed && styles.saveButtonPressed]}
-      >
+        style={({ pressed }) => [styles.saveButton, pressed && styles.saveButtonPressed]}>
         <Text style={styles.saveButtonText}>{t('transactionFormSave')}</Text>
       </Pressable>
     </View>
   );
 }
 
-function NameField({ value, onChange, errorMessage, label, placeholder }: { value: string; onChange: (value: string) => void; errorMessage?: string; label: string; placeholder: string }) {
+function NameField({
+  value,
+  onChange,
+  errorMessage,
+  label,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  errorMessage?: string;
+  label: string;
+  placeholder: string;
+}) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -196,7 +243,17 @@ function NameField({ value, onChange, errorMessage, label, placeholder }: { valu
   );
 }
 
-function NoteField({ value, onChange, label, placeholder }: { value: string; onChange: (value: string) => void; label: string; placeholder: string }) {
+function NoteField({
+  value,
+  onChange,
+  label,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  placeholder: string;
+}) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>

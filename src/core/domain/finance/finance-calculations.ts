@@ -47,7 +47,11 @@ export function calculateAccountBalance(account: Account, transactions: Transact
  * ISO calendar dates). Transfers never contribute to income, expense,
  * netCashFlow, byCategory or byAccount. Soft-deleted transactions are excluded.
  */
-export function calculatePeriodSummary(transactions: Transaction[], from: string, to: string): PeriodSummary {
+export function calculatePeriodSummary(
+  transactions: Transaction[],
+  from: string,
+  to: string,
+): PeriodSummary {
   const summary: PeriodSummary = {
     income: 0,
     expense: 0,
@@ -75,8 +79,10 @@ export function calculatePeriodSummary(transactions: Transaction[], from: string
       summary.expense += transaction.amount;
     }
     summary.netCashFlow += signedAmount;
-    summary.byCategory[transaction.categoryId] = (summary.byCategory[transaction.categoryId] ?? 0) + signedAmount;
-    summary.byAccount[transaction.accountId] = (summary.byAccount[transaction.accountId] ?? 0) + signedAmount;
+    summary.byCategory[transaction.categoryId] =
+      (summary.byCategory[transaction.categoryId] ?? 0) + signedAmount;
+    summary.byAccount[transaction.accountId] =
+      (summary.byAccount[transaction.accountId] ?? 0) + signedAmount;
   }
 
   return summary;

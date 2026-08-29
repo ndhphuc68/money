@@ -46,10 +46,18 @@ export function parseSyncOperation(value: unknown): SyncOperation {
   if (!isJsonValue(value.payload)) {
     throw new Error('Sync operation payload must be valid JSON data');
   }
-  if (value.operation !== 'create' && value.operation !== 'update' && value.operation !== 'delete') {
+  if (
+    value.operation !== 'create' &&
+    value.operation !== 'update' &&
+    value.operation !== 'delete'
+  ) {
     throw new Error('Sync operation kind is invalid');
   }
-  if (typeof value.revision !== 'number' || !Number.isInteger(value.revision) || value.revision < 0) {
+  if (
+    typeof value.revision !== 'number' ||
+    !Number.isInteger(value.revision) ||
+    value.revision < 0
+  ) {
     throw new Error('Sync operation revision must be a non-negative integer');
   }
   if (!isIsoTimestamp(value.createdAt)) {
@@ -86,7 +94,10 @@ function isJsonValueWithin(value: unknown, ancestors: WeakSet<object>): boolean 
     ancestors.add(value);
     let isValid = true;
     for (let index = 0; index < value.length; index += 1) {
-      if (!Object.prototype.hasOwnProperty.call(value, index) || !isJsonValueWithin(value[index], ancestors)) {
+      if (
+        !Object.prototype.hasOwnProperty.call(value, index) ||
+        !isJsonValueWithin(value[index], ancestors)
+      ) {
         isValid = false;
         break;
       }
@@ -94,7 +105,12 @@ function isJsonValueWithin(value: unknown, ancestors: WeakSet<object>): boolean 
     ancestors.delete(value);
     return isValid;
   }
-  if (!isRecord(value) || !isPlainObject(value) || Object.getOwnPropertySymbols(value).length > 0 || ancestors.has(value)) {
+  if (
+    !isRecord(value) ||
+    !isPlainObject(value) ||
+    Object.getOwnPropertySymbols(value).length > 0 ||
+    ancestors.has(value)
+  ) {
     return false;
   }
 

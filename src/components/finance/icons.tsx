@@ -1,5 +1,15 @@
 import { View } from 'react-native';
-import { Car, CircleDollarSign, CircleUserRound, LayoutGrid, List, ReceiptText, ShoppingBag, Target, Utensils } from 'lucide-react-native';
+import {
+  Car,
+  CircleDollarSign,
+  CircleUserRound,
+  LayoutGrid,
+  List,
+  ReceiptText,
+  ShoppingBag,
+  Target,
+  Utensils,
+} from 'lucide-react-native';
 
 import { colors, radius } from '@/theme';
 
@@ -32,8 +42,7 @@ export function CategoryIcon({ name, color = categoryColor(name) }: CategoryIcon
         height: 40,
         justifyContent: 'center',
         width: 40,
-      }}
-    >
+      }}>
       <Icon color={colors.content.inverse} size={18} strokeWidth={1.8} />
     </View>
   );

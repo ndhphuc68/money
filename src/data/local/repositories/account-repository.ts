@@ -14,7 +14,10 @@ import { accounts, changeLog, transactions } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toAccountEntity, toAccountRowValues } from './finance-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class AccountRepository implements AccountRepositoryPort {
   constructor(private readonly database: LocalDatabaseClient) {}
@@ -143,7 +146,9 @@ export class AccountRepository implements AccountRepositoryPort {
     const row = this.database.db
       .select({ id: transactions.id })
       .from(transactions)
-      .where(or(eq(transactions.accountId, accountId), eq(transactions.destinationAccountId, accountId)))
+      .where(
+        or(eq(transactions.accountId, accountId), eq(transactions.destinationAccountId, accountId)),
+      )
       .get();
     return row !== undefined;
   }

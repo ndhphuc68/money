@@ -47,7 +47,11 @@ export function GoldDetailSheet({
               <Text style={styles.title}>{title}</Text>
               <Text style={styles.subtitle}>{subtitle}</Text>
             </View>
-            <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
+            <Pressable
+              accessibilityLabel={closeLabel}
+              accessibilityRole="button"
+              onPress={onClose}
+              style={styles.closeButton}>
               <Text style={styles.closeButtonText}>×</Text>
             </Pressable>
           </View>
@@ -78,8 +82,7 @@ export function GoldDetailSheet({
             accessibilityState={{ disabled: deleteDisabled }}
             disabled={deleteDisabled}
             onPress={onMoveToTrash}
-            style={[styles.deleteButton, deleteDisabled && styles.deleteButtonDisabled]}
-          >
+            style={[styles.deleteButton, deleteDisabled && styles.deleteButtonDisabled]}>
             <Text style={styles.deleteButtonText}>{deleteLabel}</Text>
           </Pressable>
         </View>

@@ -13,7 +13,13 @@ type UndoBannerProps = {
 
 const DEFAULT_DURATION_MS = 5000;
 
-export function UndoBanner({ message, onUndo, onExpire, undoLabel, durationMs = DEFAULT_DURATION_MS }: UndoBannerProps) {
+export function UndoBanner({
+  message,
+  onUndo,
+  onExpire,
+  undoLabel,
+  durationMs = DEFAULT_DURATION_MS,
+}: UndoBannerProps) {
   const resolvedRef = useRef(false);
 
   useEffect(() => {
@@ -44,8 +50,7 @@ export function UndoBanner({ message, onUndo, onExpire, undoLabel, durationMs = 
         accessibilityLabel={undoLabel}
         accessibilityRole="button"
         onPress={handleUndoPress}
-        style={({ pressed }) => [styles.undoButton, pressed && styles.undoButtonPressed]}
-      >
+        style={({ pressed }) => [styles.undoButton, pressed && styles.undoButtonPressed]}>
         <Text style={styles.undoText}>{undoLabel}</Text>
       </Pressable>
     </View>

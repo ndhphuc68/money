@@ -14,7 +14,10 @@ import { categories, changeLog, transactions } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toCategoryEntity, toCategoryRowValues } from './finance-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class CategoryRepository implements CategoryRepositoryPort {
   constructor(private readonly database: LocalDatabaseClient) {}

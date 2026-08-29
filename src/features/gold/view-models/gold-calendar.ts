@@ -14,7 +14,11 @@ function pad2(value: number): string {
  * `Date`), with leading blank cells so the first real day lands in its
  * correct weekday column.
  */
-export function buildGoldCalendarCells(year: number, month: number, selectedDate: string): GoldCalendarCell[] {
+export function buildGoldCalendarCells(
+  year: number,
+  month: number,
+  selectedDate: string,
+): GoldCalendarCell[] {
   const firstOfMonth = new Date(year, month, 1);
   const mondayFirstWeekday = (firstOfMonth.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();

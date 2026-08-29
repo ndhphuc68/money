@@ -12,7 +12,9 @@ import {
 } from '@/core/domain/sync/sync-package';
 
 export class StableSyncPackageSerializer implements SyncPackageSerializerPort {
-  constructor(private readonly checksumCalculator: ChecksumCalculator = new Fnv1aChecksumCalculator()) {}
+  constructor(
+    private readonly checksumCalculator: ChecksumCalculator = new Fnv1aChecksumCalculator(),
+  ) {}
 
   serialize(pkg: SyncPackageWithoutAuth | SyncPackage): string {
     return stableJson(hasAuthTag(pkg) ? parseSyncPackage(pkg) : parseSyncPackageWithoutAuth(pkg));

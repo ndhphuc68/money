@@ -1,6 +1,9 @@
 import { eq, isNull } from 'drizzle-orm';
 
-import { CreateGoldBrandInput, GoldBrandRepository as GoldBrandRepositoryPort } from '@/core/application/ports/gold-repositories';
+import {
+  CreateGoldBrandInput,
+  GoldBrandRepository as GoldBrandRepositoryPort,
+} from '@/core/application/ports/gold-repositories';
 import { WriteContext } from '@/core/application/ports/finance-repositories';
 import { GoldBrand, validateGoldBrandInput } from '@/core/domain/gold/gold-brand';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
@@ -10,7 +13,10 @@ import { changeLog, goldBrands } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toGoldBrandEntity, toGoldBrandRowValues } from './gold-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class GoldBrandRepository implements GoldBrandRepositoryPort {
   constructor(private readonly database: LocalDatabaseClient) {}
@@ -73,7 +79,12 @@ export class GoldBrandRepository implements GoldBrandRepositoryPort {
   }
 
   async listActive(): Promise<GoldBrand[]> {
-    const rows = this.database.db.select().from(goldBrands).where(isNull(goldBrands.deletedAt)).orderBy(goldBrands.name).all();
+    const rows = this.database.db
+      .select()
+      .from(goldBrands)
+      .where(isNull(goldBrands.deletedAt))
+      .orderBy(goldBrands.name)
+      .all();
     return rows.map(toGoldBrandEntity);
   }
 
@@ -83,7 +94,11 @@ export class GoldBrandRepository implements GoldBrandRepositoryPort {
     const values = toGoldBrandRowValues(canonicalRecord);
 
     this.database.db.transaction((transaction) => {
-      transaction.insert(goldBrands).values(values).onConflictDoUpdate({ target: goldBrands.id, set: values }).run();
+      transaction
+        .insert(goldBrands)
+        .values(values)
+        .onConflictDoUpdate({ target: goldBrands.id, set: values })
+        .run();
       transaction.insert(changeLog).values(toChangeLogValues(canonicalOperation)).run();
     });
   }

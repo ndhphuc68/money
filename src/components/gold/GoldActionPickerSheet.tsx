@@ -42,7 +42,11 @@ export function GoldActionPickerSheet({
               <Text style={styles.title}>{title}</Text>
               <Text style={styles.subtitle}>{subtitle}</Text>
             </View>
-            <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
+            <Pressable
+              accessibilityLabel={closeLabel}
+              accessibilityRole="button"
+              onPress={onClose}
+              style={styles.closeButton}>
               <Text style={styles.closeButtonText}>×</Text>
             </Pressable>
           </View>
@@ -56,10 +60,11 @@ export function GoldActionPickerSheet({
               accessibilityState={{ disabled: sellDisabled }}
               disabled={sellDisabled}
               onPress={onSelectSell}
-              style={[styles.sellAction, sellDisabled && styles.sellActionDisabled]}
-            >
+              style={[styles.sellAction, sellDisabled && styles.sellActionDisabled]}>
               <Text style={styles.sellActionTitle}>{sellTitle}</Text>
-              <Text style={styles.sellActionSubtitle}>{sellDisabled ? sellDisabledHint : sellSubtitle}</Text>
+              <Text style={styles.sellActionSubtitle}>
+                {sellDisabled ? sellDisabledHint : sellSubtitle}
+              </Text>
             </Pressable>
           </View>
         </View>

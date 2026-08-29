@@ -1,4 +1,7 @@
-import { TransactionListFilter, TransactionRepository } from '@/core/application/ports/finance-repositories';
+import {
+  TransactionListFilter,
+  TransactionRepository,
+} from '@/core/application/ports/finance-repositories';
 import { calculatePeriodSummary } from '@/core/domain/finance/finance-calculations';
 
 import { AggregateTotal, aggregateExpenseTotals, resolveMonthRange } from './get-dashboard';
@@ -9,7 +12,10 @@ export type GetReportDeps = {
 
 export type ReportPeriod = { from: string; to: string } | { month: string };
 
-export type ReportFilters = Pick<TransactionListFilter, 'type' | 'categoryId' | 'accountId' | 'query'>;
+export type ReportFilters = Pick<
+  TransactionListFilter,
+  'type' | 'categoryId' | 'accountId' | 'query'
+>;
 
 export type ReportView = {
   income: number;
@@ -48,7 +54,10 @@ export class GetReport {
     const categoryTotals = aggregateExpenseTotals(transactions, (transaction) =>
       transaction.type === 'transfer' ? null : transaction.categoryId,
     );
-    const accountTotals = aggregateExpenseTotals(transactions, (transaction) => transaction.accountId);
+    const accountTotals = aggregateExpenseTotals(
+      transactions,
+      (transaction) => transaction.accountId,
+    );
 
     return {
       income: summary.income,

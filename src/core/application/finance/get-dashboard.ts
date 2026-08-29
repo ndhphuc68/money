@@ -1,5 +1,11 @@
-import { AccountRepository, TransactionRepository } from '@/core/application/ports/finance-repositories';
-import { calculateAccountBalance, calculatePeriodSummary } from '@/core/domain/finance/finance-calculations';
+import {
+  AccountRepository,
+  TransactionRepository,
+} from '@/core/application/ports/finance-repositories';
+import {
+  calculateAccountBalance,
+  calculatePeriodSummary,
+} from '@/core/domain/finance/finance-calculations';
 import { Transaction } from '@/core/domain/finance/transaction';
 
 export type GetDashboardDeps = {
@@ -63,7 +69,10 @@ export function shiftMonth(month: string, delta: number): string {
  * transactions). Recomputing directly from the raw transaction list avoids
  * that mismatch and only ever reflects true expense magnitude.
  */
-export function aggregateExpenseTotals(transactions: Transaction[], keyOf: (transaction: Transaction) => string | null | undefined): AggregateTotal[] {
+export function aggregateExpenseTotals(
+  transactions: Transaction[],
+  keyOf: (transaction: Transaction) => string | null | undefined,
+): AggregateTotal[] {
   const totals = new Map<string, number>();
 
   for (const transaction of transactions) {
@@ -97,10 +106,15 @@ export class GetDashboard {
       this.deps.transactionRepository.list({ includeDeleted: false }),
     ]);
 
-    const totalBalance = accounts.reduce((sum, account) => sum + calculateAccountBalance(account, transactions), 0);
+    const totalBalance = accounts.reduce(
+      (sum, account) => sum + calculateAccountBalance(account, transactions),
+      0,
+    );
 
     const { from, to } = resolveMonthRange(month);
-    const periodTransactions = transactions.filter((transaction) => transaction.date >= from && transaction.date <= to);
+    const periodTransactions = transactions.filter(
+      (transaction) => transaction.date >= from && transaction.date <= to,
+    );
     const summary = calculatePeriodSummary(periodTransactions, from, to);
 
     const chartSeries: DashboardChartPoint[] = [];
@@ -108,7 +122,11 @@ export class GetDashboard {
       const chartMonth = shiftMonth(month, -offset);
       const chartRange = resolveMonthRange(chartMonth);
       const chartSummary = calculatePeriodSummary(transactions, chartRange.from, chartRange.to);
-      chartSeries.push({ month: chartMonth, income: chartSummary.income, expense: chartSummary.expense });
+      chartSeries.push({
+        month: chartMonth,
+        income: chartSummary.income,
+        expense: chartSummary.expense,
+      });
     }
 
     const categorySpending = aggregateExpenseTotals(periodTransactions, (transaction) =>
@@ -117,7 +135,9 @@ export class GetDashboard {
 
     const recentTransactions = transactions
       .slice()
-      .sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)))
+      .sort((a, b) =>
+        a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date),
+      )
       .slice(0, RECENT_TRANSACTIONS_LIMIT);
 
     return {
