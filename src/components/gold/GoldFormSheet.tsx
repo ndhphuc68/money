@@ -49,6 +49,7 @@ export type GoldFormSheetProps = {
   saveLabel: string;
   errorMessage: string | null;
   onSave(): void;
+  onClose(): void;
 };
 
 function Dropdown({
@@ -102,10 +103,10 @@ function Dropdown({
 }
 
 export function GoldFormSheet(props: GoldFormSheetProps) {
-  const { visible, formType, title, subtitle, closeLabel, onSave } = props;
+  const { visible, formType, title, subtitle, closeLabel, onSave, onClose } = props;
 
   return (
-    <Modal animationType="fade" onRequestClose={props.onSave} transparent visible={visible}>
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -115,7 +116,7 @@ export function GoldFormSheet(props: GoldFormSheetProps) {
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.subtitle}>{subtitle}</Text>
               </View>
-              <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={props.onSave} style={styles.closeButton}>
+              <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>×</Text>
               </Pressable>
             </View>

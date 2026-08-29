@@ -1,5 +1,5 @@
 // src/features/gold/screens/gold-management-screen.tsx
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
@@ -15,12 +15,13 @@ import {
   type GoldHistoryItem,
 } from '@/components/gold';
 import { formatVnd } from '@/core/domain/finance/money';
+import { GoldError, type GoldErrorCode } from '@/core/domain/gold/gold-error';
 import { validateGoldLotInput, type GoldLotInput } from '@/core/domain/gold/gold-lot';
 import { validateGoldSellTransactionInput, type GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
 import { type GoldWeightUnit } from '@/core/domain/gold/gold-weight';
 import { formatGoldWeight } from '@/features/gold/view-models/gold-presentation';
 import type { GoldManagementViewModel } from '@/features/gold/view-models/use-gold-management';
-import type { Translate } from '@/i18n/translations';
+import type { Translate, TranslationKey } from '@/i18n/translations';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 
 type GoldManagementScreenProps = GoldManagementViewModel & {
@@ -34,6 +35,21 @@ type DropdownKind = 'none' | 'brand' | 'unit' | 'lot';
 type DetailTarget = { kind: 'lot' | 'sale'; id: string };
 
 const UNITS: GoldWeightUnit[] = ['chi', 'luong', 'phan', 'gram'];
+
+const GOLD_ERROR_KEY: Record<GoldErrorCode, TranslationKey> = {
+  lotHasActiveSale: 'goldTrashBlockedMessage',
+  lotNotFound: 'goldLotNotFoundError',
+  lotNotAvailableToSell: 'goldLotAlreadySoldError',
+  saleDateBeforePurchase: 'goldSaleDateBeforePurchaseError',
+  lotNoLongerAvailable: 'goldRestoreUnavailableError',
+};
+
+function describeGoldError(caught: unknown, t: Translate): string {
+  if (caught instanceof GoldError) {
+    return t(GOLD_ERROR_KEY[caught.code]);
+  }
+  return caught instanceof Error ? caught.message : String(caught);
+}
 
 function todayIso(): string {
   const now = new Date();
@@ -58,10 +74,11 @@ function formatDmy(iso: string): string {
  * its `totalQuantityGrams`/`totalCostBasis` numbers.
  */
 export function GoldManagementScreen(props: GoldManagementScreenProps) {
-  const { t, onBack, overview, heldLots, trashedLots, trashedSales, brands, loading, error } = props;
+  const { t, onBack, overview, heldLots, trashedLots, trashedSales, activeSales, brands, loading, error } = props;
 
   const [sheet, setSheet] = useState<SheetKind>('none');
   const [formType, setFormType] = useState<FormType>('buy');
+  const [formSession, setFormSession] = useState(0);
   const [openDropdown, setOpenDropdown] = useState<DropdownKind>('none');
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarYear, setCalendarYear] = useState(() => Number(todayIso().slice(0, 4)));
@@ -69,6 +86,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const [detailTarget, setDetailTarget] = useState<DetailTarget | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const [draftDate, setDraftDate] = useState(todayIso());
   const [draftBrandId, setDraftBrandId] = useState<string | null>(null);
@@ -81,6 +99,14 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
   const brandNameById = useMemo(() => new Map(brands.map((brand) => [brand.id, brand.name] as const)), [brands]);
   const trashedLotById = useMemo(() => new Map(trashedLots.map((lot) => [lot.id, lot] as const)), [trashedLots]);
   const trashedSaleById = useMemo(() => new Map(trashedSales.map((sale) => [sale.id, sale] as const)), [trashedSales]);
+  const activeSaleById = useMemo(() => new Map(activeSales.map((sale) => [sale.id, sale] as const)), [activeSales]);
+
+  useEffect(() => {
+    if (actionError !== null) {
+      Alert.alert(actionError);
+      setActionError(null);
+    }
+  }, [actionError]);
 
   if (loading) {
     return (
@@ -98,14 +124,24 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
     );
   }
 
-  const historyItems: GoldHistoryItem[] = heldLots.map((lot) => ({
-    kind: 'lot' as const,
-    id: lot.id,
-    title: lot.title,
-    subtitle: lot.subtitle,
-    amountLabel: lot.amountLabel,
-    amountTone: 'neutral' as const,
-  }));
+  const historyItems: GoldHistoryItem[] = [
+    ...heldLots.map((lot) => ({
+      kind: 'lot' as const,
+      id: lot.id,
+      title: lot.title,
+      subtitle: lot.subtitle,
+      amountLabel: lot.amountLabel,
+      amountTone: 'neutral' as const,
+    })),
+    ...activeSales.map((sale) => ({
+      kind: 'sale' as const,
+      id: sale.id,
+      title: sale.title,
+      subtitle: sale.subtitle,
+      amountLabel: sale.amountLabel,
+      amountTone: 'positive' as const,
+    })),
+  ];
 
   function resetForm() {
     setDraftDate(todayIso());
@@ -121,6 +157,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
   function openBuyForm() {
     resetForm();
     setFormType('buy');
+    setFormSession((session) => session + 1);
     setSheet('form');
   }
 
@@ -128,6 +165,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
     if (heldLots.length === 0) return;
     resetForm();
     setFormType('sell');
+    setFormSession((session) => session + 1);
     setSheet('form');
   }
 
@@ -179,7 +217,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
       }
       closeAllSheets();
     } catch (caught) {
-      setFormError(caught instanceof Error ? caught.message : String(caught));
+      setFormError(describeGoldError(caught, t));
     }
   }
 
@@ -213,7 +251,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
       }
       closeAllSheets();
     } catch (caught) {
-      setDetailError(caught instanceof Error ? caught.message : String(caught));
+      setDetailError(describeGoldError(caught, t));
     }
   }
 
@@ -237,7 +275,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
   }));
 
   const detailLotRow = detailTarget?.kind === 'lot' ? (heldLots.find((row) => row.id === detailTarget.id) ?? trashedLotById.get(detailTarget.id) ?? null) : null;
-  const detailSaleRow = detailTarget?.kind === 'sale' ? trashedSaleById.get(detailTarget.id) ?? null : null;
+  const detailSaleRow = detailTarget?.kind === 'sale' ? (activeSaleById.get(detailTarget.id) ?? trashedSaleById.get(detailTarget.id) ?? null) : null;
 
   return (
     <View style={styles.screen}>
@@ -297,6 +335,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
       />
 
       <GoldFormSheet
+        key={`${formType}-${formSession}`}
         addNewBrandLabel={t('goldAddNewBrandOption')}
         brandDropdownOpen={openDropdown === 'brand'}
         brandFieldLabel={t('goldBrandFieldLabel')}
@@ -313,6 +352,7 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
         lotValueLabel={draftLotId ? (lotOptions.find((option) => option.key === draftLotId)?.label ?? '') : t('goldLotFieldLabel')}
         onChangeQuantity={setDraftQuantity}
         onChangeTotalAmount={setDraftTotalAmount}
+        onClose={closeAllSheets}
         onOpenCalendar={() => setCalendarOpen(true)}
         onSave={handleSave}
         onSelectAddNewBrand={() => {
@@ -391,11 +431,14 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
         onAddBrand={() => {
           const name = newBrandName.trim();
           if (!name) return;
-          void props.addBrand(name).then(() => setNewBrandName(''));
+          void props
+            .addBrand(name)
+            .then(() => setNewBrandName(''))
+            .catch((caught) => setActionError(describeGoldError(caught, t)));
         }}
         onChangeNewBrandName={setNewBrandName}
         onClose={() => setSheet('none')}
-        onDeleteBrand={(id) => void props.removeBrand(id)}
+        onDeleteBrand={(id) => void props.removeBrand(id).catch((caught) => setActionError(describeGoldError(caught, t)))}
         saveBrandLabel={t('goldSaveBrandLabel')}
         subtitle={t('goldManageBrandsSubtitle')}
         title={t('goldManageBrandsTitle')}
@@ -425,8 +468,8 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
         onClose={() => setSheet('none')}
         onPurgeLot={(id) => confirmPurge(() => props.purgeLot(id))}
         onPurgeSale={(id) => confirmPurge(() => props.purgeSale(id))}
-        onRestoreLot={(id) => void props.restoreLot(id)}
-        onRestoreSale={(id) => void props.restoreSale(id)}
+        onRestoreLot={(id) => void props.restoreLot(id).catch((caught) => setActionError(describeGoldError(caught, t)))}
+        onRestoreSale={(id) => void props.restoreSale(id).catch((caught) => setActionError(describeGoldError(caught, t)))}
         purgeLabel={t('goldPurgeLabel')}
         restoreLabel={t('goldRestoreLabel')}
         subtitle={t('goldTrashSheetSubtitle')}

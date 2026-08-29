@@ -34,6 +34,7 @@ export type GoldManagementViewModel = {
   heldLots: LotHistoryRow[];
   trashedLots: LotHistoryRow[];
   trashedSales: SaleHistoryRow[];
+  activeSales: SaleHistoryRow[];
   brands: GoldBrand[];
   loading: boolean;
   error: string | null;
@@ -56,6 +57,7 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
   const [heldLots, setHeldLots] = useState<LotHistoryRow[]>([]);
   const [trashedLots, setTrashedLots] = useState<LotHistoryRow[]>([]);
   const [trashedSales, setTrashedSales] = useState<SaleHistoryRow[]>([]);
+  const [activeSales, setActiveSales] = useState<SaleHistoryRow[]>([]);
   const [brands, setBrands] = useState<GoldBrand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,13 +66,16 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
     setLoading(true);
     setError(null);
     try {
-      const [overviewResult, activeLots, deletedLots, deletedSales, brandList] = await Promise.all([
+      const [overviewResult, activeLots, deletedLots, allSales, brandList] = await Promise.all([
         dependencies.getGoldOverview.execute(),
         dependencies.goldLotRepository.list({ status: 'held' }),
         dependencies.goldLotRepository.list({ includeDeleted: true }).then((lots: GoldLot[]) => lots.filter((lot) => lot.deletedAt !== null)),
-        dependencies.goldSellTransactionRepository.list({ includeDeleted: true }).then((sales) => sales.filter((sale) => sale.deletedAt !== null)),
+        dependencies.goldSellTransactionRepository.list({ includeDeleted: true }),
         dependencies.listGoldBrands.execute(),
       ]);
+
+      const deletedSales = allSales.filter((sale) => sale.deletedAt !== null);
+      const currentActiveSales = allSales.filter((sale) => sale.deletedAt === null);
 
       const brandNameById = new Map(brandList.map((brand) => [brand.id, brand.name] as const));
       const nameFor = (brandId: string) => brandNameById.get(brandId) ?? brandId;
@@ -85,6 +90,12 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
       }
       setTrashedSales(
         deletedSales.map((sale) => {
+          const lot = lotById.get(sale.lotId) ?? null;
+          return buildSaleHistoryRow(sale, lot, lot ? nameFor(lot.brandId) : '', t);
+        }),
+      );
+      setActiveSales(
+        currentActiveSales.map((sale) => {
           const lot = lotById.get(sale.lotId) ?? null;
           return buildSaleHistoryRow(sale, lot, lot ? nameFor(lot.brandId) : '', t);
         }),
@@ -106,6 +117,7 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
     heldLots,
     trashedLots,
     trashedSales,
+    activeSales,
     brands,
     loading,
     error,
