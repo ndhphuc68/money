@@ -2,6 +2,9 @@
 jest.mock('expo-notifications', () => ({
   requestPermissionsAsync: jest.fn(),
   scheduleNotificationAsync: jest.fn(),
+  SchedulableTriggerInputTypes: {
+    DATE: 'date',
+  },
 }));
 
 import * as Notifications from 'expo-notifications';
@@ -37,7 +40,7 @@ describe('RecurringNotificationScheduler', () => {
     expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith({
       identifier: 'occurrence-1',
       content: { title: 'Sắp đến hạn', body: 'YouTube Premium' },
-      trigger: { type: 'date', date: fireDate },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: fireDate },
     });
   });
 });

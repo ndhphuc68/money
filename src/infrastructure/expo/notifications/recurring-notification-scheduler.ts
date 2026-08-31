@@ -13,7 +13,10 @@ export class RecurringNotificationScheduler implements NotificationScheduler {
     await Notifications.scheduleNotificationAsync({
       identifier: params.id,
       content: { title: params.title, body: params.body },
-      trigger: { type: 'date', date: params.fireDate },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: params.fireDate,
+      },
     });
   }
 }
