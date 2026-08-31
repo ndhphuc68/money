@@ -1,4 +1,5 @@
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import {
   AccountRepository,
@@ -26,6 +27,7 @@ import {
 import { ReportsScreen } from '@/features/finance/screens/reports-screen';
 import { useReports } from '@/features/finance/view-models/use-reports';
 import { Locale, translate } from '@/i18n/translations';
+import { colors } from '@/theme';
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
@@ -54,7 +56,11 @@ class FakeAccountRepository implements AccountRepository {
     return account;
   }
 
-  async update(_id: string, _changes: UpdateAccountInput, _context: WriteContext): Promise<Account> {
+  async update(
+    _id: string,
+    _changes: UpdateAccountInput,
+    _context: WriteContext,
+  ): Promise<Account> {
     throw new Error('not implemented');
   }
 
@@ -96,7 +102,11 @@ class FakeCategoryRepository implements CategoryRepository {
     return category;
   }
 
-  async update(_id: string, _changes: UpdateCategoryInput, _context: WriteContext): Promise<Category> {
+  async update(
+    _id: string,
+    _changes: UpdateCategoryInput,
+    _context: WriteContext,
+  ): Promise<Category> {
     throw new Error('not implemented');
   }
 
@@ -140,20 +150,34 @@ class FakeTransactionRepository implements TransactionRepository {
     return transaction;
   }
 
-  async update(_id: string, _changes: UpdateTransactionInput, _context: WriteContext): Promise<Transaction> {
+  async update(
+    _id: string,
+    _changes: UpdateTransactionInput,
+    _context: WriteContext,
+  ): Promise<Transaction> {
     throw new Error('not implemented');
   }
 
   async softDelete(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
 
   async restore(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: null, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: null,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
@@ -208,7 +232,13 @@ class FakeTransactionRepository implements TransactionRepository {
 function buildTransaction(
   id: string,
   input: TransactionInput,
-  meta: { createdAt: string; updatedAt: string; deletedAt: string | null; revision: number; originDeviceId: string },
+  meta: {
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    revision: number;
+    originDeviceId: string;
+  },
 ): Transaction {
   const base = {
     id,
@@ -220,9 +250,19 @@ function buildTransaction(
     ...meta,
   };
   if (input.type === 'transfer') {
-    return { ...base, type: 'transfer', destinationAccountId: input.destinationAccountId as string, categoryId: null };
+    return {
+      ...base,
+      type: 'transfer',
+      destinationAccountId: input.destinationAccountId as string,
+      categoryId: null,
+    };
   }
-  return { ...base, type: input.type, categoryId: input.categoryId as string, destinationAccountId: null };
+  return {
+    ...base,
+    type: input.type,
+    categoryId: input.categoryId as string,
+    destinationAccountId: null,
+  };
 }
 
 function makeIdFactory(prefix: string): () => string {
@@ -305,7 +345,8 @@ async function seed(repos: Repos) {
 describe('reports screen + view model', () => {
   it('shows income, expense, net cash flow, category chart legend and account totals for the current month, excluding transfers', async () => {
     const repos = makeRepos();
-    const { cashAccount, bankAccount, expenseCategory, incomeCategory, generateId } = await seed(repos);
+    const { cashAccount, bankAccount, expenseCategory, incomeCategory, generateId } =
+      await seed(repos);
 
     await repos.transactionRepository.create({
       id: generateId(),
@@ -354,6 +395,10 @@ describe('reports screen + view model', () => {
     expect(screen.getByText('100%')).toBeTruthy(); // only expense category -> 100% of the donut
     expect(screen.getByText('Vi tien mat')).toBeTruthy();
     expect(screen.queryByText(formatVnd(500_000))).toBeNull();
+    // Previous month (July) has no seeded transactions at all, so income, expense, and net
+    // cash flow all hit percentChange's `previous === 0, current !== 0` branch -> each renders
+    // a flat "+100%" label (one per SummaryRow: income, expense, net).
+    expect(screen.getAllByText('+100%')).toHaveLength(3);
   });
 
   it('navigates to the previous and next period for the active kind (month by default)', async () => {
@@ -439,7 +484,14 @@ describe('reports screen + view model', () => {
     fireEvent.press(screen.getByLabelText(t('reportsPeriodWeek')));
 
     await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
-    expect(screen.getByText('+200%')).toBeTruthy();
+    const expenseChange = screen.getByText('+200%');
+    expect(expenseChange).toBeTruthy();
+    // An expense increase is bad news for a finance app, so it must read in the "negative"
+    // (red) tone rather than the generic "increase = positive/green" mapping used for
+    // income/net (use-reports.ts inverts the expense row's tone before rendering it here).
+    expect(StyleSheet.flatten(expenseChange.props.style)).toMatchObject({
+      color: colors.status.negative,
+    });
   });
 
   it('filters by multiple categories via the compact FilterBar', async () => {
@@ -528,6 +580,9 @@ describe('reports screen + view model', () => {
     const screen = render(<Harness dependencies={dependencies} />);
 
     await waitFor(() => expect(screen.getByText(t('reportsCategoryEmpty'))).toBeTruthy());
-    expect(screen.getByText(t('reportsAccountEmpty'))).toBeTruthy();
+    // Account section suppresses its own empty text when there are no category slices either
+    // (reports-screen.tsx: showEmpty={props.categoryChartSlices.length > 0}), so with zero
+    // slices AND zero account totals, only the category-empty text renders — not a second copy.
+    expect(screen.getAllByText(t('reportsCategoryEmpty'))).toHaveLength(1);
   });
 });

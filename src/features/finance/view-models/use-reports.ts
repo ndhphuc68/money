@@ -296,6 +296,17 @@ function percentChange(current: number, previous: number): { label: string; tone
 }
 
 /**
+ * For the expense row, "more spending" is bad news and "less spending" is
+ * good news — the inverse of `percentChange`'s generic "increase = positive"
+ * interpretation used for income/net. Flip the tone only, keep the label.
+ */
+function invertTone(tone: ChangeTone): ChangeTone {
+  if (tone === 'positive') return 'negative';
+  if (tone === 'negative') return 'positive';
+  return 'neutral';
+}
+
+/**
  * Drives Reports v2: a period selector (week/month/quarter/year/custom, Task
  * 5), a category donut + income/expense trend line (Tasks 6-7), and a
  * current-vs-previous-period comparison — all on top of the existing
@@ -424,7 +435,7 @@ export function useReports({ dependencies, t, now }: UseReportsOptions): Reports
           incomeChangeLabel: income.label,
           incomeChangeTone: income.tone,
           expenseChangeLabel: expense.label,
-          expenseChangeTone: expense.tone,
+          expenseChangeTone: invertTone(expense.tone),
           netChangeLabel: net.label,
           netChangeTone: net.tone,
         },
