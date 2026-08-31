@@ -8,6 +8,7 @@ import { DeleteTransaction } from '@/core/application/finance/delete-transaction
 import { GetDashboard } from '@/core/application/finance/get-dashboard';
 import { GetRecurringOverview } from '@/core/application/finance/get-recurring-overview';
 import { GetReport } from '@/core/application/finance/get-report';
+import { GetReportTrend } from '@/core/application/finance/get-report-trend';
 import {
   CreateCategory,
   HideCategory,
@@ -53,6 +54,7 @@ export type FinanceDependencies = {
   restoreTransaction: RestoreTransaction;
   getDashboard: GetDashboard;
   getReport: GetReport;
+  getReportTrend: GetReportTrend;
   createCategory: CreateCategory;
   updateCategory: UpdateCategory;
   hideCategory: HideCategory;
@@ -122,6 +124,7 @@ export async function createFinanceDependencies(
     restoreTransaction: new RestoreTransaction({ transactionRepository, ...shared }),
     getDashboard: new GetDashboard({ accountRepository, transactionRepository }),
     getReport: new GetReport({ transactionRepository }),
+    getReportTrend: new GetReportTrend({ transactionRepository }),
     createCategory: new CreateCategory({ categoryRepository, ...shared }),
     updateCategory: new UpdateCategory({ categoryRepository, ...shared }),
     hideCategory: new HideCategory({ categoryRepository, ...shared }),
