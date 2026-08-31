@@ -9,3 +9,6 @@ export type { IconButtonProps } from './IconButton';
 
 export { PrimaryButton } from './PrimaryButton';
 export type { PrimaryButtonProps } from './PrimaryButton';
+
+export { ListRow } from './ListRow';
+export type { ListRowProps } from './ListRow';
