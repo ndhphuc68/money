@@ -13,6 +13,10 @@ import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
 import { translate } from '@/i18n/translations';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
+
 const t = translate.bind(null, 'vi');
 const filterLabels = {
   account: t('filterAccount'), all: t('filterAll'), category: t('filterCategory'), expense: t('filterExpense'),

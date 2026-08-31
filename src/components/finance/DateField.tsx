@@ -1,8 +1,9 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CalendarDays } from 'lucide-react-native';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Sheet, PrimaryButton } from '@/components/base';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 
 type DateFieldProps = {
@@ -65,36 +66,32 @@ export function DateField({ value, onChange, label, confirmLabel }: DateFieldPro
       ) : null}
 
       {Platform.OS === 'ios' ? (
-        <Modal
-          animationType="fade"
-          onRequestClose={() => setShowPicker(false)}
-          transparent
+        <Sheet
+          applyBottomInset={false}
+          onClose={() => setShowPicker(false)}
+          style={shadows.card}
           visible={showPicker}>
-          <Pressable onPress={() => setShowPicker(false)} style={styles.pickerBackdrop}>
-            <Pressable onPress={(event) => event.stopPropagation()} style={styles.pickerSheet}>
-              <View style={styles.pickerHandle} />
-              <DateTimePicker
-                display="inline"
-                mode="date"
-                onChange={(_event, selectedDate) => {
-                  if (selectedDate) {
-                    setDraftDate(selectedDate);
-                  }
-                }}
-                value={draftDate}
-              />
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => {
-                  onChange(toIsoDate(draftDate));
-                  setShowPicker(false);
-                }}
-                style={styles.pickerConfirm}>
-                <Text style={styles.pickerConfirmText}>{confirmLabel}</Text>
-              </Pressable>
-            </Pressable>
-          </Pressable>
-        </Modal>
+          <DateTimePicker
+            display="inline"
+            mode="date"
+            onChange={(_event, selectedDate) => {
+              if (selectedDate) {
+                setDraftDate(selectedDate);
+              }
+            }}
+            value={draftDate}
+          />
+          <PrimaryButton
+            backgroundColor={colors.brand.primary}
+            label={confirmLabel ?? ''}
+            minHeight={50}
+            onPress={() => {
+              onChange(toIsoDate(draftDate));
+              setShowPicker(false);
+            }}
+            style={styles.pickerConfirmSpacing}
+          />
+        </Sheet>
       ) : null}
     </View>
   );
@@ -123,38 +120,8 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.caption,
     fontWeight: typography.weights.semibold,
   },
-  pickerBackdrop: {
-    backgroundColor: 'rgba(16,24,40,0.32)',
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  pickerConfirm: {
-    alignItems: 'center',
-    backgroundColor: colors.brand.primary,
-    borderRadius: radius.lg,
-    justifyContent: 'center',
+  pickerConfirmSpacing: {
     marginTop: spacing[3],
-    minHeight: 50,
-  },
-  pickerConfirmText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.black,
-  },
-  pickerHandle: {
-    alignSelf: 'center',
-    backgroundColor: colors.border.strong,
-    borderRadius: radius.sm,
-    height: 5,
-    marginBottom: spacing[3],
-    width: 44,
-  },
-  pickerSheet: {
-    ...shadows.card,
-    backgroundColor: colors.surface.canvas,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    padding: spacing[5],
   },
   value: {
     color: colors.content.primary,
