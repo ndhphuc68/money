@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
+import { ListRow } from '@/components/base';
 import { colors, spacing, typography } from '@/theme';
 
 import { CategoryIcon, type CategoryIconName } from './icons';
@@ -24,25 +25,28 @@ export function TransactionRow({
   showDivider = true,
 }: TransactionRowProps) {
   return (
-    <View style={[styles.row, showDivider && styles.divider]}>
-      <CategoryIcon name={icon} />
-      <View style={styles.copy}>
-        <Text numberOfLines={1} style={styles.name}>
-          {name}
+    <ListRow
+      dividerColor={colors.divider}
+      gap={spacing[2] + 2}
+      leading={<CategoryIcon name={icon} />}
+      minHeight={56}
+      showDivider={showDivider}
+      style={styles.row}
+      subtitle={`${category} · ${meta}`}
+      subtitleStyle={styles.subtitle}
+      title={name}
+      titleStyle={styles.title}
+      trailing={
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.amount,
+            { color: positive ? colors.status.positive : colors.status.negative },
+          ]}>
+          {amount}
         </Text>
-        <Text numberOfLines={1} style={styles.meta}>
-          {category} · {meta}
-        </Text>
-      </View>
-      <Text
-        numberOfLines={1}
-        style={[
-          styles.amount,
-          { color: positive ? colors.status.positive : colors.status.negative },
-        ]}>
-        {amount}
-      </Text>
-    </View>
+      }
+    />
   );
 }
 
@@ -54,31 +58,16 @@ const styles = StyleSheet.create({
     marginLeft: spacing[2],
     maxWidth: 126,
   },
-  copy: {
-    flex: 1,
-    minWidth: 0,
+  row: {
+    paddingVertical: spacing[2],
   },
-  divider: {
-    borderBottomColor: colors.divider,
-    borderBottomWidth: 1,
-  },
-  meta: {
+  subtitle: {
     color: colors.content.muted,
     fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
     lineHeight: typography.lineHeights.body,
   },
-  name: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.body,
+  title: {
     fontWeight: typography.weights.bold,
     lineHeight: typography.lineHeights.body,
-  },
-  row: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing[2] + 2,
-    minHeight: 56,
-    paddingVertical: spacing[2],
   },
 });
