@@ -14,6 +14,8 @@ export { GoalCard } from './GoalCard';
 export { IconPickerSheet } from './IconPickerSheet';
 export { PeriodSelector } from './PeriodSelector';
 export type { PeriodKind, PeriodSelectorLabels, PeriodSelectorProps } from './PeriodSelector';
+export { ReportCategoryChart } from './ReportCategoryChart';
+export type { ReportCategoryChartProps, ReportCategoryChartSlice } from './ReportCategoryChart';
 export type { IconPickerSheetProps } from './IconPickerSheet';
 export { SegmentedControl } from './SegmentedControl';
 export { SettingsList } from './SettingsList';

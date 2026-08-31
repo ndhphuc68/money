@@ -9,6 +9,7 @@ module.exports = {
     '^expo-sqlite$': '<rootDir>/tests/data/local/expo-sqlite.mock.ts',
     '^@react-native-community/datetimepicker$': '<rootDir>/tests/mocks/datetimepicker.mock.tsx',
     '^lucide-react-native$': '<rootDir>/tests/mocks/lucide-react-native.tsx',
+    '^react-native-gifted-charts$': '<rootDir>/tests/mocks/react-native-gifted-charts.mock.tsx',
     '^@expo/vector-icons/(.*)$': '<rootDir>/tests/mocks/expo-vector-icons.mock.tsx',
     '^@expo/vector-icons$': '<rootDir>/tests/mocks/expo-vector-icons.mock.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
