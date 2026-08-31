@@ -3,7 +3,8 @@ import { useContext } from 'react';
 import { Plus } from 'lucide-react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { IconButton } from '@/components/base';
+import { colors, shadows, spacing, typography } from '@/theme';
 
 import { NavIcon, type NavIconName } from './icons';
 
@@ -37,13 +38,15 @@ export function BottomNav({
       {firstItems.map((item) => (
         <NavItem active={item.key === activeKey} item={item} key={item.key} onChange={onChange} />
       ))}
-      <Pressable
+      <IconButton
         accessibilityLabel={addAccessibilityLabel}
-        accessibilityRole="button"
+        backgroundColor={colors.content.primary}
+        icon={<Plus color={colors.content.inverse} size={28} strokeWidth={2.6} />}
         onPress={onAdd}
-        style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-        <Plus color={colors.content.inverse} size={28} strokeWidth={2.6} />
-      </Pressable>
+        pressedBackgroundColor="#243247"
+        size={52}
+        style={styles.addButton}
+      />
       {lastItems.map((item) => (
         <NavItem active={item.key === activeKey} item={item} key={item.key} onChange={onChange} />
       ))}
@@ -81,16 +84,7 @@ function NavItem({
 const styles = StyleSheet.create({
   addButton: {
     ...shadows.fab,
-    alignItems: 'center',
-    backgroundColor: colors.content.primary,
-    borderRadius: radius.circle,
-    height: 52,
-    justifyContent: 'center',
     marginTop: -30,
-    width: 52,
-  },
-  addButtonPressed: {
-    backgroundColor: '#243247',
   },
   item: {
     alignItems: 'center',
