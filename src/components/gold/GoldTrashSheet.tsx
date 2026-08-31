@@ -1,9 +1,9 @@
 import { X } from 'lucide-react-native';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
+import { Card, IconButton, ListRow, Sheet } from '@/components/base';
 import type { LotHistoryRow, SaleHistoryRow } from '@/features/gold/view-models/gold-presentation';
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export type GoldTrashSheetProps = {
   visible: boolean;
@@ -60,113 +60,58 @@ export function GoldTrashSheet({
       onPurge: () => onPurgeSale(sale.id),
     })),
   ];
-  const insets = useSafeAreaInsets();
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
-      <Pressable onPress={onClose} style={styles.backdrop}>
-        <Pressable
-          onPress={(event) => event.stopPropagation()}
-          style={[styles.sheet, { paddingBottom: spacing[5] + insets.bottom }]}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.handle} />
-            <View style={styles.header}>
-              <View style={styles.headerText}>
-                <Text style={styles.title}>{title}</Text>
-                <Text style={styles.subtitle}>{subtitle}</Text>
-              </View>
-              <Pressable
-                accessibilityLabel={closeLabel}
-                accessibilityRole="button"
-                onPress={onClose}
-                style={styles.closeButton}>
-                <X color={colors.content.primary} size={20} strokeWidth={2.2} />
-              </Pressable>
-            </View>
-
-            <View style={styles.card}>
-              {rows.map((row, index) => (
-                <View
-                  key={row.key}
-                  style={[styles.row, index < rows.length - 1 && styles.rowDivider]}>
-                  <View style={styles.rowText}>
-                    <Text numberOfLines={1} style={styles.rowTitle}>
-                      {row.title}
-                    </Text>
-                    <Text numberOfLines={1} style={styles.rowSubtitle}>
-                      {row.subtitle}
-                    </Text>
-                  </View>
+    <Sheet
+      closeLabel={closeLabel}
+      onClose={onClose}
+      subtitle={subtitle}
+      title={title}
+      visible={visible}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Card padding={0} style={styles.card}>
+          {rows.map((row, index) => (
+            <ListRow
+              gap={spacing[3]}
+              key={row.key}
+              minHeight={68}
+              showDivider={index < rows.length - 1}
+              subtitle={row.subtitle}
+              subtitleStyle={styles.rowSubtitle}
+              title={row.title}
+              titleStyle={styles.rowTitle}
+              trailing={
+                <>
                   <Pressable
                     accessibilityRole="button"
                     onPress={row.onRestore}
                     style={styles.restoreButton}>
                     <Text style={styles.restoreButtonText}>{restoreLabel}</Text>
                   </Pressable>
-                  <Pressable
+                  <IconButton
                     accessibilityLabel={purgeLabel}
-                    accessibilityRole="button"
+                    backgroundColor={colors.status.negativeSoft}
+                    icon={<X color={colors.status.negative} size={18} strokeWidth={2.2} />}
                     onPress={row.onPurge}
-                    style={styles.purgeButton}>
-                    <X color={colors.status.negative} size={18} strokeWidth={2.2} />
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Modal>
+                    radius="md"
+                    style={styles.purgeButton}
+                  />
+                </>
+              }
+            />
+          ))}
+        </Card>
+      </ScrollView>
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    backgroundColor: 'rgba(16,24,40,0.32)',
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
   card: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
     paddingHorizontal: spacing[4],
   },
-  closeButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.circle,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
-  },
-  handle: {
-    alignSelf: 'center',
-    backgroundColor: colors.border.strong,
-    borderRadius: radius.sm,
-    height: 5,
-    marginBottom: spacing[3],
-    width: 44,
-  },
-  header: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: spacing[3],
-    justifyContent: 'space-between',
-    marginBottom: spacing[4],
-  },
-  headerText: {
-    flex: 1,
-    minWidth: 0,
-  },
   purgeButton: {
-    alignItems: 'center',
-    backgroundColor: colors.status.negativeSoft,
-    borderRadius: radius.md,
     flexShrink: 0,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
   },
   restoreButton: {
     alignItems: 'center',
@@ -182,47 +127,10 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.small,
     fontWeight: typography.weights.black,
   },
-  row: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing[3],
-    minHeight: 68,
-  },
-  rowDivider: {
-    borderBottomColor: colors.border.subtle,
-    borderBottomWidth: 1,
-  },
   rowSubtitle: {
-    color: colors.content.secondary,
-    fontSize: typography.sizes.small,
-    fontWeight: typography.weights.semibold,
     marginTop: spacing[1],
-  },
-  rowText: {
-    flex: 1,
-    minWidth: 0,
   },
   rowTitle: {
-    color: colors.content.primary,
     fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.black,
-  },
-  sheet: {
-    backgroundColor: colors.surface.canvas,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    maxHeight: '86%',
-    padding: spacing[5],
-  },
-  subtitle: {
-    color: colors.content.secondary,
-    fontSize: typography.sizes.small,
-    fontWeight: typography.weights.semibold,
-    marginTop: spacing[1],
-  },
-  title: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.black,
   },
 });
