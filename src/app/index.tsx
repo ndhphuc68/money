@@ -13,7 +13,6 @@ import { useGoldManagement } from '@/features/gold/view-models/use-gold-manageme
 import { DashboardScreen } from '@/features/finance/screens/dashboard-screen';
 import { OnboardingScreen } from '@/features/finance/screens/onboarding-screen';
 import { SplashScreen } from '@/features/finance/screens/splash-screen';
-import { TransactionFormScreen } from '@/features/finance/screens/transaction-form-screen';
 import { TransactionsScreen } from '@/features/finance/screens/transactions-screen';
 import { ReportsScreen } from '@/features/finance/screens/reports-screen';
 import { SettingsScreen } from '@/features/finance/screens/settings-screen';
@@ -26,7 +25,7 @@ import { useTransactions } from '@/features/finance/view-models/use-transactions
 import { useReports } from '@/features/finance/view-models/use-reports';
 import { useSettings } from '@/features/finance/view-models/use-settings';
 import { SyncScreen } from '@/features/sync/screens/sync-screen';
-import { BottomNav } from '@/components/finance';
+import { BottomNav, TransactionFormSheet } from '@/components/finance';
 import { useSync } from '@/features/sync/view-models/use-sync';
 import { createMobileSyncDependencies } from '@/infrastructure/expo/sync/create-mobile-sync-dependencies';
 import { Locale, Translate, translate } from '@/i18n/translations';
@@ -39,8 +38,7 @@ type FinanceView =
   | { name: 'settings' }
   | { name: 'accounts' }
   | { name: 'categories' }
-  | { name: 'gold' }
-  | { name: 'form'; transactionId: string | null };
+  | { name: 'gold' };
 
 export default function RootScreen() {
   const database = useLocalDatabase();
@@ -122,6 +120,15 @@ function ConfiguredOnboardingScreen({
  * switching `view` unmounts the previous screen and mounts the next — that
  * makes refresh-after-mutation trivial, since every screen's view model
  * re-fetches fresh data on mount.
+ *
+ * A transaction can be added/edited from either the dashboard or the
+ * transactions list, so its form sheet lives here (above the `view` switch)
+ * as an overlay rather than as its own `FinanceView` — the underlying screen
+ * stays mounted and visible behind it, matching how gold's sheets overlay
+ * `GoldManagementScreen`. `formSession` is bumped on every open to force a
+ * fresh `ConfiguredTransactionFormSheet` mount (so `useTransactionForm`
+ * reloads instead of reusing a previous draft); `refreshKey` is bumped after
+ * a save to remount the underlying screen so its view model re-fetches.
  */
 function ConfiguredFinanceScreen({
   dependencies,
@@ -135,35 +142,50 @@ function ConfiguredFinanceScreen({
   setView(view: FinanceView): void;
 }) {
   const router = useRouter();
+  const [formTarget, setFormTarget] = useState<{ transactionId: string | null } | null>(null);
+  const [formSession, setFormSession] = useState(0);
+  const [everOpenedForm, setEverOpenedForm] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  function openForm(transactionId: string | null) {
+    setEverOpenedForm(true);
+    setFormSession((session) => session + 1);
+    setFormTarget({ transactionId });
+  }
+  function closeForm() {
+    setFormTarget(null);
+  }
+  function handleFormSaved() {
+    closeForm();
+    setRefreshKey((key) => key + 1);
+  }
+
+  const formSheet = everOpenedForm ? (
+    <ConfiguredTransactionFormSheet
+      dependencies={dependencies}
+      key={formSession}
+      onClose={closeForm}
+      onSaved={handleFormSaved}
+      t={t}
+      transactionId={formTarget?.transactionId ?? null}
+      visible={formTarget !== null}
+    />
+  ) : null;
 
   if (view.name === 'transactions') {
     return (
-      <ConfiguredTransactionsScreen
-        dependencies={dependencies}
-        onAddTransaction={() => setView({ name: 'form', transactionId: null })}
-        onBack={() => setView({ name: 'dashboard' })}
-        onSelectTransaction={(id) => setView({ name: 'form', transactionId: id })}
-        setView={setView}
-        t={t}
-      />
-    );
-  }
-
-  if (view.name === 'form') {
-    return (
-      <ConfiguredTransactionFormScreen
-        dependencies={dependencies}
-        onCancel={() => setView({ name: 'dashboard' })}
-        onNavigate={(key) => {
-          if (key === 'overview' || key === 'form') setView({ name: 'dashboard' });
-          if (key === 'transactions') setView({ name: 'transactions' });
-          if (key === 'reports') setView({ name: 'reports' });
-          if (key === 'settings') setView({ name: 'settings' });
-        }}
-        onSaved={() => setView({ name: 'dashboard' })}
-        t={t}
-        transactionId={view.transactionId}
-      />
+      <>
+        <ConfiguredTransactionsScreen
+          dependencies={dependencies}
+          key={refreshKey}
+          onAddTransaction={() => openForm(null)}
+          onBack={() => setView({ name: 'dashboard' })}
+          onSelectTransaction={(id) => openForm(id)}
+          setView={setView}
+          t={t}
+        />
+        {formSheet}
+      </>
     );
   }
 
@@ -177,15 +199,19 @@ function ConfiguredFinanceScreen({
     );
   if (view.name === 'settings')
     return (
-      <ConfiguredSettingsScreen
-        dependencies={dependencies}
-        onOpenAccounts={() => setView({ name: 'accounts' })}
-        onOpenCategories={() => setView({ name: 'categories' })}
-        onOpenSync={() => router.push('/sync')}
-        onBack={() => setView({ name: 'dashboard' })}
-        setView={setView}
-        t={t}
-      />
+      <>
+        <ConfiguredSettingsScreen
+          dependencies={dependencies}
+          onAddTransaction={() => openForm(null)}
+          onOpenAccounts={() => setView({ name: 'accounts' })}
+          onOpenCategories={() => setView({ name: 'categories' })}
+          onOpenSync={() => router.push('/sync')}
+          onBack={() => setView({ name: 'dashboard' })}
+          setView={setView}
+          t={t}
+        />
+        {formSheet}
+      </>
     );
   if (view.name === 'accounts')
     return (
@@ -208,16 +234,20 @@ function ConfiguredFinanceScreen({
   }
 
   return (
-    <ConfiguredDashboardScreen
-      dependencies={dependencies}
-      onAddTransaction={() => setView({ name: 'form', transactionId: null })}
-      onOpenSync={() => router.push('/sync')}
-      onOpenReports={() => setView({ name: 'reports' })}
-      onOpenSettings={() => setView({ name: 'settings' })}
-      onOpenTransactions={() => setView({ name: 'transactions' })}
-      onSelectTransaction={(id) => setView({ name: 'form', transactionId: id })}
-      t={t}
-    />
+    <>
+      <ConfiguredDashboardScreen
+        dependencies={dependencies}
+        key={refreshKey}
+        onAddTransaction={() => openForm(null)}
+        onOpenSync={() => router.push('/sync')}
+        onOpenReports={() => setView({ name: 'reports' })}
+        onOpenSettings={() => setView({ name: 'settings' })}
+        onOpenTransactions={() => setView({ name: 'transactions' })}
+        onSelectTransaction={(id) => openForm(id)}
+        t={t}
+      />
+      {formSheet}
+    </>
   );
 }
 
@@ -242,6 +272,7 @@ function ConfiguredReportsScreen({
 function ConfiguredSettingsScreen({
   dependencies,
   t,
+  onAddTransaction,
   onBack,
   onOpenAccounts,
   onOpenCategories,
@@ -250,6 +281,7 @@ function ConfiguredSettingsScreen({
 }: {
   dependencies: FinanceDependencies;
   t: Translate;
+  onAddTransaction(): void;
   onBack(): void;
   onOpenAccounts(): void;
   onOpenCategories(): void;
@@ -279,7 +311,7 @@ function ConfiguredSettingsScreen({
           { key: 'reports', label: t('navReports'), icon: 'target' },
           { key: 'settings', label: t('navSettings'), icon: 'profile' },
         ]}
-        onAdd={() => setView({ name: 'form', transactionId: null })}
+        onAdd={onAddTransaction}
         onChange={(key) => {
           if (key === 'overview') setView({ name: 'dashboard' });
           if (key === 'transactions') setView({ name: 'transactions' });
@@ -461,23 +493,23 @@ function ConfiguredTransactionsScreen({
   );
 }
 
-function ConfiguredTransactionFormScreen({
+function ConfiguredTransactionFormSheet({
   dependencies,
   t,
   transactionId,
-  onCancel,
-  onNavigate,
+  onClose,
   onSaved,
+  visible,
 }: {
   dependencies: FinanceDependencies;
   t: Translate;
   transactionId: string | null;
-  onCancel(): void;
-  onNavigate(key: string): void;
+  onClose(): void;
   onSaved(): void;
+  visible: boolean;
 }) {
   const viewModel = useTransactionForm({ dependencies, onSaved, t, transactionId });
-  return <TransactionFormScreen {...viewModel} onCancel={onCancel} onNavigate={onNavigate} t={t} />;
+  return <TransactionFormSheet {...viewModel} onClose={onClose} t={t} visible={visible} />;
 }
 
 /**

@@ -11,6 +11,7 @@ export { SegmentedControl } from './SegmentedControl';
 export { SettingsList } from './SettingsList';
 export { StatCard } from './StatCard';
 export { TransactionForm } from './TransactionForm';
+export { TransactionFormSheet } from './TransactionFormSheet';
 export { TransactionRow } from './TransactionRow';
 export { UndoBanner } from './UndoBanner';
 export type { BottomNavItem } from './BottomNav';

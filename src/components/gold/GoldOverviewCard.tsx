@@ -1,5 +1,6 @@
 // src/components/gold/GoldOverviewCard.tsx
 import { StyleSheet, Text, View } from 'react-native';
+import { Coins } from 'lucide-react-native';
 
 import { Card } from '@/components/base';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -29,7 +30,7 @@ export function GoldOverviewCard({
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>Au</Text>
+          <Coins color={colors.content.inverse} size={22} strokeWidth={1.8} />
         </View>
       </View>
       <View style={styles.stats}>
@@ -58,11 +59,6 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     width: 44,
-  },
-  badgeText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.bodyLg,
-    fontWeight: typography.weights.bold,
   },
   header: {
     alignItems: 'center',

@@ -1,5 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Alert, KeyboardAvoidingView } from 'react-native';
+import { Alert } from 'react-native';
 
 import {
   AccountRepository,
@@ -23,11 +23,15 @@ import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
 import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
-import { TransactionFormScreen } from '@/features/finance/screens/transaction-form-screen';
+import { TransactionFormSheet } from '@/components/finance';
 import { TransactionsScreen } from '@/features/finance/screens/transactions-screen';
 import { useTransactionForm } from '@/features/finance/view-models/use-transaction-form';
 import { useTransactions } from '@/features/finance/view-models/use-transactions';
 import { Locale, translate } from '@/i18n/translations';
+
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
 
 // ---------------------------------------------------------------------------
 // Minimal in-memory fakes, matching the pattern in
@@ -353,7 +357,7 @@ function ListHarness({ dependencies, onSelectTransaction }: { dependencies: Repo
 
 function FormHarness({ dependencies, transactionId, onSaved }: { dependencies: Repos; transactionId?: string | null; onSaved: () => void }) {
   const viewModel = useTransactionForm({ dependencies, now: () => new Date(NOW), onSaved, t, transactionId });
-  return <TransactionFormScreen {...viewModel} onCancel={() => {}} t={t} />;
+  return <TransactionFormSheet {...viewModel} onClose={() => {}} t={t} visible />;
 }
 
 describe('transactions list + view model', () => {
@@ -563,7 +567,6 @@ describe('transactions list + view model', () => {
     const form = render(<FormHarness dependencies={repos} onSaved={() => {}} />);
 
     await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
-    expect(form.UNSAFE_getByType(KeyboardAvoidingView)).toBeTruthy();
     expect(form.getByTestId('transaction-form-scroll').props.automaticallyAdjustKeyboardInsets).toBe(true);
   });
 

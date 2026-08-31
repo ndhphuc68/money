@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ChevronRight, CreditCard, Database, EyeOff, UserRound } from 'lucide-react-native';
+import { ChevronRight, Coins, CreditCard, Database, EyeOff, UserRound } from 'lucide-react-native';
 
 import type { SettingsViewModel } from '@/features/finance/view-models/use-settings';
 import type { Translate } from '@/i18n/translations';
@@ -32,7 +32,7 @@ export function SettingsScreen({
           <Row
             accessibilityLabel={t('settingsManageGold')}
             badgeColor={colors.category.gold}
-            icon={<Text style={styles.badgeText}>Au</Text>}
+            icon={<Coins color={colors.content.inverse} size={20} strokeWidth={1.8} />}
             label={t('settingsManageGold')}
             onPress={onOpenGoldManagement}
           />
@@ -124,11 +124,6 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     width: 44,
-  },
-  badgeText: {
-    color: colors.content.inverse,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.black,
   },
   container: {
     gap: spacing[5],

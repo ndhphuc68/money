@@ -1,5 +1,6 @@
 // src/components/gold/GoldHistoryList.tsx
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ArrowUpRight, Coins } from 'lucide-react-native';
 
 import { Card, ListRow } from '@/components/base';
 import { colors, radius, spacing, typography } from '@/theme';
@@ -56,10 +57,11 @@ export function GoldHistoryList({
                     styles.rowBadge,
                     item.kind === 'sale' ? styles.rowBadgeSale : styles.rowBadgeLot,
                   ]}>
-                  <Text
-                    style={[styles.rowBadgeText, item.kind === 'sale' && styles.rowBadgeTextSale]}>
-                    {item.kind === 'sale' ? '↗' : 'Au'}
-                  </Text>
+                  {item.kind === 'sale' ? (
+                    <ArrowUpRight color={colors.status.positive} size={18} strokeWidth={2} />
+                  ) : (
+                    <Coins color="#A96308" size={18} strokeWidth={1.8} />
+                  )}
                 </View>
               }
               minHeight={64}
@@ -135,14 +137,6 @@ const styles = StyleSheet.create({
   },
   rowBadgeSale: {
     backgroundColor: colors.status.positiveSoft,
-  },
-  rowBadgeText: {
-    color: '#A96308',
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.black,
-  },
-  rowBadgeTextSale: {
-    color: colors.status.positive,
   },
   rowSubtitle: {
     marginTop: spacing[1],

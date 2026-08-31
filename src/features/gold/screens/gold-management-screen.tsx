@@ -1,7 +1,9 @@
 // src/features/gold/screens/gold-management-screen.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ChevronLeft } from 'lucide-react-native';
 
+import { IconButton } from '@/components/base';
 import {
   GoldActionPickerSheet,
   GoldBrandManageSheet,
@@ -308,13 +310,14 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Pressable
+        <IconButton
           accessibilityLabel={t('goldBackLabel')}
-          accessibilityRole="button"
+          backgroundColor={colors.surface.primary}
+          icon={<ChevronLeft color={colors.content.primary} size={24} strokeWidth={2.4} />}
           onPress={onBack}
-          style={styles.backButton}>
-          <Text style={styles.backButtonText}>‹</Text>
-        </Pressable>
+          pressedBackgroundColor={colors.surface.muted}
+          style={shadows.card}
+        />
         <Text style={styles.headerTitle}>{t('settingsManageGold')}</Text>
       </View>
 
@@ -517,20 +520,6 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  backButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.circle,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
-    ...shadows.card,
-  },
-  backButtonText: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.bold,
-  },
   centered: {
     alignItems: 'center',
     backgroundColor: colors.surface.canvas,
