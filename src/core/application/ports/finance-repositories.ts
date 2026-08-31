@@ -46,11 +46,15 @@ export type CreateCategoryInput = WriteContext & {
   id: string;
   name: string;
   type: CategoryType;
+  icon?: string;
+  color?: string;
 };
 
 export type UpdateCategoryInput = {
   name?: string;
   type?: CategoryType;
+  icon?: string;
+  color?: string;
 };
 
 export interface CategoryRepository {

@@ -3,7 +3,6 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { Check, ChevronLeft, Plus } from 'lucide-react-native';
 
 import { formatVnd } from '@/core/domain/finance/money';
-import type { RecurringOccurrenceListItem } from '@/features/finance/view-models/recurring-presentation';
 import type { RecurringOccurrencesViewModel } from '@/features/finance/view-models/use-recurring-occurrences';
 import type { Translate } from '@/i18n/translations';
 import { colors, radius, shadows, spacing, typography } from '@/theme';

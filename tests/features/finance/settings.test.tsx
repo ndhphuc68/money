@@ -1,6 +1,10 @@
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
+
 import {
   AccountRepository,
   CategoryRepository,
@@ -111,6 +115,8 @@ class FakeCategoryRepository implements CategoryRepository {
       id: input.id,
       name: input.name,
       type: input.type,
+      icon: input.icon || 'fa6:shapes',
+      color: input.color || (input.type === 'income' ? '#10B981' : '#F2734A'),
       isArchived: false,
       createdAt: input.now,
       updatedAt: input.now,
@@ -134,15 +140,24 @@ class FakeCategoryRepository implements CategoryRepository {
     return updated;
   }
 
+  usedCategories = new Set<string>();
+
   async hide(id: string, context: WriteContext): Promise<Category> {
     const existing = this.requireById(id);
-    const updated: Category = {
-      ...existing,
-      isArchived: true,
-      deletedAt: context.now,
-      updatedAt: context.now,
-      revision: existing.revision + 1,
-    };
+    const used = await this.isUsedByTransaction(id);
+    const updated: Category = used
+      ? {
+          ...existing,
+          isArchived: true,
+          updatedAt: context.now,
+          revision: existing.revision + 1,
+        }
+      : {
+          ...existing,
+          deletedAt: context.now,
+          updatedAt: context.now,
+          revision: existing.revision + 1,
+        };
     this.store.set(id, updated);
     return updated;
   }
@@ -153,12 +168,12 @@ class FakeCategoryRepository implements CategoryRepository {
 
   async listActiveByType(type: Category['type']): Promise<Category[]> {
     return Array.from(this.store.values()).filter(
-      (category) => category.type === type && category.deletedAt === null,
+      (category) => category.type === type && category.deletedAt === null && !category.isArchived,
     );
   }
 
-  async isUsedByTransaction(): Promise<boolean> {
-    return true;
+  async isUsedByTransaction(id: string): Promise<boolean> {
+    return this.usedCategories.has(id);
   }
 
   async saveWithOperation(): Promise<void> {
@@ -297,7 +312,7 @@ describe('settings screen + view model', () => {
     expect(updated?.name).toBe('An uong ngoai');
   });
 
-  it('hides a category that is currently used by a transaction, instead of deleting it', async () => {
+  it('deletes a category that has never been used by any transaction', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
       const confirm = buttons?.find((button) => button.style === 'destructive');
       confirm?.onPress?.();
@@ -314,9 +329,37 @@ describe('settings screen + view model', () => {
     await waitFor(() => expect(screen.queryByText(category.name)).toBeNull());
     const stored = await dependencies.categoryRepository.listActiveByType('expense');
     expect(stored).toHaveLength(0);
-    // Not physically deleted: still resolvable by id (the repository layer only ever archives).
-    const stillExists = await dependencies.categoryRepository.findById(category.id);
-    expect(stillExists).not.toBeNull();
+
+    const deletedRecord = await dependencies.categoryRepository.findById(category.id);
+    expect(deletedRecord?.deletedAt).not.toBeNull();
+    expect(deletedRecord?.isArchived).toBe(false);
+
+    alertSpy.mockRestore();
+  });
+
+  it('hides a category that is currently used by a transaction', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
+      const confirm = buttons?.find((button) => button.style === 'destructive');
+      confirm?.onPress?.();
+    });
+
+    const dependencies = makeDependencies();
+    const { category } = await seedAccountAndCategory(dependencies);
+    dependencies.categoryRepository.usedCategories.add(category.id);
+
+    const screen = render(<CategoriesHarness dependencies={dependencies} />);
+
+    await waitFor(() => expect(screen.getByText(category.name)).toBeTruthy());
+    fireEvent.press(screen.getByLabelText(t('categoriesHideLabel', { name: category.name })));
+    expect(alertSpy).toHaveBeenCalled();
+
+    await waitFor(() => expect(screen.queryByText(category.name)).toBeNull());
+    const stored = await dependencies.categoryRepository.listActiveByType('expense');
+    expect(stored).toHaveLength(0);
+
+    const archivedRecord = await dependencies.categoryRepository.findById(category.id);
+    expect(archivedRecord?.isArchived).toBe(true);
+    expect(archivedRecord?.deletedAt).toBeNull();
 
     alertSpy.mockRestore();
   });

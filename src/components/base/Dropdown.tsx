@@ -17,6 +17,8 @@ export type DropdownProps = {
   onToggle(): void;
   onSelect(key: string): void;
   extraOption?: { label: string; onSelect(): void };
+  errorMessage?: string | null;
+  placeholder?: boolean;
 };
 
 export function Dropdown({
@@ -27,15 +29,24 @@ export function Dropdown({
   onToggle,
   onSelect,
   extraOption,
+  errorMessage = null,
+  placeholder = false,
 }: DropdownProps) {
   return (
     <View style={[styles.field, open && styles.fieldOpen]}>
       <Text style={styles.label}>{fieldLabel}</Text>
       <Pressable
+        accessibilityLabel={fieldLabel}
         accessibilityRole="button"
         onPress={onToggle}
-        style={[styles.dropdownField, open && styles.dropdownFieldOpen]}>
-        <Text numberOfLines={1} style={styles.dropdownValue}>
+        style={[
+          styles.dropdownField,
+          open && styles.dropdownFieldOpen,
+          Boolean(errorMessage) && styles.dropdownFieldError,
+        ]}>
+        <Text
+          numberOfLines={1}
+          style={[styles.dropdownValue, placeholder && styles.dropdownPlaceholder]}>
           {valueLabel}
         </Text>
         {open ? (
@@ -44,10 +55,16 @@ export function Dropdown({
           <ChevronDown color={colors.content.secondary} size={18} strokeWidth={2} />
         )}
       </Pressable>
+      {errorMessage ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errorMessage}
+        </Text>
+      ) : null}
       {open ? (
         <View style={styles.dropdownMenu}>
           {options.map((option) => (
             <Pressable
+              accessibilityLabel={option.label}
               accessibilityRole="button"
               key={option.key}
               onPress={() => onSelect(option.key)}
@@ -67,6 +84,7 @@ export function Dropdown({
           ))}
           {extraOption ? (
             <Pressable
+              accessibilityLabel={extraOption.label}
               accessibilityRole="button"
               onPress={extraOption.onSelect}
               style={styles.dropdownOption}>
@@ -95,6 +113,9 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'space-between',
     paddingHorizontal: spacing[3],
+  },
+  dropdownFieldError: {
+    borderColor: colors.status.negative,
   },
   dropdownFieldOpen: {
     backgroundColor: colors.brand.soft,
@@ -139,11 +160,20 @@ const styles = StyleSheet.create({
     color: colors.brand.primary,
     fontWeight: typography.weights.black,
   },
+  dropdownPlaceholder: {
+    color: colors.content.secondary,
+  },
   dropdownValue: {
     color: colors.content.primary,
     flex: 1,
     fontSize: typography.sizes.body,
     fontWeight: typography.weights.semibold,
+  },
+  error: {
+    color: colors.status.negative,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.semibold,
+    marginTop: spacing[1],
   },
   field: {
     gap: spacing[1],

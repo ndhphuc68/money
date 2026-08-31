@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, spacing, typography } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 
 type BudgetRowProps = {
   category: string;

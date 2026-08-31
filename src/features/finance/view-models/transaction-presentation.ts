@@ -24,33 +24,53 @@ export function maskAmountText(hidden: boolean, formatted: string): string {
 }
 
 /**
- * Best-effort mapping from a transaction/category onto the small fixed
- * `CategoryIconName` union `TransactionRow` accepts (Task 6). Categories are
- * free-text (Task 1), so this is a heuristic on the category name, not a
- * stored field.
+ * Maps from a transaction/category onto a stored custom icon string or
+ * legacy `CategoryIconName`.
  */
 export function resolveCategoryIcon(
   transactionType: Transaction['type'],
   category: Category | null,
-): CategoryIconName {
+): string {
   if (transactionType === 'transfer') {
-    return 'transport';
+    return 'lucide:arrow-right-left';
+  }
+  if (category?.icon) {
+    return category.icon;
   }
   if (transactionType === 'income') {
-    return 'income';
+    return 'fa6:money-bill-wave';
   }
 
   const name = (category?.name ?? '').toLowerCase();
   if (/an uong|food|nha hang|quan|cafe|ca phe/.test(name)) {
-    return 'food';
+    return 'mci:silverware-fork-knife';
   }
   if (/hoa don|dien|nuoc|internet|bill/.test(name)) {
-    return 'bills';
+    return 'mci:receipt-text';
   }
   if (/di chuyen|xe|grab|xang|transport/.test(name)) {
-    return 'transport';
+    return 'fa6:car-side';
   }
-  return 'shopping';
+  return 'fa6:shapes';
+}
+
+/**
+ * Maps from a category or transaction type onto a hex color string.
+ */
+export function resolveCategoryColor(
+  transactionType: Transaction['type'],
+  category: Category | null,
+): string {
+  if (category?.color) {
+    return category.color;
+  }
+  if (transactionType === 'income') {
+    return '#10B981';
+  }
+  if (transactionType === 'transfer') {
+    return '#6366F1';
+  }
+  return '#F2734A';
 }
 
 /** Formats an ISO calendar date (YYYY-MM-DD) as "DD/MM/YYYY". */
@@ -66,7 +86,8 @@ export type TransactionListItem = {
   meta: string;
   amountLabel: string;
   positive: boolean;
-  icon: CategoryIconName;
+  icon: string | CategoryIconName;
+  color?: string;
   date: string;
 };
 
@@ -91,9 +112,7 @@ export function buildTransactionListItem(
     transaction.type === 'transfer'
       ? t('transactionTypeTransfer')
       : (category?.name ?? t('transactionUncategorized'));
-  const meta = account
-    ? `${formatDateLabel(transaction.date)} · ${account.name}`
-    : formatDateLabel(transaction.date);
+  const meta = account?.name ?? '';
   const positive = transaction.type === 'income';
   const sign = transaction.type === 'income' ? '+' : '-';
   const amountLabel = maskAmountText(amountsHidden, `${sign}${formatVnd(transaction.amount)}`);
@@ -106,6 +125,7 @@ export function buildTransactionListItem(
     amountLabel,
     positive,
     icon: resolveCategoryIcon(transaction.type, category),
+    color: resolveCategoryColor(transaction.type, category),
     date: transaction.date,
   };
 }

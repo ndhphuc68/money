@@ -6,6 +6,7 @@ import {
   Database,
   EyeOff,
   Repeat,
+  Shapes,
   UserRound,
 } from 'lucide-react-native';
 
@@ -28,6 +29,7 @@ type SettingsScreenProps = SettingsViewModel & {
 export function SettingsScreen({
   t,
   onOpenAccounts,
+  onOpenCategories,
   onOpenGoldManagement,
   onOpenRecurring,
   onOpenPersonalInfo,
@@ -62,6 +64,13 @@ export function SettingsScreen({
             icon={<CreditCard color={colors.content.inverse} size={20} strokeWidth={1.8} />}
             label={t('settingsAccountsAndCategories')}
             onPress={onOpenAccounts}
+          />
+          <Row
+            accessibilityLabel={t('settingsCategories')}
+            badgeColor={colors.category.food}
+            icon={<Shapes color={colors.content.inverse} size={20} strokeWidth={1.8} />}
+            label={t('settingsCategories')}
+            onPress={onOpenCategories}
           />
           <Row
             accessibilityLabel={t('settingsManageRecurring')}

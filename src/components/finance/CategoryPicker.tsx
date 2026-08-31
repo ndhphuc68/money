@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { PillChip } from '@/components/base';
 import type { Category, CategoryType } from '@/core/domain/finance/category';
 import { colors, spacing, typography } from '@/theme';
+import { CategoryIcon } from './icons';
 
 type CategoryPickerProps = {
   categories: readonly Category[];
@@ -40,6 +41,12 @@ export function CategoryPicker({
         {visible.map((category) => (
           <PillChip
             active={category.id === selectedId}
+            activeColor={category.color}
+            icon={
+              category.icon ? (
+                <CategoryIcon color={category.color} icon={category.icon} iconSize={12} size={20} />
+              ) : null
+            }
             key={category.id}
             label={category.name}
             onPress={() => onSelect(category.id)}

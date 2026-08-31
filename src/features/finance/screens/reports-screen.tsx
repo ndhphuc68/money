@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+
+import { CategoryIcon } from '@/components/finance';
 import type { ReportsViewModel } from '@/features/finance/view-models/use-reports';
 import type { Translate } from '@/i18n/translations';
 import { colors, spacing, typography } from '@/theme';
@@ -41,22 +43,23 @@ export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate
             </View>
           </View>
           <Totals
-            title={t('reportsCategoryTitle')}
             empty={t('reportsCategoryEmpty')}
             items={props.categoryTotals}
+            title={t('reportsCategoryTitle')}
           />
           <Totals
-            title={t('reportsAccountTitle')}
+            compact
             empty={t('reportsAccountEmpty')}
             items={props.accountTotals}
-            compact
             showEmpty={props.categoryTotals.length > 0}
+            title={t('reportsAccountTitle')}
           />
         </>
       )}
     </ScrollView>
   );
 }
+
 function Totals({
   title,
   empty,
@@ -79,8 +82,11 @@ function Totals({
             <Text key={item.id}>{item.label}</Text>
           ) : (
             <View key={item.id} style={styles.row}>
-              <Text>{item.label}</Text>
-              <Text>{item.amountLabel}</Text>
+              <View style={styles.itemInfo}>
+                {item.icon ? <CategoryIcon color={item.color} icon={item.icon} size={28} /> : null}
+                <Text style={styles.itemLabel}>{item.label}</Text>
+              </View>
+              <Text style={styles.itemAmount}>{item.amountLabel}</Text>
             </View>
           ),
         )
@@ -90,25 +96,41 @@ function Totals({
     </View>
   );
 }
+
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface.canvas,
-    flexGrow: 1,
-    gap: spacing[4],
-    padding: spacing[4],
-  },
-  title: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.title,
-    fontWeight: typography.weights.bold,
-  },
-  month: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   card: {
     backgroundColor: colors.surface.primary,
     borderRadius: 16,
     gap: spacing[2],
     padding: spacing[4],
   },
+  container: {
+    backgroundColor: colors.surface.canvas,
+    flexGrow: 1,
+    gap: spacing[4],
+    padding: spacing[4],
+  },
   heading: { fontWeight: typography.weights.bold },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
+  itemAmount: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.bold,
+  },
+  itemInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing[2],
+  },
+  itemLabel: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.medium,
+  },
+  month: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  title: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.title,
+    fontWeight: typography.weights.bold,
+  },
 });

@@ -1,5 +1,4 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { X } from 'lucide-react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { FilterBar, TransactionRow, UndoBanner } from '@/components/finance';
 import type { TransactionsViewModel } from '@/features/finance/view-models/use-transactions';
@@ -27,27 +26,11 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
     groups,
     isEmpty,
     undoMessage,
-    deleteTransaction,
     undoDelete,
     dismissUndo,
     onSelectTransaction,
     t,
   } = props;
-
-  function confirmDelete(id: string, name: string) {
-    Alert.alert(
-      t('transactionsDeleteConfirmTitle'),
-      t('transactionsDeleteConfirmMessage', { name }),
-      [
-        { text: t('transactionsDeleteConfirmCancel'), style: 'cancel' },
-        {
-          text: t('transactionsDeleteConfirmConfirm'),
-          style: 'destructive',
-          onPress: () => deleteTransaction(id),
-        },
-      ],
-    );
-  }
 
   return (
     <View style={styles.root}>
@@ -93,33 +76,22 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
               <Text style={styles.groupLabel}>{group.dateLabel}</Text>
               <View style={styles.groupCard}>
                 {group.items.map((item, index) => (
-                  <View key={item.id} style={styles.rowWrapper}>
-                    <Pressable
-                      accessibilityLabel={t('transactionsEditLabel', { name: item.name })}
-                      accessibilityRole="button"
-                      onPress={() => onSelectTransaction(item.id)}
-                      style={styles.rowPressable}>
-                      <TransactionRow
-                        amount={item.amountLabel}
-                        category={item.categoryLabel}
-                        icon={item.icon}
-                        meta={item.meta}
-                        name={item.name}
-                        positive={item.positive}
-                        showDivider={index < group.items.length - 1}
-                      />
-                    </Pressable>
-                    <Pressable
-                      accessibilityLabel={t('transactionsDeleteLabel', { name: item.name })}
-                      accessibilityRole="button"
-                      onPress={() => confirmDelete(item.id, item.name)}
-                      style={({ pressed }) => [
-                        styles.deleteButton,
-                        pressed && styles.deleteButtonPressed,
-                      ]}>
-                      <X color={colors.status.negative} size={20} strokeWidth={2.4} />
-                    </Pressable>
-                  </View>
+                  <Pressable
+                    accessibilityLabel={t('transactionsViewDetailLabel', { name: item.name })}
+                    accessibilityRole="button"
+                    key={item.id}
+                    onPress={() => onSelectTransaction(item.id)}>
+                    <TransactionRow
+                      amount={item.amountLabel}
+                      category={item.categoryLabel}
+                      color={item.color}
+                      icon={item.icon}
+                      meta={item.meta}
+                      name={item.name}
+                      positive={item.positive}
+                      showDivider={index < group.items.length - 1}
+                    />
+                  </Pressable>
                 ))}
               </View>
             </View>
@@ -146,15 +118,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[4],
     paddingTop: 58,
   },
-  deleteButton: {
-    alignItems: 'center',
-    height: 32,
-    justifyContent: 'center',
-    width: 32,
-  },
-  deleteButtonPressed: {
-    opacity: 0.6,
-  },
   emptyText: {
     color: colors.content.muted,
     fontSize: typography.sizes.body,
@@ -179,13 +142,6 @@ const styles = StyleSheet.create({
   root: {
     backgroundColor: colors.surface.canvas,
     flex: 1,
-  },
-  rowPressable: {
-    flex: 1,
-  },
-  rowWrapper: {
-    alignItems: 'center',
-    flexDirection: 'row',
   },
   title: {
     color: colors.content.primary,

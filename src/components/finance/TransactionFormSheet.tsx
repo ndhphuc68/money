@@ -9,10 +9,9 @@ import type {
   TransactionFormViewModel,
 } from '@/features/finance/view-models/use-transaction-form';
 import type { Translate } from '@/i18n/translations';
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { colors, radius, spacing, typography } from '@/theme';
 
 import { AmountInput } from './AmountInput';
-import { CategoryPicker } from './CategoryPicker';
 import { SegmentedControl } from './SegmentedControl';
 
 export type TransactionFormSheetProps = TransactionFormViewModel & {
@@ -56,7 +55,9 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
     submit,
   } = props;
 
-  const [openDropdown, setOpenDropdown] = useState<'frequency' | 'endMode' | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<'category' | 'frequency' | 'endMode' | null>(
+    null,
+  );
 
   const typeLabels: Record<TransactionType, string> = {
     expense: t('transactionTypeExpense'),
@@ -77,7 +78,10 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
       ) : (
         <ScrollView
           automaticallyAdjustKeyboardInsets
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          onScrollBeginDrag={() => setOpenDropdown(null)}
           showsVerticalScrollIndicator={false}
           testID="transaction-form-scroll">
           <View style={styles.field}>
@@ -99,19 +103,39 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
             />
           </View>
 
-          <View style={styles.field}>
-            <Text style={styles.sectionLabel}>{t('transactionFormCategoryLabel')}</Text>
-            <CategoryPicker
-              categories={categories}
+          <View style={[styles.field, openDropdown === 'category' && styles.fieldOpen]}>
+            <Dropdown
               errorMessage={errors.categoryId ?? null}
-              onSelect={setCategoryId}
-              selectedId={values.categoryId}
-              type={selectedType}
+              fieldLabel={t('transactionFormCategoryLabel')}
+              onSelect={(key) => {
+                setCategoryId(key);
+                setOpenDropdown(null);
+              }}
+              onToggle={() => setOpenDropdown(openDropdown === 'category' ? null : 'category')}
+              open={openDropdown === 'category'}
+              options={categories
+                .filter((category) => category.type === selectedType && !category.isArchived)
+                .map((category) => ({
+                  isActive: category.id === values.categoryId,
+                  key: category.id,
+                  label: category.name,
+                }))}
+              placeholder={!values.categoryId}
+              valueLabel={
+                categories.find((category) => category.id === values.categoryId)?.name ??
+                t('transactionFormCategoryPlaceholder')
+              }
             />
           </View>
 
           {selectedType === 'expense' && canEnableRecurring ? (
-            <View style={styles.recurringCard} testID="recurring-toggle-card">
+            <View
+              style={[
+                styles.recurringCard,
+                (openDropdown === 'frequency' || openDropdown === 'endMode') &&
+                  styles.recurringCardOpen,
+              ]}
+              testID="recurring-toggle-card">
               <Card>
                 <View style={styles.recurringToggleRow}>
                   <View style={styles.recurringToggleCopy}>
@@ -214,14 +238,14 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
             </View>
           ) : null}
 
-          <View style={styles.noteCard}>
-            <Text style={styles.sectionLabel}>{noteLabel}</Text>
+          <View style={styles.field}>
+            <Text style={styles.label}>{noteLabel}</Text>
             <TextInput
               accessibilityLabel={noteLabel}
               multiline
               onChangeText={setNote}
               placeholder="Ví dụ: Ăn trưa với đồng nghiệp"
-              placeholderTextColor={colors.content.secondary}
+              placeholderTextColor={colors.content.placeholder}
               style={styles.noteInput}
               textAlignVertical="top"
               value={values.note}
@@ -257,6 +281,16 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: spacing[4],
   },
+  fieldOpen: {
+    elevation: 30,
+    zIndex: 30,
+  },
+  label: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.small,
+    fontWeight: typography.weights.black,
+    marginBottom: spacing[1],
+  },
   loadingText: {
     color: colors.content.primary,
     fontSize: typography.sizes.body,
@@ -264,24 +298,24 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[5],
     textAlign: 'center',
   },
-  noteCard: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
-    gap: spacing[1],
-    marginBottom: spacing[4],
-    minHeight: 64,
-    paddingHorizontal: spacing[4],
-    paddingTop: spacing[3],
-  },
   noteInput: {
+    backgroundColor: colors.surface.input,
+    borderColor: colors.border.strong,
+    borderRadius: radius.sm,
+    borderWidth: 1,
     color: colors.content.primary,
     fontSize: typography.sizes.body,
-    minHeight: 30,
-    padding: 0,
+    fontWeight: typography.weights.semibold,
+    minHeight: 80,
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[3],
   },
   recurringCard: {
     marginBottom: spacing[4],
+  },
+  recurringCardOpen: {
+    elevation: 30,
+    zIndex: 30,
   },
   recurringFields: {
     borderTopColor: colors.border.subtle,
@@ -324,6 +358,9 @@ const styles = StyleSheet.create({
   },
   saveButtonSpacing: {
     marginTop: spacing[1],
+  },
+  scrollContent: {
+    paddingBottom: spacing[6],
   },
   sectionLabel: {
     color: colors.content.primary,

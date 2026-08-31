@@ -3,25 +3,24 @@ import { CategoryType } from '@/core/domain/finance/category';
 export type DefaultCategory = {
   name: string;
   type: CategoryType;
+  icon: string;
+  color: string;
 };
 
 /**
  * Suggested category set offered during onboarding's "confirm default
- * categories" step. Plain data only: `Category` (Task 1) has no icon/color
- * fields, so this list is deliberately just name + type. The user can
- * accept, edit, or drop any of these before `Onboarding.confirmDefaults`
- * creates them.
+ * categories" step, pre-configured with Vela Design icons and colors.
  */
 export const DEFAULT_CATEGORIES: DefaultCategory[] = [
-  { name: 'Lương', type: 'income' },
-  { name: 'Thưởng', type: 'income' },
-  { name: 'Thu nhập khác', type: 'income' },
-  { name: 'Ăn uống', type: 'expense' },
-  { name: 'Di chuyển', type: 'expense' },
-  { name: 'Nhà ở', type: 'expense' },
-  { name: 'Hóa đơn & tiện ích', type: 'expense' },
-  { name: 'Mua sắm', type: 'expense' },
-  { name: 'Giải trí', type: 'expense' },
-  { name: 'Sức khỏe', type: 'expense' },
-  { name: 'Chi tiêu khác', type: 'expense' },
+  { name: 'Ăn uống', type: 'expense', icon: 'mci:silverware-fork-knife', color: '#F59E0B' },
+  { name: 'Di chuyển', type: 'expense', icon: 'fa6:car-side', color: '#8B5CF6' },
+  { name: 'Nhà ở', type: 'expense', icon: 'fa6:house', color: '#06B6D4' },
+  { name: 'Hóa đơn & tiện ích', type: 'expense', icon: 'mci:receipt-text', color: '#3B82F6' },
+  { name: 'Mua sắm', type: 'expense', icon: 'fa6:bag-shopping', color: '#EC4899' },
+  { name: 'Giải trí', type: 'expense', icon: 'fa6:gamepad', color: '#6366F1' },
+  { name: 'Sức khỏe', type: 'expense', icon: 'fa6:heart-pulse', color: '#EF4444' },
+  { name: 'Chi tiêu khác', type: 'expense', icon: 'fa6:shapes', color: '#64748B' },
+  { name: 'Lương', type: 'income', icon: 'fa6:money-bill-wave', color: '#10B981' },
+  { name: 'Thưởng', type: 'income', icon: 'fa6:gift', color: '#F59E0B' },
+  { name: 'Thu nhập khác', type: 'income', icon: 'fa6:wallet', color: '#2F6FED' },
 ];

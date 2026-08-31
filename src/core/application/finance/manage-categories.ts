@@ -15,6 +15,8 @@ export type ManageCategoriesDeps = {
 export type CreateCategoryRequest = {
   name: string;
   type: CategoryType;
+  icon?: string;
+  color?: string;
 };
 
 function validateCreateCategoryRequest(input: CreateCategoryRequest): void {
@@ -47,6 +49,8 @@ export class CreateCategory {
       now: this.deps.now(),
       name: input.name.trim(),
       type: input.type,
+      icon: input.icon,
+      color: input.color,
     });
   }
 }

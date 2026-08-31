@@ -22,6 +22,8 @@ export type ReportTotalItem = {
   id: string;
   label: string;
   amountLabel: string;
+  color?: string;
+  icon?: string;
 };
 
 export type ReportsViewModel = {
@@ -102,6 +104,8 @@ export function useReports({ dependencies, t, month, now }: UseReportsOptions): 
             id: entry.id,
             label: category?.name ?? t('transactionUncategorized'),
             amountLabel: formatVnd(entry.amount),
+            color: category?.color ?? '#F2734A',
+            icon: category?.icon ?? 'fa6:shapes',
           };
         }),
       );

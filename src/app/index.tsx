@@ -29,7 +29,20 @@ import { useSettings } from '@/features/finance/view-models/use-settings';
 import { useRecurringOccurrences } from '@/features/finance/view-models/use-recurring-occurrences';
 import { useRecurringManagement } from '@/features/finance/view-models/use-recurring-management';
 import { SyncScreen } from '@/features/sync/screens/sync-screen';
-import { BottomNav, TransactionFormSheet } from '@/components/finance';
+import {
+  BottomNav,
+  TransactionDetailSheet,
+  TransactionFormSheet,
+  type TransactionDetailData,
+} from '@/components/finance';
+import { formatVnd } from '@/core/domain/finance/money';
+import type { Transaction } from '@/core/domain/finance/transaction';
+import {
+  formatDateLabel,
+  maskAmountText,
+  resolveCategoryColor,
+  resolveCategoryIcon,
+} from '@/features/finance/view-models/transaction-presentation';
 import { useSync } from '@/features/sync/view-models/use-sync';
 import { createMobileSyncDependencies } from '@/infrastructure/expo/sync/create-mobile-sync-dependencies';
 import { Locale, Translate, translate } from '@/i18n/translations';
@@ -135,33 +148,63 @@ function ConfiguredFinanceScreen({
   setView(view: FinanceView): void;
 }) {
   const router = useRouter();
-  const [formTarget, setFormTarget] = useState<{ transactionId: string | null } | null>(null);
+  const [formVisible, setFormVisible] = useState(false);
   const [formSession, setFormSession] = useState(0);
   const [everOpenedForm, setEverOpenedForm] = useState(false);
+
+  const [detailTransactionId, setDetailTransactionId] = useState<string | null>(null);
+  const [detailSession, setDetailSession] = useState(0);
+  const [everOpenedDetail, setEverOpenedDetail] = useState(false);
+
   const [refreshKey, setRefreshKey] = useState(0);
 
-  function openForm(transactionId: string | null) {
+  function openAddForm() {
     setEverOpenedForm(true);
     setFormSession((session) => session + 1);
-    setFormTarget({ transactionId });
+    setFormVisible(true);
   }
   function closeForm() {
-    setFormTarget(null);
+    setFormVisible(false);
   }
   function handleFormSaved() {
     closeForm();
     setRefreshKey((key) => key + 1);
   }
 
+  function openDetail(transactionId: string) {
+    setEverOpenedDetail(true);
+    setDetailSession((session) => session + 1);
+    setDetailTransactionId(transactionId);
+  }
+  function closeDetail() {
+    setDetailTransactionId(null);
+  }
+  function handleDetailDeleted() {
+    closeDetail();
+    setRefreshKey((key) => key + 1);
+  }
+
   const formSheet = everOpenedForm ? (
     <ConfiguredTransactionFormSheet
       dependencies={dependencies}
-      key={formSession}
+      key={`form-${formSession}`}
       onClose={closeForm}
       onSaved={handleFormSaved}
       t={t}
-      transactionId={formTarget?.transactionId ?? null}
-      visible={formTarget !== null}
+      transactionId={null}
+      visible={formVisible}
+    />
+  ) : null;
+
+  const detailSheet = everOpenedDetail ? (
+    <ConfiguredTransactionDetailSheet
+      dependencies={dependencies}
+      key={`detail-${detailSession}`}
+      onClose={closeDetail}
+      onDeleted={handleDetailDeleted}
+      t={t}
+      transactionId={detailTransactionId}
+      visible={detailTransactionId !== null}
     />
   ) : null;
 
@@ -171,13 +214,14 @@ function ConfiguredFinanceScreen({
         <ConfiguredTransactionsScreen
           dependencies={dependencies}
           key={refreshKey}
-          onAddTransaction={() => openForm(null)}
+          onAddTransaction={openAddForm}
           onBack={() => setView({ name: 'dashboard' })}
-          onSelectTransaction={(id) => openForm(id)}
+          onSelectTransaction={openDetail}
           setView={setView}
           t={t}
         />
         {formSheet}
+        {detailSheet}
       </>
     );
   }
@@ -195,7 +239,7 @@ function ConfiguredFinanceScreen({
       <>
         <ConfiguredSettingsScreen
           dependencies={dependencies}
-          onAddTransaction={() => openForm(null)}
+          onAddTransaction={openAddForm}
           onOpenAccounts={() => setView({ name: 'accounts' })}
           onOpenCategories={() => setView({ name: 'categories' })}
           onOpenSync={() => router.push('/sync')}
@@ -204,6 +248,7 @@ function ConfiguredFinanceScreen({
           t={t}
         />
         {formSheet}
+        {detailSheet}
       </>
     );
   if (view.name === 'accounts')
@@ -230,12 +275,13 @@ function ConfiguredFinanceScreen({
       <>
         <ConfiguredRecurringOccurrencesScreen
           dependencies={dependencies}
-          onAddRecurring={() => openForm(null)}
+          onAddRecurring={openAddForm}
           onBack={() => setView({ name: 'settings' })}
           onOpenManagement={() => setView({ name: 'recurringManagement' })}
           t={t}
         />
         {formSheet}
+        {detailSheet}
       </>
     );
   }
@@ -254,15 +300,16 @@ function ConfiguredFinanceScreen({
       <ConfiguredDashboardScreen
         dependencies={dependencies}
         key={refreshKey}
-        onAddTransaction={() => openForm(null)}
+        onAddTransaction={openAddForm}
         onOpenSync={() => router.push('/sync')}
         onOpenReports={() => setView({ name: 'reports' })}
         onOpenSettings={() => setView({ name: 'settings' })}
         onOpenTransactions={() => setView({ name: 'transactions' })}
-        onSelectTransaction={(id) => openForm(id)}
+        onSelectTransaction={openDetail}
         t={t}
       />
       {formSheet}
+      {detailSheet}
     </>
   );
 }
@@ -562,6 +609,133 @@ function ConfiguredTransactionFormSheet({
 }) {
   const viewModel = useTransactionForm({ dependencies, onSaved, t, transactionId });
   return <TransactionFormSheet {...viewModel} onClose={onClose} t={t} visible={visible} />;
+}
+
+function ConfiguredTransactionDetailSheet({
+  dependencies,
+  t,
+  transactionId,
+  onClose,
+  onDeleted,
+  visible,
+}: {
+  dependencies: FinanceDependencies;
+  t: Translate;
+  transactionId: string | null;
+  onClose(): void;
+  onDeleted(): void;
+  visible: boolean;
+}) {
+  const [detail, setDetail] = useState<TransactionDetailData | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!transactionId) {
+        setDetail(null);
+        return;
+      }
+      setLoading(true);
+      try {
+        const [transaction, activeAccounts, expenseCategories, incomeCategories, settings] =
+          await Promise.all([
+            dependencies.transactionRepository.findById(transactionId),
+            dependencies.accountRepository.listActive(),
+            dependencies.categoryRepository.listActiveByType('expense'),
+            dependencies.categoryRepository.listActiveByType('income'),
+            dependencies.profileSettingsRepository.get(),
+          ]);
+
+        if (!transaction || cancelled) return;
+
+        const allCategories = [...incomeCategories, ...expenseCategories];
+        const account = activeAccounts.find((a) => a.id === transaction.accountId);
+        const destinationAccount =
+          transaction.type === 'transfer'
+            ? activeAccounts.find((a) => a.id === transaction.destinationAccountId)
+            : null;
+        const category =
+          transaction.type === 'transfer'
+            ? null
+            : allCategories.find((c) => c.id === transaction.categoryId);
+
+        const typeLabels: Record<Transaction['type'], string> = {
+          expense: t('transactionTypeExpense'),
+          income: t('transactionTypeIncome'),
+          transfer: t('transactionTypeTransfer'),
+        };
+
+        const positive = transaction.type === 'income';
+        const sign = transaction.type === 'income' ? '+' : '-';
+        const amountLabel = maskAmountText(
+          settings.amountsHidden,
+          `${sign}${formatVnd(transaction.amount)}`,
+        );
+
+        const detailData: TransactionDetailData = {
+          id: transaction.id,
+          name: transaction.name,
+          type: transaction.type,
+          typeLabel: typeLabels[transaction.type],
+          amountLabel,
+          positive,
+          categoryLabel:
+            category?.name ??
+            (transaction.type === 'transfer' ? null : t('transactionUncategorized')),
+          categoryIcon: resolveCategoryIcon(transaction.type, category ?? null),
+          categoryColor: resolveCategoryColor(transaction.type, category ?? null),
+          accountName: account?.name ?? '',
+          destinationAccountName: destinationAccount?.name ?? null,
+          dateLabel: formatDateLabel(transaction.date),
+          note: transaction.note,
+        };
+
+        if (!cancelled) {
+          setDetail(detailData);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [dependencies, t, transactionId]);
+
+  async function handleDelete(id: string) {
+    await dependencies.deleteTransaction.execute(id);
+    onDeleted();
+  }
+
+  return (
+    <TransactionDetailSheet
+      closeLabel={t('transactionDetailClose')}
+      deleteConfirmCancel={t('transactionsDeleteConfirmCancel')}
+      deleteConfirmConfirm={t('transactionsDeleteConfirmConfirm')}
+      deleteConfirmMessage={t('transactionsDeleteConfirmMessage')}
+      deleteConfirmTitle={t('transactionsDeleteConfirmTitle')}
+      deleteLabel={t('transactionDetailDeleteAction')}
+      detail={detail}
+      labels={{
+        type: t('transactionDetailTypeLabel'),
+        category: t('transactionDetailCategoryLabel'),
+        account: t('transactionDetailAccountLabel'),
+        destination: t('transactionDetailDestinationLabel'),
+        date: t('transactionDetailDateLabel'),
+        note: t('transactionDetailNoteLabel'),
+      }}
+      loading={loading}
+      onClose={onClose}
+      onDelete={handleDelete}
+      title={t('transactionDetailTitle')}
+      visible={visible}
+    />
+  );
 }
 
 export function ConfiguredSyncScreen() {

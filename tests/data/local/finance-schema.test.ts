@@ -63,6 +63,8 @@ describe('finance database schema', () => {
       id: categoryId,
       name: 'Groceries',
       type: 'expense',
+      icon: 'fa6:shapes',
+      color: '#2F6FED',
       isArchived: false,
       ...syncFields(),
     });
@@ -74,6 +76,8 @@ describe('finance database schema', () => {
         id: categoryId,
         name: 'Groceries',
         type: 'expense',
+        icon: 'fa6:shapes',
+        color: '#2F6FED',
         isArchived: false,
         ...syncFields(),
       },

@@ -30,6 +30,8 @@ export type DashboardCategorySpendingItem = {
   id: string;
   label: string;
   amountLabel: string;
+  color?: string;
+  icon?: string;
 };
 
 export type DashboardViewModel = {
@@ -116,11 +118,16 @@ export function useDashboard({
       const accountsById = indexById(accounts);
 
       const categorySpending: DashboardCategorySpendingItem[] = dashboard.categorySpending.map(
-        (entry) => ({
-          id: entry.id,
-          label: categoriesById.get(entry.id)?.name ?? t('transactionUncategorized'),
-          amountLabel: maskAmountText(hidden, formatVnd(entry.amount)),
-        }),
+        (entry) => {
+          const category = categoriesById.get(entry.id);
+          return {
+            id: entry.id,
+            label: category?.name ?? t('transactionUncategorized'),
+            amountLabel: maskAmountText(hidden, formatVnd(entry.amount)),
+            color: category?.color ?? '#F2734A',
+            icon: category?.icon ?? 'fa6:shapes',
+          };
+        },
       );
 
       const recentTransactions = dashboard.recentTransactions.map((transaction) =>

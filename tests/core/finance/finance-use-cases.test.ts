@@ -115,6 +115,8 @@ class FakeCategoryRepository implements CategoryRepository {
       id: input.id,
       name: input.name,
       type: input.type,
+      icon: input.icon || 'fa6:shapes',
+      color: input.color || (input.type === 'income' ? '#10B981' : '#F2734A'),
       isArchived: false,
       createdAt: input.now,
       updatedAt: input.now,
@@ -878,8 +880,18 @@ describe('Onboarding', () => {
     await onboarding.createFirstAccount({ name: 'Cash', type: 'cash', openingBalance: 0 });
 
     const edited = [
-      { name: 'Ăn uống', type: 'expense' as const },
-      { name: 'Lương tháng', type: 'income' as const },
+      {
+        name: 'Ăn uống',
+        type: 'expense' as const,
+        icon: 'mci:silverware-fork-knife',
+        color: '#F59E0B',
+      },
+      {
+        name: 'Lương tháng',
+        type: 'income' as const,
+        icon: 'fa6:money-bill-wave',
+        color: '#10B981',
+      },
     ];
     const created = await onboarding.confirmDefaults(edited);
 

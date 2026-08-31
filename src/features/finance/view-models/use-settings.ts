@@ -28,6 +28,14 @@ export type SettingsDependencies = {
   buildWriteContext: () => WriteContext;
 };
 
+export type CategorySaveInput = {
+  id?: string;
+  name: string;
+  type: CategoryType;
+  icon: string;
+  color: string;
+};
+
 export type SettingsViewModel = {
   loading: boolean;
   settings: ProfileSettings;
@@ -47,12 +55,18 @@ export type SettingsViewModel = {
   categories: Category[];
   categoryName: string;
   categoryType: CategoryType;
+  categoryIcon: string;
+  categoryColor: string;
   editingCategoryId: string | null;
+  editingCategory: Category | null;
   setCategoryName(value: string): void;
   setCategoryType(value: CategoryType): void;
+  setCategoryIcon(value: string): void;
+  setCategoryColor(value: string): void;
   addCategory(): Promise<void>;
   beginEditCategory(category: Category): void;
   saveCategory(): Promise<void>;
+  saveCategoryData(data: CategorySaveInput): Promise<void>;
   hideCategory(id: string): Promise<void>;
   refresh(): Promise<void>;
 };
@@ -78,6 +92,8 @@ export function useSettings({
   const [openingBalance, setOpeningBalance] = useState<number | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const [categoryType, setCategoryType] = useState<CategoryType>('expense');
+  const [categoryIcon, setCategoryIcon] = useState('fa6:shapes');
+  const [categoryColor, setCategoryColor] = useState('#F2734A');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -107,11 +123,13 @@ export function useSettings({
     await dependencies.profileSettingsRepository.save(next);
     setSettings(next);
   }, [dependencies, displayName, settings]);
+
   const toggleAmountsHidden = useCallback(async () => {
     const next = { ...settings, amountsHidden: !settings.amountsHidden };
     await dependencies.profileSettingsRepository.save(next);
     setSettings(next);
   }, [dependencies, settings]);
+
   const addAccount = useCallback(async () => {
     if (!accountName.trim() || openingBalance === null) return;
     await dependencies.createAccount.execute({
@@ -123,6 +141,7 @@ export function useSettings({
     setOpeningBalance(null);
     await refresh();
   }, [accountName, accountType, dependencies, openingBalance, refresh]);
+
   const hideAccount = useCallback(
     async (id: string) => {
       await dependencies.accountRepository.softDeleteOrHide(id, dependencies.buildWriteContext());
@@ -130,34 +149,99 @@ export function useSettings({
     },
     [dependencies, refresh],
   );
+
   const addCategory = useCallback(async () => {
     if (!categoryName.trim()) return;
-    await dependencies.createCategory.execute({ name: categoryName.trim(), type: categoryType });
+    await dependencies.createCategory.execute({
+      name: categoryName.trim(),
+      type: categoryType,
+      icon: categoryIcon,
+      color: categoryColor,
+    });
     setCategoryName('');
+    setCategoryIcon('fa6:shapes');
+    setCategoryColor(categoryType === 'income' ? '#10B981' : '#F2734A');
     await refresh();
-  }, [categoryName, categoryType, dependencies, refresh]);
+  }, [categoryColor, categoryIcon, categoryName, categoryType, dependencies, refresh]);
+
   const beginEditCategory = useCallback((category: Category) => {
     setEditingCategoryId(category.id);
     setCategoryName(category.name);
     setCategoryType(category.type);
+    setCategoryIcon(category.icon || 'fa6:shapes');
+    setCategoryColor(category.color || (category.type === 'income' ? '#10B981' : '#F2734A'));
   }, []);
+
   const saveCategory = useCallback(async () => {
     if (!categoryName.trim()) return;
-    if (editingCategoryId)
-      await dependencies.updateCategory.execute(editingCategoryId, { name: categoryName.trim() });
-    else
-      await dependencies.createCategory.execute({ name: categoryName.trim(), type: categoryType });
+    if (editingCategoryId) {
+      await dependencies.updateCategory.execute(editingCategoryId, {
+        name: categoryName.trim(),
+        type: categoryType,
+        icon: categoryIcon,
+        color: categoryColor,
+      });
+    } else {
+      await dependencies.createCategory.execute({
+        name: categoryName.trim(),
+        type: categoryType,
+        icon: categoryIcon,
+        color: categoryColor,
+      });
+    }
     setEditingCategoryId(null);
     setCategoryName('');
     await refresh();
-  }, [categoryName, categoryType, dependencies, editingCategoryId, refresh]);
-  const hideCategory = useCallback(
-    async (id: string) => {
-      await dependencies.hideCategory.execute(id);
+  }, [
+    categoryColor,
+    categoryIcon,
+    categoryName,
+    categoryType,
+    dependencies,
+    editingCategoryId,
+    refresh,
+  ]);
+
+  const saveCategoryData = useCallback(
+    async (data: CategorySaveInput) => {
+      if (!data.name.trim()) return;
+      if (data.id) {
+        await dependencies.updateCategory.execute(data.id, {
+          name: data.name.trim(),
+          type: data.type,
+          icon: data.icon,
+          color: data.color,
+        });
+      } else {
+        await dependencies.createCategory.execute({
+          name: data.name.trim(),
+          type: data.type,
+          icon: data.icon,
+          color: data.color,
+        });
+      }
+      setEditingCategoryId(null);
+      setCategoryName('');
       await refresh();
     },
     [dependencies, refresh],
   );
+
+  const hideCategory = useCallback(
+    async (id: string) => {
+      await dependencies.hideCategory.execute(id);
+      if (editingCategoryId === id) {
+        setEditingCategoryId(null);
+        setCategoryName('');
+      }
+      await refresh();
+    },
+    [dependencies, editingCategoryId, refresh],
+  );
+
+  const editingCategory = editingCategoryId
+    ? (categories.find((c) => c.id === editingCategoryId) ?? null)
+    : null;
 
   return {
     loading,
@@ -178,12 +262,18 @@ export function useSettings({
     categories,
     categoryName,
     categoryType,
+    categoryIcon,
+    categoryColor,
     editingCategoryId,
+    editingCategory,
     setCategoryName,
     setCategoryType,
+    setCategoryIcon,
+    setCategoryColor,
     addCategory,
     beginEditCategory,
     saveCategory,
+    saveCategoryData,
     hideCategory,
     refresh,
   };

@@ -58,6 +58,8 @@ function makeCategory(overrides: Partial<Category>): Category {
     originDeviceId: 'device-1',
     name: 'An uong',
     type: 'expense',
+    icon: 'mci:silverware-fork-knife',
+    color: '#F59E0B',
     isArchived: false,
     ...overrides,
   };

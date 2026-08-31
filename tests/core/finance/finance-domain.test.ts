@@ -39,6 +39,8 @@ function makeCategory(id: string, type: 'income' | 'expense'): Category {
     ...syncFields(id),
     name: `Category ${id}`,
     type,
+    icon: 'fa6:shapes',
+    color: type === 'income' ? '#10B981' : '#F2734A',
     isArchived: false,
   };
 }

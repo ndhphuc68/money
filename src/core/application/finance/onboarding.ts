@@ -135,6 +135,8 @@ export class Onboarding {
         now: this.deps.now(),
         name: category.name,
         type: category.type,
+        icon: category.icon,
+        color: category.color,
       });
       created.push(record);
     }

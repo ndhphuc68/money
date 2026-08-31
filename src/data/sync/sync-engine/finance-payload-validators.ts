@@ -97,10 +97,21 @@ export function parseCategoryPayload(value: unknown): Category {
     throw new Error('Category payload isArchived must be a boolean');
   }
 
+  const icon =
+    typeof fields.icon === 'string' && fields.icon.trim() !== '' ? fields.icon : 'fa6:shapes';
+  const color =
+    typeof fields.color === 'string' && fields.color.trim() !== ''
+      ? fields.color
+      : fields.type === 'income'
+        ? '#10B981'
+        : '#F2734A';
+
   return {
     ...base,
     name: fields.name,
     type: fields.type as CategoryType,
+    icon,
+    color,
     isArchived: fields.isArchived,
   };
 }

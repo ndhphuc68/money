@@ -101,6 +101,8 @@ class FakeCategoryRepository implements CategoryRepository {
       id: input.id,
       name: input.name,
       type: input.type,
+      icon: input.icon || 'fa6:shapes',
+      color: input.color || (input.type === 'income' ? '#10B981' : '#F2734A'),
       isArchived: false,
       createdAt: input.now,
       updatedAt: input.now,
@@ -522,7 +524,8 @@ describe('transactions list + view model', () => {
 
     await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
     fireEvent.changeText(form.getByLabelText(t('transactionFormAmountLabel')), '150.000');
-    fireEvent.press(form.getByLabelText(expenseCategory.name));
+    fireEvent.press(form.getByRole('button', { name: 'Danh mục' }));
+    fireEvent.press(form.getByRole('button', { name: expenseCategory.name }));
     fireEvent.changeText(form.getByLabelText(t('transactionFormNoteLabel')), 'An trua');
     fireEvent.press(form.getByLabelText(t('transactionFormSave')));
 
@@ -652,6 +655,7 @@ describe('transactions list + view model', () => {
 
     await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
     fireEvent.changeText(form.getByLabelText('Số tiền'), '50000');
+    fireEvent.press(form.getByRole('button', { name: 'Danh mục' }));
     fireEvent.press(form.getByRole('button', { name: expenseCategory.name }));
     fireEvent.changeText(
       form.getByLabelText('Ghi chú (không bắt buộc)'),
@@ -683,15 +687,10 @@ describe('transactions list + view model', () => {
     ).toBe(true);
   });
 
-  it('deletes a transaction after confirmation, then restores it via Undo', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
-      const confirm = buttons?.find((button) => button.style === 'destructive');
-      confirm?.onPress?.();
-    });
-
+  it('deletes a transaction via view model and restores it via Undo', async () => {
     const repos = makeRepos();
     const { account, expenseCategory } = await seedAccountAndCategories(repos);
-    await repos.createTransaction.execute({
+    const created = await repos.createTransaction.execute({
       type: 'expense',
       amount: 100_000,
       accountId: account.id,
@@ -700,11 +699,26 @@ describe('transactions list + view model', () => {
       name: 'An sang',
     });
 
-    const screen = render(<ListHarness dependencies={repos} />);
+    let viewModel!: ReturnType<typeof useTransactions>;
+    function Harness() {
+      viewModel = useTransactions({ dependencies: repos, now: () => new Date(NOW), t });
+      return (
+        <TransactionsScreen
+          {...viewModel}
+          onAddTransaction={() => {}}
+          onBack={() => {}}
+          onSelectTransaction={() => {}}
+          t={t}
+        />
+      );
+    }
+
+    const screen = render(<Harness />);
     await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
 
-    fireEvent.press(screen.getByLabelText(t('transactionsDeleteLabel', { name: 'An sang' })));
-    expect(alertSpy).toHaveBeenCalled();
+    await act(async () => {
+      await viewModel.deleteTransaction(created.id);
+    });
 
     await waitFor(() => expect(screen.queryByText('An sang')).toBeNull());
     expect(screen.getByText(t('transactionsDeleteUndoMessage'))).toBeTruthy();
@@ -717,8 +731,6 @@ describe('transactions list + view model', () => {
     await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
     const [restored] = await repos.transactionRepository.list({ includeDeleted: true });
     expect(restored.deletedAt).toBeNull();
-
-    alertSpy.mockRestore();
   });
 
   describe('useTransactionForm recurring toggle', () => {

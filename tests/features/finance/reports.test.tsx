@@ -87,6 +87,8 @@ class FakeCategoryRepository implements CategoryRepository {
       id: input.id,
       name: input.name,
       type: input.type,
+      icon: input.icon || 'fa6:shapes',
+      color: input.color || (input.type === 'income' ? '#10B981' : '#F2734A'),
       isArchived: false,
       createdAt: input.now,
       updatedAt: input.now,

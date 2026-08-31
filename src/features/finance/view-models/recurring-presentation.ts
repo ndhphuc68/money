@@ -21,11 +21,23 @@ export function formatFrequencyLabel(frequency: RecurringFrequency, t: Translate
   return t(FREQUENCY_KEYS[frequency]);
 }
 
-export function resolveCategoryMeta(name: string = ''): { initials: string; bg: string } {
+export function resolveCategoryMeta(
+  name: string = '',
+  category?: { color?: string; name?: string } | null,
+): { initials: string; bg: string } {
+  if (category?.color) {
+    const initials = (category.name || name)
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join('');
+    return { initials: initials || 'DM', bg: category.color };
+  }
   const lower = name.toLowerCase();
   if (/an uong|food|nha hang|quan|cafe|ca phe/.test(lower))
-    return { initials: 'AU', bg: '#F2734A' };
-  if (/mua sam|shopping|shopee/.test(lower)) return { initials: 'MS', bg: '#7C5CFC' };
+    return { initials: 'AU', bg: '#F59E0B' };
+  if (/mua sam|shopping|shopee/.test(lower)) return { initials: 'MS', bg: '#EC4899' };
   if (/di chuyen|transport|grab|xang/.test(lower)) return { initials: 'DC', bg: '#14B8A6' };
   return { initials: 'HĐ', bg: '#2F6FED' };
 }

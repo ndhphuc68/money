@@ -152,7 +152,7 @@ describe('finance repositories', () => {
   });
 
   describe('CategoryRepository', () => {
-    it('creates and hides a category without physically deleting it', async () => {
+    it('soft-deletes a category when it is not referenced by any transaction', async () => {
       const category = await categories.create({
         id: id('01001'),
         name: 'Salary',
@@ -164,13 +164,83 @@ describe('finance repositories', () => {
 
       await expect(categories.listActiveByType('income')).resolves.toEqual([category]);
 
-      const hidden = await categories.hide(
+      const deleted = await categories.hide(
         category.id,
         ctx({ operationId: id('91002'), now: '2026-08-24T11:00:00.000Z' }),
       );
 
+      expect(deleted.deletedAt).toBe('2026-08-24T11:00:00.000Z');
+      expect(deleted.isArchived).toBe(false);
+      await expect(categories.listActiveByType('income')).resolves.toEqual([]);
+    });
+
+    it('archives (hides) a category when it is referenced by a transaction', async () => {
+      const category = await categories.create({
+        id: id('01002'),
+        name: 'Food',
+        type: 'expense',
+        originDeviceId: deviceId,
+        operationId: id('91003'),
+        now: '2026-08-24T10:00:00.000Z',
+      });
+      const account = await accounts.create({
+        id: id('00001'),
+        name: 'Wallet',
+        type: 'cash',
+        openingBalance: 1000,
+        originDeviceId: deviceId,
+        operationId: id('90001'),
+        now: '2026-08-24T10:00:00.000Z',
+      });
+      await transactionsRepo.create({
+        id: id('02001'),
+        type: 'expense',
+        amount: 50,
+        name: 'Lunch',
+        date: '2026-08-24',
+        accountId: account.id,
+        categoryId: category.id,
+        destinationAccountId: null,
+        note: null,
+        originDeviceId: deviceId,
+        operationId: id('92001'),
+        now: '2026-08-24T10:05:00.000Z',
+      });
+
+      const hidden = await categories.hide(
+        category.id,
+        ctx({ operationId: id('91004'), now: '2026-08-24T11:00:00.000Z' }),
+      );
+
       expect(hidden.isArchived).toBe(true);
+      expect(hidden.deletedAt).toBeNull();
       await expect(categories.findById(category.id)).resolves.toEqual(hidden);
+    });
+
+    it('creates and updates a category with custom icon and color', async () => {
+      const category = await categories.create({
+        id: id('01099'),
+        name: 'TikTok Shop',
+        type: 'expense',
+        icon: 'fa6:tiktok',
+        color: '#010101',
+        originDeviceId: deviceId,
+        operationId: id('91099'),
+        now: '2026-08-24T10:00:00.000Z',
+      });
+
+      expect(category.icon).toBe('fa6:tiktok');
+      expect(category.color).toBe('#010101');
+
+      const updated = await categories.update(
+        category.id,
+        { name: 'TikTok Creator', icon: 'fa6:video', color: '#1DB954' },
+        ctx({ operationId: id('91100'), now: '2026-08-24T11:00:00.000Z' }),
+      );
+
+      expect(updated.name).toBe('TikTok Creator');
+      expect(updated.icon).toBe('fa6:video');
+      expect(updated.color).toBe('#1DB954');
     });
 
     it('reports a category as unused before any transaction references it', async () => {

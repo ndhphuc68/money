@@ -63,4 +63,21 @@ describe('finance card components', () => {
     expect(screen.getByText('$4,200 saved')).toBeTruthy();
     expect(screen.getByText('Target $10,000')).toBeTruthy();
   });
+
+  it('does not duplicate category name in subtitle when name equals category', () => {
+    const screen = render(
+      <TransactionRow
+        amount="-100.000 ₫"
+        category="Hóa đơn & tiện ích"
+        icon="bills"
+        meta="31/08/2026 · Ví tiền mặt"
+        name="Hóa đơn & tiện ích"
+        positive={false}
+      />,
+    );
+
+    expect(screen.getByText('Hóa đơn & tiện ích')).toBeTruthy();
+    expect(screen.getByText('31/08/2026 · Ví tiền mặt')).toBeTruthy();
+    expect(screen.queryByText('Hóa đơn & tiện ích · 31/08/2026 · Ví tiền mặt')).toBeNull();
+  });
 });

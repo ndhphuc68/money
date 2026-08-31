@@ -7,6 +7,8 @@ export const categories = sqliteTable(
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     type: text('type', { enum: ['income', 'expense'] }).notNull(),
+    icon: text('icon').notNull().default('fa6:shapes'),
+    color: text('color').notNull().default('#2F6FED'),
     isArchived: integer('is_archived', { mode: 'boolean' }).notNull(),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),

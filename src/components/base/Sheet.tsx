@@ -45,19 +45,22 @@ export function Sheet({
   const showHandle = variant === 'bottomSheet';
   const bottomInset = applyBottomInset ? insets.bottom : 0;
 
+  const Container = onBodyPress ? Pressable : View;
+
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
-      <Pressable
-        onPress={onClose}
+      <View
         style={[
           styles.backdrop,
           isDialog ? { padding: spacing[5], paddingBottom: spacing[5] + bottomInset } : null,
         ]}>
         <Pressable
-          onPress={(event) => {
-            event.stopPropagation();
-            onBodyPress?.();
-          }}
+          accessibilityLabel="Backdrop"
+          onPress={onClose}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <Container
+          onPress={onBodyPress}
           style={[
             isDialog ? styles.dialogSheet : styles.bottomSheet,
             !isDialog ? { paddingBottom: spacing[5] + bottomInset } : null,
@@ -79,8 +82,8 @@ export function Sheet({
             </View>
           ) : null}
           {children}
-        </Pressable>
-      </Pressable>
+        </Container>
+      </View>
     </Modal>
   );
 }

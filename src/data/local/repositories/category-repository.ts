@@ -9,7 +9,7 @@ import {
 import { Category, CategoryType } from '@/core/domain/finance/category';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
-import { categories, changeLog, transactions } from '@/data/local/schema';
+import { categories, changeLog, recurringSchedules, transactions } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
 import { toCategoryEntity, toCategoryRowValues } from './finance-record-mappers';
@@ -27,6 +27,8 @@ export class CategoryRepository implements CategoryRepositoryPort {
       id: input.id,
       name: input.name,
       type: input.type,
+      icon: input.icon || 'fa6:shapes',
+      color: input.color || (input.type === 'income' ? '#10B981' : '#F2734A'),
       isArchived: false,
       createdAt: input.now,
       updatedAt: input.now,
@@ -74,23 +76,34 @@ export class CategoryRepository implements CategoryRepositoryPort {
   }
 
   /**
-   * Archives the category so it is hidden from pickers but preserved for
-   * history. Physical deletion is intentionally not exposed by this
-   * repository, regardless of whether the category is in use.
+   * If the category is referenced by any transaction or recurring schedule,
+   * archives it (isArchived = true) to preserve historical data.
+   * If it is not used anywhere, soft-deletes it (deletedAt = now).
    */
   async hide(id: string, context: WriteContext): Promise<Category> {
     const existing = await this.requireById(id);
-    const updated: Category = {
-      ...existing,
-      isArchived: true,
-      updatedAt: context.now,
-      revision: existing.revision + 1,
-      originDeviceId: context.originDeviceId,
-    };
+    const inUse = await this.isUsedByTransaction(id);
+
+    const updated: Category = inUse
+      ? {
+          ...existing,
+          isArchived: true,
+          updatedAt: context.now,
+          revision: existing.revision + 1,
+          originDeviceId: context.originDeviceId,
+        }
+      : {
+          ...existing,
+          deletedAt: context.now,
+          updatedAt: context.now,
+          revision: existing.revision + 1,
+          originDeviceId: context.originDeviceId,
+        };
+
     const operation = buildSyncOperation({
       entityType: 'category',
       entityId: updated.id,
-      operation: 'update',
+      operation: inUse ? 'update' : 'delete',
       payload: updated,
       originDeviceId: context.originDeviceId,
       revision: updated.revision,
@@ -111,25 +124,34 @@ export class CategoryRepository implements CategoryRepositoryPort {
     const rows = this.database.db
       .select()
       .from(categories)
-      .where(and(eq(categories.type, type), isNull(categories.deletedAt)))
+      .where(
+        and(
+          eq(categories.type, type),
+          isNull(categories.deletedAt),
+          eq(categories.isArchived, false),
+        ),
+      )
       .all();
     return rows.map(toCategoryEntity);
   }
 
   /**
-   * Reports whether any transaction — active or soft-deleted — references
-   * this category. A soft-deleted transaction is a tombstone, not a physical
-   * removal: it can still be inspected in history and (per the domain model)
-   * restored, so a category it references is still meaningfully "in use" and
-   * must not be treated as safe to physically remove.
+   * Reports whether any transaction or recurring schedule references this category.
    */
   async isUsedByTransaction(id: string): Promise<boolean> {
-    const row = this.database.db
+    const inTx = this.database.db
       .select({ id: transactions.id })
       .from(transactions)
       .where(eq(transactions.categoryId, id))
       .get();
-    return row !== undefined;
+    if (inTx !== undefined) return true;
+
+    const inRecurring = this.database.db
+      .select({ id: recurringSchedules.id })
+      .from(recurringSchedules)
+      .where(eq(recurringSchedules.categoryId, id))
+      .get();
+    return inRecurring !== undefined;
   }
 
   async saveWithOperation(record: Category, operation: SyncOperation): Promise<void> {

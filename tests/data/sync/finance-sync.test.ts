@@ -57,6 +57,8 @@ function categoryRecord(overrides: Partial<Category> = {}): Category {
     id: incomeCategoryId,
     name: 'Salary',
     type: 'income',
+    icon: 'fa6:shapes',
+    color: '#10B981',
     isArchived: false,
     createdAt: '2026-08-24T10:00:00.000Z',
     updatedAt: '2026-08-24T10:00:00.000Z',

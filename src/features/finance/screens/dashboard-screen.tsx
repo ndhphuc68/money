@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { Bell } from 'lucide-react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
-import { BalanceCard, StatCard, TransactionRow } from '@/components/finance';
+import { BalanceCard, CategoryIcon, StatCard, TransactionRow } from '@/components/finance';
 import type { DashboardViewModel } from '@/features/finance/view-models/use-dashboard';
 import type { Translate } from '@/i18n/translations';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
@@ -34,16 +34,10 @@ export function DashboardScreen(props: DashboardScreenProps) {
     asOfLabel,
     incomeLabel,
     expenseLabel,
-    netLabel,
-    netTone,
     categorySpending,
     recentTransactions,
     onOpenTransactions,
-    onAddTransaction,
     onSelectTransaction,
-    onOpenSync,
-    onOpenReports,
-    onOpenSettings,
     t,
   } = props;
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0 };
@@ -116,6 +110,7 @@ export function DashboardScreen(props: DashboardScreenProps) {
               <TransactionRow
                 amount={item.amountLabel}
                 category={item.categoryLabel}
+                color={item.color}
                 icon={item.icon}
                 meta={item.meta}
                 name={item.name}
@@ -133,9 +128,14 @@ export function DashboardScreen(props: DashboardScreenProps) {
         ) : (
           categorySpending.map((entry) => (
             <View key={entry.id} style={styles.categoryRow}>
-              <Text numberOfLines={1} style={styles.categoryLabel}>
-                {entry.label}
-              </Text>
+              <View style={styles.categoryInfo}>
+                {entry.icon ? (
+                  <CategoryIcon color={entry.color} icon={entry.icon} size={32} />
+                ) : null}
+                <Text numberOfLines={1} style={styles.categoryLabel}>
+                  {entry.label}
+                </Text>
+              </View>
               <Text style={styles.categoryAmount}>{entry.amountLabel}</Text>
             </View>
           ))
@@ -182,18 +182,25 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     fontWeight: typography.weights.bold,
   },
+  categoryInfo: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing[3],
+    marginRight: spacing[3],
+  },
   categoryLabel: {
     color: colors.content.secondary,
     flex: 1,
     fontSize: typography.sizes.body,
     fontWeight: typography.weights.semibold,
-    marginRight: spacing[3],
   },
   categoryRow: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    minHeight: 40,
+    minHeight: 44,
+    paddingVertical: spacing[1],
   },
   container: {
     backgroundColor: colors.surface.canvas,

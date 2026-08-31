@@ -11,7 +11,8 @@ type TransactionRowProps = {
   meta: string;
   amount: string;
   positive: boolean;
-  icon: CategoryIconName;
+  icon?: string | CategoryIconName;
+  color?: string;
   showDivider?: boolean;
 };
 
@@ -22,17 +23,33 @@ export function TransactionRow({
   amount,
   positive,
   icon,
+  color,
   showDivider = true,
 }: TransactionRowProps) {
+  const isSameAsCategory =
+    Boolean(category) && name.trim().toLowerCase() === category.trim().toLowerCase();
+  const subtitle = isSameAsCategory
+    ? meta
+    : category && meta
+      ? `${category} · ${meta}`
+      : category || meta;
+
   return (
     <ListRow
       dividerColor={colors.divider}
       gap={spacing[2] + 2}
-      leading={<CategoryIcon name={icon} />}
+      leading={
+        <CategoryIcon
+          color={color}
+          icon={typeof icon === 'string' ? icon : undefined}
+          name={icon && typeof icon !== 'string' ? (icon as CategoryIconName) : undefined}
+          size={40}
+        />
+      }
       minHeight={56}
       showDivider={showDivider}
       style={styles.row}
-      subtitle={`${category} · ${meta}`}
+      subtitle={subtitle}
       subtitleStyle={styles.subtitle}
       title={name}
       titleStyle={styles.title}
@@ -52,21 +69,23 @@ export function TransactionRow({
 
 const styles = StyleSheet.create({
   amount: {
-    fontSize: typography.sizes.small,
+    fontSize: typography.sizes.body,
     fontWeight: typography.weights.black,
-    lineHeight: 15,
+    lineHeight: 18,
     marginLeft: spacing[2],
-    maxWidth: 126,
   },
   row: {
     paddingVertical: spacing[2],
   },
   subtitle: {
-    color: colors.content.muted,
-    fontSize: typography.sizes.body,
-    lineHeight: typography.lineHeights.body,
+    color: colors.content.secondary,
+    fontSize: typography.sizes.small,
+    fontWeight: typography.weights.semibold,
+    lineHeight: typography.lineHeights.small,
   },
   title: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.body,
     fontWeight: typography.weights.bold,
     lineHeight: typography.lineHeights.body,
   },
