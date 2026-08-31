@@ -3,7 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AmountInput, DateField } from '@/components/finance';
-import { Dropdown, type DropdownOption } from '@/components/shared';
+import { Dropdown, type DropdownOption } from '@/components/base';
 import { colors, radius, spacing, typography } from '@/theme';
 
 export type GoldDropdownOption = DropdownOption;
