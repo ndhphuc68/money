@@ -13,7 +13,11 @@
       "android",
       "web"
     ],
-    "ios": {},
+    "ios": {
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "Vimo cần quyền thông báo để nhắc bạn trước khi đến hạn chi tiêu định kỳ."
+      }
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/branding/vimo-icon.png",

@@ -21,6 +21,8 @@ import {
   UpdateRecurringSchedule,
 } from '@/core/application/finance/manage-recurring-schedule';
 import { GetRecurringOverview } from '@/core/application/finance/get-recurring-overview';
+import { ScanAndScheduleRecurringNotifications } from '@/core/application/finance/sync-recurring-notifications';
+import { NotificationScheduler } from '@/core/application/ports/notification-scheduler';
 import { LocalDatabaseClient, openTestLocalDatabase } from '@/data/local/db/client';
 import { accounts, categories } from '@/data/local/schema';
 import { RecurringOccurrenceProcessingRepository } from '@/data/local/repositories/recurring-occurrence-processing-repository';
@@ -28,6 +30,16 @@ import { RecurringOccurrenceRepository } from '@/data/local/repositories/recurri
 import { RecurringScheduleRepository } from '@/data/local/repositories/recurring-schedule-repository';
 
 const deviceId = '550e8400-e29b-41d4-a716-446655440030';
+
+class FakeNotificationScheduler implements NotificationScheduler {
+  scheduled: { id: string; title: string; body: string; fireDate: Date }[] = [];
+  async requestPermissions(): Promise<boolean> {
+    return true;
+  }
+  async scheduleAt(params: { id: string; title: string; body: string; fireDate: Date }): Promise<void> {
+    this.scheduled.push(params);
+  }
+}
 
 describe('recurring expense use cases', () => {
   let database: LocalDatabaseClient;
@@ -179,6 +191,86 @@ describe('recurring expense use cases', () => {
 
       expect(overview.schedules).toEqual([schedule]);
       expect(overview.dueOccurrences).toEqual([occurrence]);
+    });
+  });
+
+  describe('ScanAndScheduleRecurringNotifications', () => {
+    it('schedules a future reminder for a not-yet-due occurrence and marks it notified', async () => {
+      const { occurrence } = await (async () => {
+        const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+        return createRecurringExpense.execute({
+          transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
+          recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+        });
+      })();
+
+      const notificationScheduler = new FakeNotificationScheduler();
+      const scan = new ScanAndScheduleRecurringNotifications({
+        occurrenceRepository,
+        scheduleRepository,
+        notificationScheduler,
+        now: () => '2026-08-28T08:00:00.000Z',
+        deviceId,
+        generateId,
+      });
+
+      await scan.execute();
+
+      expect(notificationScheduler.scheduled).toHaveLength(1);
+      expect(notificationScheduler.scheduled[0]).toMatchObject({ id: occurrence.id, body: 'YouTube Premium' });
+      expect(notificationScheduler.scheduled[0].fireDate.toISOString().slice(0, 10)).toBe('2026-09-26');
+      await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({ notifiedAt: '2026-08-28T08:00:00.000Z' });
+    });
+
+    it('sends a catch-up reminder immediately when opening the app after the reminder date has passed', async () => {
+      const { occurrence } = await (async () => {
+        const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+        return createRecurringExpense.execute({
+          transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
+          recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+        });
+      })();
+
+      const notificationScheduler = new FakeNotificationScheduler();
+      const scan = new ScanAndScheduleRecurringNotifications({
+        occurrenceRepository,
+        scheduleRepository,
+        notificationScheduler,
+        now: () => '2026-09-30T08:00:00.000Z',
+        deviceId,
+        generateId,
+      });
+
+      await scan.execute();
+
+      expect(notificationScheduler.scheduled).toHaveLength(1);
+      expect(notificationScheduler.scheduled[0].id).toBe(occurrence.id);
+    });
+
+    it('never notifies the same occurrence twice', async () => {
+      const { occurrence } = await (async () => {
+        const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+        return createRecurringExpense.execute({
+          transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
+          recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+        });
+      })();
+
+      const notificationScheduler = new FakeNotificationScheduler();
+      const scan = new ScanAndScheduleRecurringNotifications({
+        occurrenceRepository,
+        scheduleRepository,
+        notificationScheduler,
+        now: () => '2026-09-30T08:00:00.000Z',
+        deviceId,
+        generateId,
+      });
+
+      await scan.execute();
+      await scan.execute();
+
+      expect(notificationScheduler.scheduled).toHaveLength(1);
+      void occurrence;
     });
   });
 });
