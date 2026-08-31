@@ -332,6 +332,9 @@ class FakeTransactionRepository implements TransactionRepository {
     if (filter.categoryId) {
       items = items.filter((t) => t.categoryId === filter.categoryId);
     }
+    if (filter.categoryIds && filter.categoryIds.length > 0) {
+      items = items.filter((t) => filter.categoryIds!.includes(t.categoryId ?? ''));
+    }
     if (filter.accountId) {
       items = items.filter(
         (t) => t.accountId === filter.accountId || t.destinationAccountId === filter.accountId,
@@ -794,6 +797,61 @@ describe('GetReport', () => {
 
     expect(view.expense).toBe(100000);
     expect(view.accountTotals).toEqual([{ id: 'account-bank', amount: 100000 }]);
+  });
+
+  it('applies a multi-category filter (categoryIds)', async () => {
+    const transactionRepository = new FakeTransactionRepository();
+    const now = makeClock('2026-08-25T00:00:00.000Z');
+    const generateId = makeIdFactory('rep3');
+    const createTransaction = new CreateTransaction({
+      transactionRepository,
+      now,
+      deviceId: DEVICE_ID,
+      generateId,
+    });
+
+    await createTransaction.execute({
+      type: 'expense',
+      amount: 400000,
+      accountId: 'account-cash',
+      categoryId: 'category-food',
+      date: '2026-08-02',
+      name: 'Groceries',
+      note: null,
+    });
+    await createTransaction.execute({
+      type: 'expense',
+      amount: 150000,
+      accountId: 'account-cash',
+      categoryId: 'category-transport',
+      date: '2026-08-03',
+      name: 'Taxi',
+      note: null,
+    });
+    await createTransaction.execute({
+      type: 'expense',
+      amount: 90000,
+      accountId: 'account-cash',
+      categoryId: 'category-bills',
+      date: '2026-08-04',
+      name: 'Internet',
+      note: null,
+    });
+
+    const report = new GetReport({ transactionRepository });
+    const view = await report.execute(
+      { month: '2026-08' },
+      { categoryIds: ['category-food', 'category-transport'] },
+    );
+
+    expect(view.expense).toBe(550000);
+    expect(view.categoryTotals).toEqual(
+      expect.arrayContaining([
+        { id: 'category-food', amount: 400000 },
+        { id: 'category-transport', amount: 150000 },
+      ]),
+    );
+    expect(view.categoryTotals).toHaveLength(2);
   });
 });
 

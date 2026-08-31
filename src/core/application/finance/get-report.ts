@@ -14,7 +14,7 @@ export type ReportPeriod = { from: string; to: string } | { month: string };
 
 export type ReportFilters = Pick<
   TransactionListFilter,
-  'type' | 'categoryId' | 'accountId' | 'query'
+  'type' | 'categoryId' | 'categoryIds' | 'accountId' | 'query'
 >;
 
 export type ReportView = {
