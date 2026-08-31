@@ -1,8 +1,14 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { CategoryIcon } from '@/components/finance';
-import type { ReportsViewModel } from '@/features/finance/view-models/use-reports';
+import { Card } from '@/components/base';
+import {
+  CategoryIcon,
+  FilterBar,
+  PeriodSelector,
+  ReportCategoryChart,
+  ReportTrendChart,
+} from '@/components/finance';
+import type { ChangeTone, ReportsViewModel } from '@/features/finance/view-models/use-reports';
 import type { Translate } from '@/i18n/translations';
 import { colors, spacing, typography } from '@/theme';
 
@@ -10,54 +16,160 @@ export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{t('reportsTitle')}</Text>
-      <View style={styles.month}>
-        <Pressable
-          accessibilityLabel={t('reportsPreviousMonth')}
-          accessibilityRole="button"
-          onPress={props.goToPreviousMonth}>
-          <ChevronLeft color={colors.content.primary} size={22} />
-        </Pressable>
-        <Text>{props.monthLabel}</Text>
-        <Pressable
-          accessibilityLabel={t('reportsNextMonth')}
-          accessibilityRole="button"
-          onPress={props.goToNextMonth}>
-          <ChevronRight color={colors.content.primary} size={22} />
-        </Pressable>
-      </View>
+
+      <PeriodSelector
+        customFrom={props.customFrom}
+        customTo={props.customTo}
+        kind={props.periodKind}
+        labels={{
+          apply: t('reportsPeriodApply'),
+          close: t('reportsPeriodClose'),
+          custom: t('reportsPeriodCustom'),
+          customFrom: t('reportsCustomFromLabel'),
+          customTo: t('reportsCustomToLabel'),
+          month: t('reportsPeriodMonth'),
+          next: t('reportsNextPeriod'),
+          previous: t('reportsPreviousPeriod'),
+          quarter: t('reportsPeriodQuarter'),
+          week: t('reportsPeriodWeek'),
+          year: t('reportsPeriodYear'),
+        }}
+        onCustomFromChange={props.onCustomFromChange}
+        onCustomToChange={props.onCustomToChange}
+        onKindChange={props.onPeriodKindChange}
+        onNext={props.onNextPeriod}
+        onPrevious={props.onPreviousPeriod}
+        rangeLabel={props.periodLabel}
+      />
+
+      <FilterBar
+        accountId={props.accountId}
+        accounts={props.accounts}
+        categories={props.categories}
+        categoryId={props.categoryId}
+        categoryIds={props.categoryIds}
+        compact
+        // `month`/`onMonthChange` are unused in compact mode (PeriodSelector
+        // owns period navigation here) but required by FilterBarProps.
+        month=""
+        onAccountChange={props.onAccountChange}
+        onCategoryChange={props.onCategoryChange}
+        onMonthChange={() => {}}
+        onSearchChange={props.onSearchChange}
+        onTypeChange={props.onTypeChange}
+        search={props.search}
+        type={props.type}
+        labels={{
+          account: t('filterAccount'),
+          advanced: t('filterAdvanced'),
+          all: t('filterAll'),
+          category: t('filterCategory'),
+          expense: t('filterExpense'),
+          income: t('filterIncome'),
+          month: t('filterMonth'),
+          nextMonth: t('filterNextMonth'),
+          previousMonth: t('filterPreviousMonth'),
+          searchLabel: t('filterSearchLabel'),
+          searchPlaceholder: t('filterSearchPlaceholder'),
+          transfer: t('filterTransfer'),
+        }}
+      />
+
       {props.loading ? (
         <Text>{t('dashboardLoading')}</Text>
       ) : (
         <>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Text>{t('reportsIncomeLabel')}</Text>
-              <Text>{props.incomeLabel}</Text>
-            </View>
-            <Text>
-              {t('reportsExpenseLabel')}: {props.expenseLabel}
-            </Text>
-            <View style={styles.row}>
-              <Text>{t('reportsNetLabel')}</Text>
-              <Text>{props.netLabel}</Text>
-            </View>
-          </View>
-          <Totals
-            empty={t('reportsCategoryEmpty')}
-            items={props.categoryTotals}
-            title={t('reportsCategoryTitle')}
-          />
+          <Card style={styles.summaryCard}>
+            {props.comparison ? (
+              <Text style={styles.comparisonCaption}>{t('reportsComparisonTitle')}</Text>
+            ) : null}
+            <SummaryRow
+              amountLabel={props.incomeLabel}
+              changeLabel={props.comparison?.incomeChangeLabel}
+              changeTone={props.comparison?.incomeChangeTone}
+              label={t('reportsIncomeLabel')}
+            />
+            <SummaryRow
+              amountLabel={props.expenseLabel}
+              changeLabel={props.comparison?.expenseChangeLabel}
+              changeTone={props.comparison?.expenseChangeTone}
+              label={t('reportsExpenseLabel')}
+            />
+            <View style={styles.divider} />
+            <SummaryRow
+              amountLabel={props.netLabel}
+              changeLabel={props.comparison?.netChangeLabel}
+              changeTone={props.comparison?.netChangeTone}
+              label={t('reportsNetLabel')}
+            />
+          </Card>
+
+          {props.showTrend ? (
+            <Card style={styles.sectionCard}>
+              <Text style={styles.heading}>{t('reportsTrendTitle')}</Text>
+              <ReportTrendChart
+                emptyLabel={t('reportsCategoryEmpty')}
+                expenseLegendLabel={t('reportsExpenseLabel')}
+                incomeLegendLabel={t('reportsIncomeLabel')}
+                points={props.trendPoints}
+              />
+            </Card>
+          ) : null}
+
+          <Card style={styles.sectionCard}>
+            <Text style={styles.heading}>{t('reportsCategoryTitle')}</Text>
+            <ReportCategoryChart
+              emptyLabel={t('reportsCategoryEmpty')}
+              slices={props.categoryChartSlices}
+            />
+          </Card>
+
           <Totals
             compact
             empty={t('reportsAccountEmpty')}
             items={props.accountTotals}
-            showEmpty={props.categoryTotals.length > 0}
+            showEmpty={props.categoryChartSlices.length > 0}
             title={t('reportsAccountTitle')}
           />
         </>
       )}
     </ScrollView>
   );
+}
+
+function SummaryRow({
+  label,
+  amountLabel,
+  changeLabel,
+  changeTone,
+}: {
+  label: string;
+  amountLabel: string;
+  changeLabel?: string;
+  changeTone?: ChangeTone;
+}) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <View style={styles.amountWithChange}>
+        <Text style={styles.amountText}>{amountLabel}</Text>
+        {changeLabel ? <Text style={changeTextStyle(changeTone)}>{changeLabel}</Text> : null}
+      </View>
+    </View>
+  );
+}
+
+function changeTextStyle(tone?: ChangeTone) {
+  return {
+    color:
+      tone === 'positive'
+        ? colors.status.positive
+        : tone === 'negative'
+          ? colors.status.negative
+          : colors.content.secondary,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.semibold,
+  };
 }
 
 function Totals({
@@ -69,12 +181,12 @@ function Totals({
 }: {
   title: string;
   empty: string;
-  items: ReportsViewModel['categoryTotals'];
+  items: ReportsViewModel['accountTotals'];
   compact?: boolean;
   showEmpty?: boolean;
 }) {
   return (
-    <View style={styles.card}>
+    <Card style={styles.sectionCard}>
       <Text style={styles.heading}>{title}</Text>
       {items.length ? (
         items.map((item) =>
@@ -93,22 +205,34 @@ function Totals({
       ) : showEmpty ? (
         <Text>{empty}</Text>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: 16,
-    gap: spacing[2],
-    padding: spacing[4],
+  amountText: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.bodyLg,
+    fontWeight: typography.weights.bold,
+  },
+  amountWithChange: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  comparisonCaption: {
+    color: colors.content.muted,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.semibold,
   },
   container: {
     backgroundColor: colors.surface.canvas,
     flexGrow: 1,
     gap: spacing[4],
     padding: spacing[4],
+  },
+  divider: {
+    backgroundColor: colors.border.subtle,
+    height: StyleSheet.hairlineWidth,
   },
   heading: { fontWeight: typography.weights.bold },
   itemAmount: {
@@ -126,8 +250,16 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     fontWeight: typography.weights.medium,
   },
-  month: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  rowLabel: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.medium,
+  },
+  sectionCard: {
+    gap: spacing[3],
+  },
+  summaryCard: { gap: spacing[3] },
   title: {
     color: colors.content.primary,
     fontSize: typography.sizes.title,

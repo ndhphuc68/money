@@ -14,6 +14,7 @@ import {
   WriteContext,
 } from '@/core/application/ports/finance-repositories';
 import { GetReport } from '@/core/application/finance/get-report';
+import { GetReportTrend } from '@/core/application/finance/get-report-trend';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { formatVnd } from '@/core/domain/finance/money';
@@ -26,10 +27,9 @@ import { ReportsScreen } from '@/features/finance/screens/reports-screen';
 import { useReports } from '@/features/finance/view-models/use-reports';
 import { Locale, translate } from '@/i18n/translations';
 
-// ---------------------------------------------------------------------------
-// Minimal in-memory fakes, matching the pattern in
-// tests/features/finance/dashboard.test.tsx.
-// ---------------------------------------------------------------------------
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
 
 const DEVICE_ID = '550e8400-e29b-41d4-a716-446655440099';
 const NOW = '2026-08-25T08:00:00.000Z';
@@ -54,11 +54,7 @@ class FakeAccountRepository implements AccountRepository {
     return account;
   }
 
-  async update(
-    _id: string,
-    _changes: UpdateAccountInput,
-    _context: WriteContext,
-  ): Promise<Account> {
+  async update(_id: string, _changes: UpdateAccountInput, _context: WriteContext): Promise<Account> {
     throw new Error('not implemented');
   }
 
@@ -100,11 +96,7 @@ class FakeCategoryRepository implements CategoryRepository {
     return category;
   }
 
-  async update(
-    _id: string,
-    _changes: UpdateCategoryInput,
-    _context: WriteContext,
-  ): Promise<Category> {
+  async update(_id: string, _changes: UpdateCategoryInput, _context: WriteContext): Promise<Category> {
     throw new Error('not implemented');
   }
 
@@ -148,34 +140,20 @@ class FakeTransactionRepository implements TransactionRepository {
     return transaction;
   }
 
-  async update(
-    _id: string,
-    _changes: UpdateTransactionInput,
-    _context: WriteContext,
-  ): Promise<Transaction> {
+  async update(_id: string, _changes: UpdateTransactionInput, _context: WriteContext): Promise<Transaction> {
     throw new Error('not implemented');
   }
 
   async softDelete(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = {
-      ...existing,
-      deletedAt: context.now,
-      updatedAt: context.now,
-      revision: existing.revision + 1,
-    } as Transaction;
+    const updated = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
 
   async restore(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = {
-      ...existing,
-      deletedAt: null,
-      updatedAt: context.now,
-      revision: existing.revision + 1,
-    } as Transaction;
+    const updated = { ...existing, deletedAt: null, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
@@ -188,6 +166,22 @@ class FakeTransactionRepository implements TransactionRepository {
     let items = Array.from(this.store.values());
     if (!filter.includeDeleted) {
       items = items.filter((t) => t.deletedAt === null);
+    }
+    if (filter.type) {
+      items = items.filter((t) => t.type === filter.type);
+    }
+    if (filter.categoryIds && filter.categoryIds.length > 0) {
+      items = items.filter((t) => filter.categoryIds!.includes(t.categoryId ?? ''));
+    } else if (filter.categoryId) {
+      items = items.filter((t) => t.categoryId === filter.categoryId);
+    }
+    if (filter.accountId) {
+      items = items.filter(
+        (t) => t.accountId === filter.accountId || t.destinationAccountId === filter.accountId,
+      );
+    }
+    if (filter.query) {
+      items = items.filter((t) => t.name.toLowerCase().includes(filter.query!.toLowerCase()));
     }
     if (filter.from) {
       items = items.filter((t) => t.date >= filter.from!);
@@ -214,13 +208,7 @@ class FakeTransactionRepository implements TransactionRepository {
 function buildTransaction(
   id: string,
   input: TransactionInput,
-  meta: {
-    createdAt: string;
-    updatedAt: string;
-    deletedAt: string | null;
-    revision: number;
-    originDeviceId: string;
-  },
+  meta: { createdAt: string; updatedAt: string; deletedAt: string | null; revision: number; originDeviceId: string },
 ): Transaction {
   const base = {
     id,
@@ -232,19 +220,9 @@ function buildTransaction(
     ...meta,
   };
   if (input.type === 'transfer') {
-    return {
-      ...base,
-      type: 'transfer',
-      destinationAccountId: input.destinationAccountId as string,
-      categoryId: null,
-    };
+    return { ...base, type: 'transfer', destinationAccountId: input.destinationAccountId as string, categoryId: null };
   }
-  return {
-    ...base,
-    type: input.type,
-    categoryId: input.categoryId as string,
-    destinationAccountId: null,
-  };
+  return { ...base, type: input.type, categoryId: input.categoryId as string, destinationAccountId: null };
 }
 
 function makeIdFactory(prefix: string): () => string {
@@ -266,11 +244,19 @@ function makeRepos() {
 
 type Repos = ReturnType<typeof makeRepos>;
 
+function makeDependencies(repos: Repos) {
+  return {
+    ...repos,
+    getReport: new GetReport(repos),
+    getReportTrend: new GetReportTrend(repos),
+  };
+}
+
 function Harness({
   dependencies,
   now,
 }: {
-  dependencies: Repos & { getReport: GetReport };
+  dependencies: ReturnType<typeof makeDependencies>;
   now?: () => Date;
 }) {
   const viewModel = useReports({ dependencies, now: now ?? (() => new Date(NOW)), t });
@@ -317,10 +303,9 @@ async function seed(repos: Repos) {
 }
 
 describe('reports screen + view model', () => {
-  it('shows income, expense, net cash flow, category totals and account totals for the current month, excluding transfers', async () => {
+  it('shows income, expense, net cash flow, category chart legend and account totals for the current month, excluding transfers', async () => {
     const repos = makeRepos();
-    const { cashAccount, bankAccount, expenseCategory, incomeCategory, generateId } =
-      await seed(repos);
+    const { cashAccount, bankAccount, expenseCategory, incomeCategory, generateId } = await seed(repos);
 
     await repos.transactionRepository.create({
       id: generateId(),
@@ -346,7 +331,6 @@ describe('reports screen + view model', () => {
       operationId: generateId(),
       now: NOW,
     });
-    // A transfer between accounts must never count as income/expense/category/account spending.
     await repos.transactionRepository.create({
       id: generateId(),
       type: 'transfer',
@@ -360,19 +344,19 @@ describe('reports screen + view model', () => {
       now: NOW,
     });
 
-    const dependencies = { ...repos, getReport: new GetReport(repos) };
+    const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
     await waitFor(() => expect(screen.getByText(formatVnd(5_000_000))).toBeTruthy());
     expect(screen.getByText(formatVnd(200_000))).toBeTruthy();
     expect(screen.getByText(formatVnd(5_000_000 - 200_000))).toBeTruthy();
     expect(screen.getByText('An uong')).toBeTruthy();
+    expect(screen.getByText('100%')).toBeTruthy(); // only expense category -> 100% of the donut
     expect(screen.getByText('Vi tien mat')).toBeTruthy();
-    // The transfer amount (500,000) must not appear anywhere in the totals.
     expect(screen.queryByText(formatVnd(500_000))).toBeNull();
   });
 
-  it('navigates to the previous and next month, refetching the report for that month', async () => {
+  it('navigates to the previous and next period for the active kind (month by default)', async () => {
     const repos = makeRepos();
     const { cashAccount, expenseCategory, generateId } = await seed(repos);
 
@@ -401,26 +385,124 @@ describe('reports screen + view model', () => {
       now: NOW,
     });
 
-    const dependencies = { ...repos, getReport: new GetReport(repos) };
+    const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
     await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
     expect(screen.queryByText(formatVnd(100_000))).toBeNull();
 
-    fireEvent.press(screen.getByLabelText(t('reportsPreviousMonth')));
+    fireEvent.press(screen.getByLabelText(t('reportsPreviousPeriod')));
 
     await waitFor(() => expect(screen.getByText(formatVnd(100_000))).toBeTruthy());
     expect(screen.queryByText(formatVnd(300_000))).toBeNull();
 
-    fireEvent.press(screen.getByLabelText(t('reportsNextMonth')));
+    fireEvent.press(screen.getByLabelText(t('reportsNextPeriod')));
 
     await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
   });
 
-  it('shows an empty state when a month has no transactions', async () => {
+  it('switches to weekly view and shows the current-vs-previous-period comparison', async () => {
+    const repos = makeRepos();
+    const { cashAccount, expenseCategory, generateId } = await seed(repos);
+
+    // Current week (2026-08-24..30) has 300,000; the previous week (2026-08-17..23) has 100,000
+    // -> expense should read as up (previous > 0, current higher -> positive change label "+200%").
+    await repos.transactionRepository.create({
+      id: generateId(),
+      type: 'expense',
+      amount: 100_000,
+      accountId: cashAccount.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-18',
+      name: 'Chi tuan truoc',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
+    await repos.transactionRepository.create({
+      id: generateId(),
+      type: 'expense',
+      amount: 300_000,
+      accountId: cashAccount.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-25',
+      name: 'Chi tuan nay',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
+
+    const dependencies = makeDependencies(repos);
+    const screen = render(<Harness dependencies={dependencies} />);
+    await waitFor(() => expect(screen.queryByText(t('dashboardLoading'))).toBeNull()); // initial month load settled
+
+    fireEvent.press(screen.getByLabelText(t('reportsPeriodWeek')));
+
+    await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
+    expect(screen.getByText('+200%')).toBeTruthy();
+  });
+
+  it('filters by multiple categories via the compact FilterBar', async () => {
+    const repos = makeRepos();
+    const { cashAccount, generateId } = await seed(repos);
+    const transportCategory = await repos.categoryRepository.create({
+      id: generateId(),
+      name: 'Di chuyen',
+      type: 'expense',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
+    const billsCategory = await repos.categoryRepository.create({
+      id: generateId(),
+      name: 'Hoa don',
+      type: 'expense',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
+
+    await repos.transactionRepository.create({
+      id: generateId(),
+      type: 'expense',
+      amount: 150_000,
+      accountId: cashAccount.id,
+      categoryId: transportCategory.id,
+      date: '2026-08-05',
+      name: 'Taxi',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
+    await repos.transactionRepository.create({
+      id: generateId(),
+      type: 'expense',
+      amount: 90_000,
+      accountId: cashAccount.id,
+      categoryId: billsCategory.id,
+      date: '2026-08-06',
+      name: 'Internet',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
+
+    const dependencies = makeDependencies(repos);
+    const screen = render(<Harness dependencies={dependencies} />);
+
+    await waitFor(() => expect(screen.getByText(formatVnd(240_000))).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText(t('filterAdvanced')));
+    fireEvent.press(screen.getByLabelText(transportCategory.name));
+
+    await waitFor(() => expect(screen.getByText(formatVnd(150_000))).toBeTruthy());
+    expect(screen.queryByText(formatVnd(240_000))).toBeNull();
+  });
+
+  it('shows empty states when a period has no transactions', async () => {
     const repos = makeRepos();
     await seed(repos);
-    const dependencies = { ...repos, getReport: new GetReport(repos) };
+    const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
     await waitFor(() => expect(screen.getByText(t('reportsCategoryEmpty'))).toBeTruthy());
