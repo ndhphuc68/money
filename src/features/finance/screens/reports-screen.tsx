@@ -1,4 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useContext } from 'react';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/base';
 import {
@@ -13,8 +15,10 @@ import type { Translate } from '@/i18n/translations';
 import { colors, spacing, typography } from '@/theme';
 
 export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate }) {
+  const insets = useContext(SafeAreaInsetsContext) ?? { top: 0 };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top + 12 }]}>
       <Text style={styles.title}>{t('reportsTitle')}</Text>
 
       <PeriodSelector

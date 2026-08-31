@@ -29,9 +29,16 @@ import { useReports } from '@/features/finance/view-models/use-reports';
 import { Locale, translate } from '@/i18n/translations';
 import { colors } from '@/theme';
 
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
-}));
+jest.mock('react-native-safe-area-context', () => {
+  // jest.mock factories can't reference out-of-scope imports (babel-plugin-jest-hoist),
+  // only in-factory requires.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { createContext } = require('react');
+  return {
+    useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+    SafeAreaInsetsContext: createContext({ top: 0, right: 0, bottom: 0, left: 0 }),
+  };
+});
 
 const DEVICE_ID = '550e8400-e29b-41d4-a716-446655440099';
 const NOW = '2026-08-25T08:00:00.000Z';
