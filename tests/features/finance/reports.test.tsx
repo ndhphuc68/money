@@ -461,6 +461,14 @@ describe('reports screen + view model', () => {
       operationId: generateId(),
       now: NOW,
     });
+    const foodCategory = await repos.categoryRepository.create({
+      id: generateId(),
+      name: 'An uong',
+      type: 'expense',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
 
     await repos.transactionRepository.create({
       id: generateId(),
@@ -486,17 +494,31 @@ describe('reports screen + view model', () => {
       operationId: generateId(),
       now: NOW,
     });
+    await repos.transactionRepository.create({
+      id: generateId(),
+      type: 'expense',
+      amount: 60_000,
+      accountId: cashAccount.id,
+      categoryId: foodCategory.id,
+      date: '2026-08-07',
+      name: 'Com trua',
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: NOW,
+    });
 
     const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
-    await waitFor(() => expect(screen.getByText(formatVnd(240_000))).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
 
     fireEvent.press(screen.getByLabelText(t('filterAdvanced')));
     fireEvent.press(screen.getByLabelText(transportCategory.name));
+    fireEvent.press(screen.getByLabelText(billsCategory.name));
 
-    await waitFor(() => expect(screen.getByText(formatVnd(150_000))).toBeTruthy());
-    expect(screen.queryByText(formatVnd(240_000))).toBeNull();
+    await waitFor(() => expect(screen.getByText(formatVnd(240_000))).toBeTruthy());
+    expect(screen.queryByText(formatVnd(300_000))).toBeNull();
+    expect(screen.queryByText(formatVnd(60_000))).toBeNull();
   });
 
   it('shows empty states when a period has no transactions', async () => {
