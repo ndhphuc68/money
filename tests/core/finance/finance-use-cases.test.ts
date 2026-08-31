@@ -329,11 +329,10 @@ class FakeTransactionRepository implements TransactionRepository {
     if (filter.type) {
       items = items.filter((t) => t.type === filter.type);
     }
-    if (filter.categoryId) {
-      items = items.filter((t) => t.categoryId === filter.categoryId);
-    }
     if (filter.categoryIds && filter.categoryIds.length > 0) {
       items = items.filter((t) => filter.categoryIds!.includes(t.categoryId ?? ''));
+    } else if (filter.categoryId) {
+      items = items.filter((t) => t.categoryId === filter.categoryId);
     }
     if (filter.accountId) {
       items = items.filter(
