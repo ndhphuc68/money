@@ -1,4 +1,6 @@
+import { X } from 'lucide-react-native';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { GoldBrand } from '@/core/domain/gold/gold-brand';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
@@ -38,10 +40,14 @@ export function GoldBrandManageSheet({
   onAddBrand,
   onClose,
 }: GoldBrandManageSheetProps) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+      <Pressable onPress={onClose} style={styles.backdrop}>
+        <Pressable
+          onPress={(event) => event.stopPropagation()}
+          style={[styles.sheet, { paddingBottom: spacing[5] + insets.bottom }]}>
           <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={styles.handle} />
             <View style={styles.header}>
@@ -54,7 +60,7 @@ export function GoldBrandManageSheet({
                 accessibilityRole="button"
                 onPress={onClose}
                 style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>×</Text>
+                <X color={colors.content.primary} size={20} strokeWidth={2.2} />
               </Pressable>
             </View>
 
@@ -74,7 +80,7 @@ export function GoldBrandManageSheet({
                     accessibilityRole="button"
                     onPress={() => onDeleteBrand(brand.id)}
                     style={styles.deleteButton}>
-                    <Text style={styles.deleteButtonText}>×</Text>
+                    <X color={colors.status.negative} size={16} strokeWidth={2.2} />
                   </Pressable>
                 </View>
               ))}
@@ -101,15 +107,15 @@ export function GoldBrandManageSheet({
               <Text style={styles.saveButtonText}>{saveBrandLabel}</Text>
             </Pressable>
           </ScrollView>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   backdrop: {
-    backgroundColor: 'rgba(16,24,40,0.48)',
+    backgroundColor: 'rgba(16,24,40,0.32)',
     flex: 1,
     justifyContent: 'flex-end',
   },
@@ -128,11 +134,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 44,
   },
-  closeButtonText: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.bold,
-  },
   deleteButton: {
     alignItems: 'center',
     backgroundColor: colors.status.negativeSoft,
@@ -141,11 +142,6 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: 'center',
     width: 36,
-  },
-  deleteButtonText: {
-    color: colors.status.negative,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.bold,
   },
   field: {
     gap: spacing[1],

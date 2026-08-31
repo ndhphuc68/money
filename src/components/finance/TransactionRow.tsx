@@ -64,15 +64,15 @@ const styles = StyleSheet.create({
   },
   meta: {
     color: colors.content.muted,
-    fontSize: 11,
+    fontSize: typography.sizes.body,
     fontWeight: typography.weights.semibold,
-    lineHeight: 14,
+    lineHeight: typography.lineHeights.body,
   },
   name: {
     color: colors.content.primary,
-    fontSize: 13,
+    fontSize: typography.sizes.body,
     fontWeight: typography.weights.bold,
-    lineHeight: 16,
+    lineHeight: typography.lineHeights.body,
   },
   row: {
     alignItems: 'center',

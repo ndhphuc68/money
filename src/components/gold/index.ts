@@ -4,8 +4,6 @@ export { GoldHistoryList } from './GoldHistoryList';
 export type { GoldHistoryItem, GoldHistoryListProps, GoldHistoryRowKind } from './GoldHistoryList';
 export { GoldActionPickerSheet } from './GoldActionPickerSheet';
 export type { GoldActionPickerSheetProps } from './GoldActionPickerSheet';
-export { GoldCalendarModal } from './GoldCalendarModal';
-export type { GoldCalendarModalProps } from './GoldCalendarModal';
 export { GoldFormSheet } from './GoldFormSheet';
 export type { GoldDropdownOption, GoldFormSheetProps } from './GoldFormSheet';
 export { GoldBrandManageSheet } from './GoldBrandManageSheet';

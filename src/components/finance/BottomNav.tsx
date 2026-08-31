@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: typography.sizes.micro,
     fontWeight: typography.weights.bold,
-    lineHeight: 14,
+    lineHeight: 18,
   },
   nav: {
     alignItems: 'center',

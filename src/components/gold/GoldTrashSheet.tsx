@@ -1,4 +1,6 @@
+import { X } from 'lucide-react-native';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { LotHistoryRow, SaleHistoryRow } from '@/features/gold/view-models/gold-presentation';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
@@ -58,11 +60,14 @@ export function GoldTrashSheet({
       onPurge: () => onPurgeSale(sale.id),
     })),
   ];
+  const insets = useSafeAreaInsets();
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+      <Pressable onPress={onClose} style={styles.backdrop}>
+        <Pressable
+          onPress={(event) => event.stopPropagation()}
+          style={[styles.sheet, { paddingBottom: spacing[5] + insets.bottom }]}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.handle} />
             <View style={styles.header}>
@@ -75,7 +80,7 @@ export function GoldTrashSheet({
                 accessibilityRole="button"
                 onPress={onClose}
                 style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>×</Text>
+                <X color={colors.content.primary} size={20} strokeWidth={2.2} />
               </Pressable>
             </View>
 
@@ -103,21 +108,21 @@ export function GoldTrashSheet({
                     accessibilityRole="button"
                     onPress={row.onPurge}
                     style={styles.purgeButton}>
-                    <Text style={styles.purgeButtonText}>×</Text>
+                    <X color={colors.status.negative} size={18} strokeWidth={2.2} />
                   </Pressable>
                 </View>
               ))}
             </View>
           </ScrollView>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   backdrop: {
-    backgroundColor: 'rgba(16,24,40,0.48)',
+    backgroundColor: 'rgba(16,24,40,0.32)',
     flex: 1,
     justifyContent: 'flex-end',
   },
@@ -134,11 +139,6 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     width: 44,
-  },
-  closeButtonText: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.bold,
   },
   handle: {
     alignSelf: 'center',
@@ -167,11 +167,6 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     width: 44,
-  },
-  purgeButtonText: {
-    color: colors.status.negative,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.bold,
   },
   restoreButton: {
     alignItems: 'center',

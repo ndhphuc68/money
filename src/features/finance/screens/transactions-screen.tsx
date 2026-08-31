@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   groupLabel: {
     color: colors.content.muted,
-    fontSize: 11,
+    fontSize: typography.sizes.body,
     fontWeight: typography.weights.semibold,
     letterSpacing: 0.4,
     textTransform: 'uppercase',

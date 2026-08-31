@@ -8,9 +8,9 @@ export const typography = {
     heading: 18,
     bodyLg: 16,
     body: 14,
-    caption: 13,
-    small: 12,
-    micro: 10,
+    caption: 14,
+    small: 13,
+    micro: 12,
   },
   weights: {
     regular: '400',
@@ -25,9 +25,9 @@ export const typography = {
     heading: 24,
     bodyLg: 24,
     body: 20,
-    caption: 18,
-    small: 16,
-    micro: 12,
+    caption: 20,
+    small: 20,
+    micro: 20,
   },
 } as const;
 

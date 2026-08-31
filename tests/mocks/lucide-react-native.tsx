@@ -22,6 +22,7 @@ export const Gift = createIcon();
 export const Eye = createIcon();
 export const EyeOff = createIcon();
 export const Bell = createIcon();
+export const CalendarDays = createIcon();
 export const HeartPulse = createIcon();
 export const House = createIcon();
 export const LayoutDashboard = createIcon();

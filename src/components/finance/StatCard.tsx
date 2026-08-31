@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: colors.content.muted,
-    fontSize: 11,
+    fontSize: typography.sizes.body,
     fontWeight: typography.weights.semibold,
     marginBottom: spacing[2] - 2,
   },

@@ -5,7 +5,6 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import {
   GoldActionPickerSheet,
   GoldBrandManageSheet,
-  GoldCalendarModal,
   GoldDetailSheet,
   GoldFormSheet,
   GoldHistoryList,
@@ -62,11 +61,6 @@ function todayIso(): string {
   return `${year}-${month}-${day}`;
 }
 
-function formatDmy(iso: string): string {
-  const [year, month, day] = iso.split('-');
-  return `${day}/${month}/${year}`;
-}
-
 /**
  * `heldLots`/`trashedLots`/`trashedSales` below are the view-model's
  * presentation rows (`LotHistoryRow`/`SaleHistoryRow` — id/title/subtitle/
@@ -94,9 +88,6 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
   const [formType, setFormType] = useState<FormType>('buy');
   const [formSession, setFormSession] = useState(0);
   const [openDropdown, setOpenDropdown] = useState<DropdownKind>('none');
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [calendarYear, setCalendarYear] = useState(() => Number(todayIso().slice(0, 4)));
-  const [calendarMonth, setCalendarMonth] = useState(() => Number(todayIso().slice(5, 7)) - 1);
   const [formError, setFormError] = useState<string | null>(null);
   const [detailTarget, setDetailTarget] = useState<DetailTarget | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -198,7 +189,6 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
   function closeAllSheets() {
     setSheet('none');
     setOpenDropdown('none');
-    setCalendarOpen(false);
     setDetailTarget(null);
     setDetailError(null);
   }
@@ -396,8 +386,9 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
           draftBrandId ? (brandNameById.get(draftBrandId) ?? '') : t('goldBrandFieldLabel')
         }
         closeLabel={t('goldCloseLabel')}
+        dateConfirmLabel={t('dateFieldConfirmLabel')}
         dateLabel={t('goldDateFieldLabel')}
-        dateValueLabel={formatDmy(draftDate)}
+        dateValue={draftDate}
         errorMessage={formError}
         formType={formType}
         lotDropdownOpen={openDropdown === 'lot'}
@@ -408,10 +399,11 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
             ? (lotOptions.find((option) => option.key === draftLotId)?.label ?? '')
             : t('goldLotFieldLabel')
         }
+        onChangeDate={setDraftDate}
         onChangeQuantity={setDraftQuantity}
         onChangeTotalAmount={setDraftTotalAmount}
         onClose={closeAllSheets}
-        onOpenCalendar={() => setCalendarOpen(true)}
+        onCloseDropdowns={() => setOpenDropdown('none')}
         onSave={handleSave}
         onSelectAddNewBrand={() => {
           setOpenDropdown('none');
@@ -446,36 +438,6 @@ export function GoldManagementScreen(props: GoldManagementScreenProps) {
         unitOptions={unitOptions}
         unitValueLabel={formatGoldWeight(1, draftUnit, t).replace(/^1 /, '')}
         visible={sheet === 'form'}
-      />
-
-      <GoldCalendarModal
-        month={calendarMonth}
-        onClose={() => setCalendarOpen(false)}
-        onNextMonth={() => {
-          if (calendarMonth === 11) {
-            setCalendarMonth(0);
-            setCalendarYear(calendarYear + 1);
-          } else {
-            setCalendarMonth(calendarMonth + 1);
-          }
-        }}
-        onPrevMonth={() => {
-          if (calendarMonth === 0) {
-            setCalendarMonth(11);
-            setCalendarYear(calendarYear - 1);
-          } else {
-            setCalendarMonth(calendarMonth - 1);
-          }
-        }}
-        onSelectDate={(iso) => {
-          setDraftDate(iso);
-          setCalendarOpen(false);
-        }}
-        selectedDate={draftDate}
-        titleLabel={t('goldDateFieldLabel')}
-        visible={calendarOpen}
-        weekdayLabels={['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']}
-        year={calendarYear}
       />
 
       <GoldBrandManageSheet

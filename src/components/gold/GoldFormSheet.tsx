@@ -1,13 +1,12 @@
+import { X } from 'lucide-react-native';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AmountInput } from '@/components/finance';
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { AmountInput, DateField } from '@/components/finance';
+import { Dropdown, type DropdownOption } from '@/components/shared';
+import { colors, radius, spacing, typography } from '@/theme';
 
-export type GoldDropdownOption = {
-  key: string;
-  label: string;
-  isActive: boolean;
-};
+export type GoldDropdownOption = DropdownOption;
 
 export type GoldFormSheetProps = {
   visible: boolean;
@@ -16,8 +15,9 @@ export type GoldFormSheetProps = {
   subtitle: string;
   closeLabel: string;
   dateLabel: string;
-  dateValueLabel: string;
-  onOpenCalendar(): void;
+  dateValue: string;
+  dateConfirmLabel: string;
+  onChangeDate(iso: string): void;
   brandFieldLabel: string;
   brandValueLabel: string;
   brandDropdownOpen: boolean;
@@ -50,77 +50,23 @@ export type GoldFormSheetProps = {
   errorMessage: string | null;
   onSave(): void;
   onClose(): void;
+  onCloseDropdowns(): void;
 };
 
-function Dropdown({
-  fieldLabel,
-  valueLabel,
-  open,
-  options,
-  onToggle,
-  onSelect,
-  extraOption,
-}: {
-  fieldLabel: string;
-  valueLabel: string;
-  open: boolean;
-  options: GoldDropdownOption[];
-  onToggle(): void;
-  onSelect(key: string): void;
-  extraOption?: { label: string; onSelect(): void };
-}) {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{fieldLabel}</Text>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onToggle}
-        style={[styles.dropdownField, open && styles.dropdownFieldOpen]}>
-        <Text numberOfLines={1} style={styles.dropdownValue}>
-          {valueLabel}
-        </Text>
-        <Text style={styles.chevron}>{open ? '︿' : '﹀'}</Text>
-      </Pressable>
-      {open ? (
-        <View style={styles.dropdownMenu}>
-          {options.map((option) => (
-            <Pressable
-              accessibilityRole="button"
-              key={option.key}
-              onPress={() => onSelect(option.key)}
-              style={styles.dropdownOption}>
-              <Text
-                style={[
-                  styles.dropdownOptionText,
-                  option.isActive && styles.dropdownOptionTextActive,
-                ]}
-                numberOfLines={1}>
-                {option.label}
-              </Text>
-              {option.isActive ? <Text style={styles.dropdownCheck}>✓</Text> : null}
-            </Pressable>
-          ))}
-          {extraOption ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={extraOption.onSelect}
-              style={styles.dropdownOption}>
-              <Text style={styles.dropdownAddNew}>{extraOption.label}</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
 export function GoldFormSheet(props: GoldFormSheetProps) {
-  const { visible, formType, title, subtitle, closeLabel, onSave, onClose } = props;
+  const { visible, formType, title, subtitle, closeLabel, onSave, onClose, onCloseDropdowns } =
+    props;
+  const insets = useSafeAreaInsets();
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+      <Pressable onPress={onClose} style={styles.backdrop}>
+        <Pressable
+          onPress={(event) => {
+            event.stopPropagation();
+            onCloseDropdowns();
+          }}
+          style={[styles.sheet, { paddingBottom: spacing[5] + insets.bottom }]}>
           <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={styles.handle} />
             <View style={styles.header}>
@@ -133,18 +79,17 @@ export function GoldFormSheet(props: GoldFormSheetProps) {
                 accessibilityRole="button"
                 onPress={onClose}
                 style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>×</Text>
+                <X color={colors.content.primary} size={20} strokeWidth={2.2} />
               </Pressable>
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{props.dateLabel}</Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={props.onOpenCalendar}
-                style={styles.dateField}>
-                <Text style={styles.dropdownValue}>{props.dateValueLabel}</Text>
-              </Pressable>
+              <DateField
+                confirmLabel={props.dateConfirmLabel}
+                label={props.dateLabel}
+                onChange={props.onChangeDate}
+                value={props.dateValue}
+              />
             </View>
 
             {formType === 'buy' ? (
@@ -169,7 +114,7 @@ export function GoldFormSheet(props: GoldFormSheetProps) {
             )}
 
             {formType === 'buy' ? (
-              <View style={styles.row}>
+              <View style={[styles.row, props.unitDropdownOpen && styles.rowOpen]}>
                 <View style={[styles.field, styles.rowField]}>
                   <Text style={styles.label}>{props.quantityLabel}</Text>
                   <TextInput
@@ -180,7 +125,7 @@ export function GoldFormSheet(props: GoldFormSheetProps) {
                     value={props.quantityValue}
                   />
                 </View>
-                <View style={[styles.field, styles.rowField]}>
+                <View style={styles.rowField}>
                   <Dropdown
                     fieldLabel={props.unitFieldLabel}
                     onSelect={props.onSelectUnit}
@@ -204,25 +149,24 @@ export function GoldFormSheet(props: GoldFormSheetProps) {
 
             {props.errorMessage ? <Text style={styles.errorText}>{props.errorMessage}</Text> : null}
 
-            <Pressable accessibilityRole="button" onPress={onSave} style={styles.saveButton}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onSave}
+              style={[styles.saveButton, styles.saveButtonSpacing]}>
               <Text style={styles.saveButtonText}>{props.saveLabel}</Text>
             </Pressable>
           </ScrollView>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   backdrop: {
-    backgroundColor: 'rgba(16,24,40,0.48)',
+    backgroundColor: 'rgba(16,24,40,0.32)',
     flex: 1,
     justifyContent: 'flex-end',
-  },
-  chevron: {
-    color: colors.content.secondary,
-    fontSize: typography.sizes.small,
   },
   closeButton: {
     alignItems: 'center',
@@ -231,76 +175,6 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     width: 44,
-  },
-  closeButtonText: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.heading,
-    fontWeight: typography.weights.bold,
-  },
-  dateField: {
-    backgroundColor: colors.surface.input,
-    borderColor: colors.border.strong,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    height: 48,
-    justifyContent: 'center',
-    paddingHorizontal: spacing[3],
-  },
-  dropdownAddNew: {
-    color: colors.brand.primary,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.black,
-  },
-  dropdownCheck: {
-    color: colors.brand.primary,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.bold,
-  },
-  dropdownField: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.input,
-    borderColor: colors.border.strong,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    flexDirection: 'row',
-    height: 48,
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing[3],
-  },
-  dropdownFieldOpen: {
-    borderColor: colors.brand.primary,
-  },
-  dropdownMenu: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.md,
-    marginTop: spacing[1],
-    maxHeight: 240,
-    padding: spacing[1],
-  },
-  dropdownOption: {
-    alignItems: 'center',
-    borderRadius: radius.sm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 44,
-    paddingHorizontal: spacing[2],
-  },
-  dropdownOptionText: {
-    color: colors.content.primary,
-    flex: 1,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-  },
-  dropdownOptionTextActive: {
-    color: colors.brand.primary,
-    fontWeight: typography.weights.black,
-  },
-  dropdownValue: {
-    color: colors.content.primary,
-    flex: 1,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
   },
   errorText: {
     color: colors.status.negative,
@@ -350,6 +224,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing[3],
   },
+  rowOpen: {
+    elevation: 20,
+    zIndex: 20,
+  },
   rowField: {
     flex: 1,
   },
@@ -359,6 +237,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     justifyContent: 'center',
     minHeight: 54,
+  },
+  saveButtonSpacing: {
+    marginTop: spacing[4],
   },
   saveButtonText: {
     color: colors.content.inverse,

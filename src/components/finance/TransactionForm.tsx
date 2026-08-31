@@ -184,7 +184,12 @@ export function TransactionForm({
         />
       )}
 
-      <DateField label={t('dateTransactionLabel')} onChange={setDate} value={date} />
+      <DateField
+        confirmLabel={t('dateFieldConfirmLabel')}
+        label={t('dateTransactionLabel')}
+        onChange={setDate}
+        value={date}
+      />
 
       <NoteField
         label={t('transactionFormNoteLabel')}

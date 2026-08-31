@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   due: {
     color: colors.content.muted,
-    fontSize: 11,
+    fontSize: typography.sizes.body,
     fontWeight: typography.weights.semibold,
     marginTop: 2,
   },

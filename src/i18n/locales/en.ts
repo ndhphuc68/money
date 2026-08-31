@@ -197,6 +197,7 @@ export const en = {
   amountInvalid: 'Invalid amount',
   amountPlaceholder: 'Enter amount',
   dateTransactionLabel: 'Transaction date',
+  dateFieldConfirmLabel: 'Done',
   undoAction: 'Undo',
   goldUnitLuong: 'tael',
   goldUnitChi: 'chi',
