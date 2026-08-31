@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNull, like, lt, lte, or } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, like, lt, lte, or } from 'drizzle-orm';
 
 import {
   CreateTransactionInput,
@@ -154,7 +154,9 @@ export class TransactionRepository implements TransactionRepositoryPort {
     if (filter.type) {
       conditions.push(eq(transactions.type, filter.type));
     }
-    if (filter.categoryId) {
+    if (filter.categoryIds && filter.categoryIds.length > 0) {
+      conditions.push(inArray(transactions.categoryId, filter.categoryIds as string[]));
+    } else if (filter.categoryId) {
       conditions.push(eq(transactions.categoryId, filter.categoryId));
     }
     if (filter.accountId) {

@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ChevronLeft, ChevronRight, ListChecks } from 'lucide-react-native';
 import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ChevronLeft, ChevronRight, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react-native';
 
-import { Card } from '@/components/base';
+import { Card, PrimaryButton, Sheet } from '@/components/base';
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
 import type { TransactionType } from '@/core/domain/finance/transaction';
@@ -10,10 +10,12 @@ import { colors, radius, spacing, typography } from '@/theme';
 
 import { AccountPicker } from './AccountPicker';
 import { CategoryPicker } from './CategoryPicker';
+import { CategoryIcon } from './icons';
 
 export type TransactionTypeFilter = 'all' | TransactionType;
 
 const TYPE_OPTIONS: readonly TransactionTypeFilter[] = ['all', 'income', 'expense', 'transfer'];
+
 type FilterBarProps = {
   compact?: boolean;
   month: string;
@@ -22,7 +24,8 @@ type FilterBarProps = {
   onTypeChange: (type: TransactionTypeFilter) => void;
   categories: readonly Category[];
   categoryId: string | null;
-  onCategoryChange: (id: string | null) => void;
+  categoryIds?: readonly string[];
+  onCategoryChange: (id: string | null | string[]) => void;
   accounts: readonly Account[];
   accountId: string | null;
   onAccountChange: (id: string | null) => void;
@@ -62,6 +65,7 @@ export function FilterBar({
   onTypeChange,
   categories,
   categoryId,
+  categoryIds,
   onCategoryChange,
   accounts,
   accountId,
@@ -72,20 +76,22 @@ export function FilterBar({
   compact = false,
 }: FilterBarProps) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
+
   const typeLabels: Record<TransactionTypeFilter, string> = {
     all: labels.all,
     income: labels.income,
     expense: labels.expense,
     transfer: labels.transfer,
   };
-  const categoryType = type === 'all' ? 'all' : type === 'income' ? 'income' : 'expense';
-  const visibleOptions = compact
-    ? TYPE_OPTIONS.filter((option) => option !== 'transfer')
-    : TYPE_OPTIONS;
 
-  const body = (
-    <>
-      {!compact ? (
+  const categoryType = type === 'all' ? 'all' : type === 'income' ? 'income' : 'expense';
+
+  const activeCategoryIds =
+    categoryIds ?? (Array.isArray(categoryId) ? categoryId : categoryId ? [categoryId] : []);
+
+  if (!compact) {
+    return (
+      <Card style={styles.container}>
         <View style={styles.monthRow}>
           <Pressable
             accessibilityLabel={labels.previousMonth}
@@ -103,9 +109,82 @@ export function FilterBar({
             <ChevronRight color={colors.content.primary} size={20} />
           </Pressable>
         </View>
-      ) : null}
 
-      <View style={compact ? styles.compactTypeRow : styles.typeRow}>
+        <View style={styles.typeRow}>
+          {TYPE_OPTIONS.map((option) => {
+            const active = option === type;
+            return (
+              <Pressable
+                accessibilityLabel={typeLabels[option]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                key={option}
+                onPress={() => onTypeChange(option)}
+                style={({ pressed }) => [
+                  styles.typeChip,
+                  active && styles.typeChipActive,
+                  pressed && !active && styles.typeChipPressed,
+                ]}>
+                <Text style={[styles.typeChipText, active && styles.typeChipTextActive]}>
+                  {typeLabels[option]}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {type !== 'transfer' ? (
+          <CategoryPicker
+            allLabel={labels.all}
+            allowUnselect
+            categories={categories}
+            label={labels.category}
+            onSelect={onCategoryChange}
+            selectedId={activeCategoryIds}
+            type={categoryType}
+          />
+        ) : null}
+
+        <AccountPicker
+          accounts={accounts}
+          allLabel={labels.all}
+          allowUnselect
+          label={labels.account}
+          onSelect={onAccountChange}
+          selectedId={accountId}
+        />
+
+        <TextInput
+          accessibilityLabel={labels.searchLabel}
+          onChangeText={onSearchChange}
+          placeholder={labels.searchPlaceholder}
+          placeholderTextColor={colors.content.placeholder}
+          style={styles.searchInputFull}
+          value={search}
+        />
+      </Card>
+    );
+  }
+
+  const visibleOptions = TYPE_OPTIONS.filter((option) => option !== 'transfer');
+  const selectedCategories = categories.filter((c) => activeCategoryIds.includes(c.id));
+  const selectedAccount = accounts.find((a) => a.id === accountId);
+
+  let activeFiltersCount = 0;
+  activeFiltersCount += activeCategoryIds.length;
+  if (accountId !== null) activeFiltersCount += 1;
+  if (search.trim().length > 0) activeFiltersCount += 1;
+
+  const handleResetFilters = () => {
+    onCategoryChange(null);
+    onAccountChange(null);
+    onSearchChange('');
+  };
+
+  return (
+    <View style={styles.compactContainer}>
+      {/* Segmented Control - Type Row */}
+      <View style={styles.compactTypeRow}>
         {visibleOptions.map((option) => {
           const active = option === type;
           return (
@@ -117,7 +196,7 @@ export function FilterBar({
               onPress={() => onTypeChange(option)}
               style={({ pressed }) => [
                 styles.typeChip,
-                compact && styles.compactTypeChip,
+                styles.compactTypeChip,
                 active && styles.typeChipActive,
                 pressed && !active && styles.typeChipPressed,
               ]}>
@@ -129,68 +208,221 @@ export function FilterBar({
         })}
       </View>
 
-      {compact ? (
+      {/* Search & Filter Trigger Bar */}
+      <View style={styles.searchFilterRow}>
+        <View style={styles.searchInputContainer}>
+          <Search color={colors.content.muted} size={18} style={styles.searchIcon} />
+          <TextInput
+            accessibilityLabel={labels.searchLabel}
+            onChangeText={onSearchChange}
+            placeholder={labels.searchPlaceholder}
+            placeholderTextColor={colors.content.placeholder}
+            style={styles.searchInput}
+            value={search}
+          />
+          {search.length > 0 ? (
+            <Pressable
+              accessibilityLabel="Xoá tìm kiếm"
+              onPress={() => onSearchChange('')}
+              style={styles.clearSearchButton}>
+              <X color={colors.content.muted} size={16} />
+            </Pressable>
+          ) : null}
+        </View>
+
         <Pressable
           accessibilityLabel={labels.advanced ?? 'Bộ lọc nâng cao'}
           accessibilityRole="button"
           accessibilityState={{ expanded: advancedOpen }}
-          onPress={() => setAdvancedOpen((open) => !open)}
-          style={({ pressed }) => [styles.advancedToggle, pressed && styles.advancedTogglePressed]}>
-          <ListChecks color={colors.content.muted} size={16} strokeWidth={2} />
-          <Text style={styles.advancedToggleText}>{labels.advanced ?? 'Bộ lọc nâng cao'}</Text>
-          <Text style={styles.advancedToggleValue}>{advancedOpen ? 'Ẩn' : 'Hiện'}</Text>
+          onPress={() => setAdvancedOpen(true)}
+          style={({ pressed }) => [
+            styles.filterButton,
+            activeFiltersCount > 0 && styles.filterButtonActive,
+            pressed && styles.filterButtonPressed,
+          ]}>
+          <SlidersHorizontal
+            color={activeFiltersCount > 0 ? colors.brand.primary : colors.content.primary}
+            size={18}
+            strokeWidth={2.2}
+          />
+          {activeFiltersCount > 0 ? (
+            <View style={styles.badgeContainer}>
+              <Text style={styles.badgeText}>{activeFiltersCount}</Text>
+            </View>
+          ) : null}
         </Pressable>
+      </View>
+
+      {/* Active Filter Chips Bar (Main Screen) */}
+      {activeFiltersCount > 0 ? (
+        <ScrollView
+          contentContainerStyle={styles.activeChipsContainer}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.activeChipsScroll}>
+          {selectedCategories.map((cat) => (
+            <View key={cat.id} style={styles.activeChip}>
+              {cat.icon ? (
+                <CategoryIcon
+                  color={cat.color}
+                  icon={cat.icon}
+                  iconSize={10}
+                  size={16}
+                />
+              ) : null}
+              <Text style={styles.activeChipText}>{cat.name}</Text>
+              <Pressable
+                accessibilityLabel={`Xoá danh mục ${cat.name}`}
+                hitSlop={4}
+                onPress={() => onCategoryChange(activeCategoryIds.filter((id) => id !== cat.id))}>
+                <X color={colors.content.muted} size={14} />
+              </Pressable>
+            </View>
+          ))}
+
+          {selectedAccount ? (
+            <View style={styles.activeChip}>
+              <Text style={styles.activeChipText}>{selectedAccount.name}</Text>
+              <Pressable
+                accessibilityLabel="Xoá tài khoản"
+                hitSlop={4}
+                onPress={() => onAccountChange(null)}>
+                <X color={colors.content.muted} size={14} />
+              </Pressable>
+            </View>
+          ) : null}
+
+          {activeFiltersCount > 1 ? (
+            <Pressable onPress={handleResetFilters} style={styles.clearAllButton}>
+              <Text style={styles.clearAllText}>Xoá lọc</Text>
+            </Pressable>
+          ) : null}
+        </ScrollView>
       ) : null}
 
-      {(!compact || advancedOpen) && type !== 'transfer' ? (
-        <CategoryPicker
-          allLabel={labels.all}
-          allowUnselect
-          categories={categories}
-          label={labels.category}
-          onSelect={onCategoryChange}
-          selectedId={categoryId}
-          type={categoryType}
-        />
-      ) : null}
+      {/* Advanced Filters Bottom Sheet */}
+      <Sheet
+        closeLabel="Đóng"
+        onClose={() => setAdvancedOpen(false)}
+        title={labels.advanced ?? 'Bộ lọc nâng cao'}
+        visible={advancedOpen}>
+        <View style={styles.sheetHeaderRow}>
+          <Text style={styles.sheetSubtitle}>Tối ưu danh sách theo danh mục & tài khoản</Text>
+          {activeFiltersCount > 0 ? (
+            <Pressable onPress={handleResetFilters} style={styles.resetButton}>
+              <RotateCcw color={colors.brand.primary} size={14} />
+              <Text style={styles.resetButtonText}>Đặt lại</Text>
+            </Pressable>
+          ) : null}
+        </View>
 
-      {!compact || advancedOpen ? (
-        <AccountPicker
-          allLabel={labels.all}
-          allowUnselect
-          accounts={accounts}
-          label={labels.account}
-          onSelect={onAccountChange}
-          selectedId={accountId}
-        />
-      ) : null}
+        <ScrollView
+          contentContainerStyle={styles.sheetScrollContent}
+          showsVerticalScrollIndicator={false}
+          style={styles.sheetScroll}>
+          {type !== 'transfer' ? (
+            <View style={styles.sheetSection}>
+              <CategoryPicker
+                allLabel={labels.all}
+                allowUnselect
+                categories={categories}
+                label={labels.category}
+                onSelect={onCategoryChange}
+                selectedId={activeCategoryIds}
+                type={categoryType}
+              />
+            </View>
+          ) : null}
 
-      {!compact || advancedOpen ? (
-        <TextInput
-          accessibilityLabel={labels.searchLabel}
-          onChangeText={onSearchChange}
-          placeholder={labels.searchPlaceholder}
-          placeholderTextColor={colors.content.placeholder}
-          style={styles.searchInput}
-          value={search}
-        />
-      ) : null}
-    </>
-  );
+          <View style={styles.sheetSection}>
+            <AccountPicker
+              accounts={accounts}
+              allLabel={labels.all}
+              allowUnselect
+              label={labels.account}
+              onSelect={onAccountChange}
+              selectedId={accountId}
+            />
+          </View>
+        </ScrollView>
 
-  return compact ? (
-    <View style={styles.compactContainer}>{body}</View>
-  ) : (
-    <Card style={styles.container}>{body}</Card>
+        <View style={styles.sheetFooter}>
+          <PrimaryButton
+            backgroundColor={colors.brand.primary}
+            label="Áp dụng"
+            onPress={() => setAdvancedOpen(false)}
+            pressedBackgroundColor={colors.brand.primaryPressed}
+          />
+        </View>
+      </Sheet>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: spacing[3],
+  activeChip: {
+    alignItems: 'center',
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.strong,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing[1],
+    paddingHorizontal: spacing[3],
+    paddingVertical: 4,
+  },
+  activeChipText: {
+    color: colors.content.primary,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.semibold,
+  },
+  activeChipsContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing[2],
+  },
+  activeChipsScroll: {
+    marginTop: spacing[1],
+  },
+  badgeContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.brand.primary,
+    borderColor: colors.surface.primary,
+    borderRadius: radius.circle,
+    borderWidth: 1.5,
+    height: 18,
+    justifyContent: 'center',
+    minWidth: 18,
+    paddingHorizontal: 4,
+    position: 'absolute',
+    right: -3,
+    top: -3,
+  },
+  badgeText: {
+    color: colors.content.inverse,
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+  },
+  clearAllButton: {
+    paddingHorizontal: spacing[2],
+    paddingVertical: 4,
+  },
+  clearAllText: {
+    color: colors.brand.primary,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.bold,
+  },
+  clearSearchButton: {
+    padding: spacing[1],
   },
   compactContainer: {
     gap: spacing[2],
+  },
+  compactTypeChip: {
+    alignItems: 'center',
+    flex: 1,
+    minHeight: 32,
+    paddingHorizontal: spacing[2],
   },
   compactTypeRow: {
     backgroundColor: colors.surface.muted,
@@ -199,6 +431,27 @@ const styles = StyleSheet.create({
     gap: spacing[1],
     minHeight: 44,
     padding: spacing[1],
+  },
+  container: {
+    gap: spacing[3],
+  },
+  filterButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.strong,
+    borderRadius: radius.circle,
+    borderWidth: 1,
+    height: 42,
+    justifyContent: 'center',
+    position: 'relative',
+    width: 42,
+  },
+  filterButtonActive: {
+    backgroundColor: colors.brand.soft,
+    borderColor: colors.brand.primary,
+  },
+  filterButtonPressed: {
+    opacity: 0.7,
   },
   monthButton: {
     alignItems: 'center',
@@ -221,7 +474,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  resetButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing[1],
+    paddingHorizontal: spacing[2],
+    paddingVertical: 2,
+  },
+  resetButtonText: {
+    color: colors.brand.primary,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.bold,
+  },
+  searchFilterRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing[2],
+  },
+  searchIcon: {
+    marginRight: spacing[2],
+  },
   searchInput: {
+    color: colors.content.primary,
+    flex: 1,
+    fontSize: typography.sizes.body,
+    paddingVertical: 0,
+  },
+  searchInputContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.strong,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    flex: 1,
+    flexDirection: 'row',
+    height: 42,
+    paddingHorizontal: spacing[3],
+  },
+  searchInputFull: {
     backgroundColor: colors.surface.input,
     borderColor: colors.border.strong,
     borderRadius: radius.sm,
@@ -231,26 +521,31 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: spacing[3],
   },
-  advancedToggle: {
+  sheetFooter: {
+    marginTop: spacing[4],
+    paddingTop: spacing[2],
+  },
+  sheetHeaderRow: {
     alignItems: 'center',
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing[3],
+    marginTop: -spacing[2],
+  },
+  sheetScroll: {
+    maxHeight: 380,
+  },
+  sheetScrollContent: {
+    gap: spacing[4],
+    paddingVertical: spacing[2],
+  },
+  sheetSection: {
     gap: spacing[2],
-    minHeight: 44,
-    paddingHorizontal: spacing[1],
   },
-  advancedTogglePressed: {
-    opacity: 0.6,
-  },
-  advancedToggleText: {
-    color: colors.content.muted,
-    flex: 1,
-    fontSize: typography.sizes.small,
+  sheetSubtitle: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.caption,
     fontWeight: typography.weights.semibold,
-  },
-  advancedToggleValue: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.small,
-    fontWeight: typography.weights.bold,
   },
   typeChip: {
     backgroundColor: colors.surface.muted,
@@ -258,12 +553,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 36,
     paddingHorizontal: spacing[3],
-  },
-  compactTypeChip: {
-    alignItems: 'center',
-    flex: 1,
-    minHeight: 32,
-    paddingHorizontal: spacing[2],
   },
   typeChipActive: {
     backgroundColor: colors.content.primary,

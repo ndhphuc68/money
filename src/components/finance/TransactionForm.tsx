@@ -179,9 +179,10 @@ export function TransactionForm({
           categories={categories}
           errorMessage={errors.categoryId ?? null}
           label={t('transactionFormCategoryLabel')}
-          onSelect={setCategoryId}
+          onSelect={(id) => setCategoryId(typeof id === 'string' ? id : null)}
           selectedId={categoryId}
           type={type === 'income' ? 'income' : 'expense'}
+          multiple={false}
         />
       )}
 

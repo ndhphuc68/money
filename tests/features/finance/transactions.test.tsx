@@ -305,7 +305,9 @@ class FakeTransactionRepository implements TransactionRepository {
     if (filter.type) {
       items = items.filter((t) => t.type === filter.type);
     }
-    if (filter.categoryId) {
+    if (filter.categoryIds && filter.categoryIds.length > 0) {
+      items = items.filter((t) => t.categoryId && filter.categoryIds!.includes(t.categoryId));
+    } else if (filter.categoryId) {
       items = items.filter((t) => t.categoryId === filter.categoryId);
     }
     if (filter.accountId) {
@@ -468,7 +470,7 @@ describe('transactions list + view model', () => {
         categories={[]}
         deleteTransaction={async () => undefined}
         dismissUndo={() => undefined}
-        filters={{ accountId: null, categoryId: null, month: '2026-08', search: '', type: 'all' }}
+        filters={{ accountId: null, categoryId: null, categoryIds: [], month: '2026-08', search: '', type: 'all' }}
         groups={[
           {
             date: '2026-08-25',
@@ -587,6 +589,39 @@ describe('transactions list + view model', () => {
     fireEvent.press(screen.getByLabelText(secondAccount.name));
     await waitFor(() => expect(screen.queryByText('An sang')).toBeNull());
     expect(screen.getByText('Mua sam')).toBeTruthy();
+  });
+
+  it('supports selecting multiple categories in the filter sheet', async () => {
+    const repos = makeRepos();
+    const { account, expenseCategory, incomeCategory } = await seedAccountAndCategories(repos);
+
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 100_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-05',
+      name: 'An sang',
+    });
+    await repos.createTransaction.execute({
+      type: 'income',
+      amount: 5_000_000,
+      accountId: account.id,
+      categoryId: incomeCategory.id,
+      date: '2026-08-07',
+      name: 'Luong thang 8',
+    });
+
+    const screen = render(<ListHarness dependencies={repos} />);
+    await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
+    expect(screen.getByText('Luong thang 8')).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText('Bộ lọc nâng cao'));
+    fireEvent.press(screen.getByLabelText(expenseCategory.name));
+    fireEvent.press(screen.getByLabelText(incomeCategory.name));
+
+    await waitFor(() => expect(screen.getByText('An sang')).toBeTruthy());
+    expect(screen.getByText('Luong thang 8')).toBeTruthy();
   });
 
   it('filters by free-text search against the transaction name', async () => {

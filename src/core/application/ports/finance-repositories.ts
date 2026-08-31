@@ -82,6 +82,7 @@ export type TransactionListFilter = {
   month?: string;
   type?: TransactionType;
   categoryId?: string;
+  categoryIds?: readonly string[];
   accountId?: string;
   /** Case-insensitive substring match against the transaction name. */
   query?: string;

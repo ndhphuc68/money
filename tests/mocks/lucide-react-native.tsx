@@ -49,6 +49,10 @@ export const Pencil = createIcon();
 export const Trash2 = createIcon();
 export const Shapes = createIcon();
 export const Search = createIcon();
+export const SlidersHorizontal = createIcon();
+export const RotateCcw = createIcon();
+export const Sliders = createIcon();
+export const Filter = createIcon();
 
 const icons: Record<string, any> = {
   Car,

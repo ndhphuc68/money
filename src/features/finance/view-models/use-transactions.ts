@@ -35,6 +35,7 @@ export type TransactionsFilters = {
   month: string;
   type: TransactionTypeFilter;
   categoryId: string | null;
+  categoryIds: string[];
   accountId: string | null;
   search: string;
 };
@@ -51,7 +52,7 @@ export type TransactionsViewModel = {
   filters: TransactionsFilters;
   setMonth(month: string): void;
   setType(type: TransactionTypeFilter): void;
-  setCategoryId(id: string | null): void;
+  setCategoryId(id: string | null | string[]): void;
   setAccountId(id: string | null): void;
   setSearch(value: string): void;
   categories: Category[];
@@ -104,6 +105,7 @@ export function useTransactions({
     month: currentMonth(now?.() ?? new Date()),
     type: 'all',
     categoryId: null,
+    categoryIds: [],
     accountId: null,
     search: '',
   });
@@ -121,7 +123,11 @@ export function useTransactions({
           dependencies.transactionRepository.list({
             month: filters.month,
             type: filters.type === 'all' ? undefined : filters.type,
-            categoryId: filters.categoryId ?? undefined,
+            categoryIds: filters.categoryIds.length > 0 ? filters.categoryIds : undefined,
+            categoryId:
+              filters.categoryIds.length === 0 && filters.categoryId
+                ? filters.categoryId
+                : undefined,
             accountId: filters.accountId ?? undefined,
             query: filters.search.trim() === '' ? undefined : filters.search.trim(),
             includeDeleted: false,
@@ -167,10 +173,21 @@ export function useTransactions({
     (type: TransactionTypeFilter) => setFilters((current) => ({ ...current, type })),
     [],
   );
-  const setCategoryId = useCallback(
-    (categoryId: string | null) => setFilters((current) => ({ ...current, categoryId })),
-    [],
-  );
+  const setCategoryId = useCallback((val: string | null | string[]) => {
+    setFilters((current) => {
+      if (Array.isArray(val)) {
+        return {
+          ...current,
+          categoryIds: val,
+          categoryId: val.length === 1 ? val[0] : null,
+        };
+      }
+      if (val === null) {
+        return { ...current, categoryId: null, categoryIds: [] };
+      }
+      return { ...current, categoryId: val, categoryIds: [val] };
+    });
+  }, []);
   const setAccountId = useCallback(
     (accountId: string | null) => setFilters((current) => ({ ...current, accountId })),
     [],
