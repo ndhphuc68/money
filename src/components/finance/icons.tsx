@@ -23,7 +23,7 @@ import { colors, radius } from '@/theme';
 import { DEFAULT_CATEGORY_COLOR } from './category-colors';
 
 export type CategoryIconName =
-  | 'income' | 'food' | 'shopping' | 'bills' | 'transport' | 'shapes' | string;
+  'income' | 'food' | 'shopping' | 'bills' | 'transport' | 'shapes' | string;
 
 export type NavIconName =
   | 'overview'

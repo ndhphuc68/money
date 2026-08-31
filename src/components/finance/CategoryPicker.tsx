@@ -86,7 +86,12 @@ export function CategoryPicker({
               activeColor={category.color}
               icon={
                 category.icon ? (
-                  <CategoryIcon color={category.color} icon={category.icon} iconSize={12} size={20} />
+                  <CategoryIcon
+                    color={category.color}
+                    icon={category.icon}
+                    iconSize={12}
+                    size={20}
+                  />
                 ) : null
               }
               key={category.id}

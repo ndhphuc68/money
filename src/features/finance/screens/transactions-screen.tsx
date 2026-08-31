@@ -41,6 +41,7 @@ export function TransactionsScreen(props: TransactionsScreenProps) {
           accounts={accounts}
           categories={categories}
           categoryId={filters.categoryId}
+          categoryIds={filters.categoryIds}
           month={filters.month}
           onAccountChange={setAccountId}
           onCategoryChange={setCategoryId}

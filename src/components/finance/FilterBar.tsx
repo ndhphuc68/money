@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ChevronLeft, ChevronRight, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react-native';
 
 import { Card, PrimaryButton, Sheet } from '@/components/base';
 import type { Account } from '@/core/domain/finance/account';
@@ -10,7 +17,6 @@ import { colors, radius, spacing, typography } from '@/theme';
 
 import { AccountPicker } from './AccountPicker';
 import { CategoryPicker } from './CategoryPicker';
-import { CategoryIcon } from './icons';
 
 export type TransactionTypeFilter = 'all' | TransactionType;
 
@@ -167,8 +173,6 @@ export function FilterBar({
   }
 
   const visibleOptions = TYPE_OPTIONS.filter((option) => option !== 'transfer');
-  const selectedCategories = categories.filter((c) => activeCategoryIds.includes(c.id));
-  const selectedAccount = accounts.find((a) => a.id === accountId);
 
   let activeFiltersCount = 0;
   activeFiltersCount += activeCategoryIds.length;
@@ -253,53 +257,6 @@ export function FilterBar({
         </Pressable>
       </View>
 
-      {/* Active Filter Chips Bar (Main Screen) */}
-      {activeFiltersCount > 0 ? (
-        <ScrollView
-          contentContainerStyle={styles.activeChipsContainer}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.activeChipsScroll}>
-          {selectedCategories.map((cat) => (
-            <View key={cat.id} style={styles.activeChip}>
-              {cat.icon ? (
-                <CategoryIcon
-                  color={cat.color}
-                  icon={cat.icon}
-                  iconSize={10}
-                  size={16}
-                />
-              ) : null}
-              <Text style={styles.activeChipText}>{cat.name}</Text>
-              <Pressable
-                accessibilityLabel={`Xoá danh mục ${cat.name}`}
-                hitSlop={4}
-                onPress={() => onCategoryChange(activeCategoryIds.filter((id) => id !== cat.id))}>
-                <X color={colors.content.muted} size={14} />
-              </Pressable>
-            </View>
-          ))}
-
-          {selectedAccount ? (
-            <View style={styles.activeChip}>
-              <Text style={styles.activeChipText}>{selectedAccount.name}</Text>
-              <Pressable
-                accessibilityLabel="Xoá tài khoản"
-                hitSlop={4}
-                onPress={() => onAccountChange(null)}>
-                <X color={colors.content.muted} size={14} />
-              </Pressable>
-            </View>
-          ) : null}
-
-          {activeFiltersCount > 1 ? (
-            <Pressable onPress={handleResetFilters} style={styles.clearAllButton}>
-              <Text style={styles.clearAllText}>Xoá lọc</Text>
-            </Pressable>
-          ) : null}
-        </ScrollView>
-      ) : null}
-
       {/* Advanced Filters Bottom Sheet */}
       <Sheet
         closeLabel="Đóng"
@@ -360,30 +317,6 @@ export function FilterBar({
 }
 
 const styles = StyleSheet.create({
-  activeChip: {
-    alignItems: 'center',
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.strong,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: spacing[1],
-    paddingHorizontal: spacing[3],
-    paddingVertical: 4,
-  },
-  activeChipText: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.semibold,
-  },
-  activeChipsContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing[2],
-  },
-  activeChipsScroll: {
-    marginTop: spacing[1],
-  },
   badgeContainer: {
     alignItems: 'center',
     backgroundColor: colors.brand.primary,
@@ -401,15 +334,6 @@ const styles = StyleSheet.create({
   badgeText: {
     color: colors.content.inverse,
     fontSize: 10,
-    fontWeight: typography.weights.bold,
-  },
-  clearAllButton: {
-    paddingHorizontal: spacing[2],
-    paddingVertical: 4,
-  },
-  clearAllText: {
-    color: colors.brand.primary,
-    fontSize: typography.sizes.caption,
     fontWeight: typography.weights.bold,
   },
   clearSearchButton: {
