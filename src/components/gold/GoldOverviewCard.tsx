@@ -1,6 +1,7 @@
 // src/components/gold/GoldOverviewCard.tsx
 import { StyleSheet, Text, View } from 'react-native';
 
+import { Card } from '@/components/base';
 import { colors, radius, spacing, typography } from '@/theme';
 
 export type GoldOverviewCardProps = {
@@ -21,7 +22,7 @@ export function GoldOverviewCard({
   costBasisValue,
 }: GoldOverviewCardProps) {
   return (
-    <View style={styles.card}>
+    <Card backgroundColor={colors.category.gold} elevation="none" padding={spacing[5]} radius="xl">
       <View style={styles.header}>
         <View style={styles.headerText}>
           <Text style={styles.title}>{title}</Text>
@@ -45,7 +46,7 @@ export function GoldOverviewCard({
           </Text>
         </View>
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -62,11 +63,6 @@ const styles = StyleSheet.create({
     color: colors.content.inverse,
     fontSize: typography.sizes.bodyLg,
     fontWeight: typography.weights.bold,
-  },
-  card: {
-    backgroundColor: colors.category.gold,
-    borderRadius: radius.xl,
-    padding: spacing[5],
   },
   header: {
     alignItems: 'center',
