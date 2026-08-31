@@ -5,22 +5,36 @@ import {
   Car,
   CircleDollarSign,
   CircleUserRound,
+  Home,
+  LayoutDashboard,
   LayoutGrid,
   List,
+  PieChart,
   ReceiptText,
+  Settings,
   Shapes,
   ShoppingBag,
   Target,
   Utensils,
+  Wallet,
 } from 'lucide-react-native';
 
 import { colors, radius } from '@/theme';
 import { DEFAULT_CATEGORY_COLOR } from './category-colors';
 
 export type CategoryIconName =
-  'income' | 'food' | 'shopping' | 'bills' | 'transport' | 'shapes' | string;
+  | 'income' | 'food' | 'shopping' | 'bills' | 'transport' | 'shapes' | string;
 
-export type NavIconName = 'overview' | 'list' | 'target' | 'profile';
+export type NavIconName =
+  | 'overview'
+  | 'list'
+  | 'target'
+  | 'profile'
+  | 'dashboard'
+  | 'transactions'
+  | 'reports'
+  | 'settings'
+  | string;
 
 export type CategoryIconProps = {
   icon?: string;
@@ -100,18 +114,34 @@ function renderInnerIcon(iconKey: string, size: number) {
   return <FontAwesome6 color={iconColor} name="shapes" size={size} />;
 }
 
-export function NavIcon({ name, color }: { name: NavIconName; color: string }) {
-  const navIcons = {
-    overview: LayoutGrid,
-    list: List,
-    target: Target,
-    profile: CircleUserRound,
+export function NavIcon({
+  name,
+  color,
+  size = 24,
+}: {
+  name: NavIconName;
+  color: string;
+  size?: number;
+}) {
+  const navIcons: Record<string, any> = {
+    overview: LayoutDashboard,
+    dashboard: LayoutDashboard,
+    home: Home,
+    wallet: Wallet,
+    list: ReceiptText,
+    transactions: ReceiptText,
+    receipt: ReceiptText,
+    target: PieChart,
+    reports: PieChart,
+    chart: PieChart,
+    profile: Settings,
+    settings: Settings,
   };
-  const Icon = navIcons[name];
+  const Icon = navIcons[name] ?? LayoutDashboard;
 
   return (
     <View accessibilityElementsHidden importantForAccessibility="no">
-      <Icon color={color} size={25} strokeWidth={1.9} />
+      <Icon color={color} size={size} strokeWidth={2} />
     </View>
   );
 }

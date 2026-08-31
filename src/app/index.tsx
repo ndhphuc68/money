@@ -228,11 +228,16 @@ function ConfiguredFinanceScreen({
 
   if (view.name === 'reports')
     return (
-      <ConfiguredReportsScreen
-        dependencies={dependencies}
-        onBack={() => setView({ name: 'dashboard' })}
-        t={t}
-      />
+      <>
+        <ConfiguredReportsScreen
+          dependencies={dependencies}
+          onAddTransaction={openAddForm}
+          setView={setView}
+          t={t}
+        />
+        {formSheet}
+        {detailSheet}
+      </>
     );
   if (view.name === 'settings')
     return (
@@ -317,18 +322,35 @@ function ConfiguredFinanceScreen({
 function ConfiguredReportsScreen({
   dependencies,
   t,
-  onBack,
+  onAddTransaction,
+  setView,
 }: {
   dependencies: FinanceDependencies;
   t: Translate;
-  onBack(): void;
+  onAddTransaction(): void;
+  setView(view: FinanceView): void;
 }) {
   return (
     <View style={{ flex: 1 }}>
-      <ReportsScreen {...useReports({ dependencies, t })} t={t} />
-      <Text onPress={onBack} style={{ padding: 16 }}>
-        {t('settingsBack')}
-      </Text>
+      <View style={{ flex: 1 }}>
+        <ReportsScreen {...useReports({ dependencies, t })} t={t} />
+      </View>
+      <BottomNav
+        activeKey="reports"
+        addAccessibilityLabel={t('dashboardAddTransaction')}
+        items={[
+          { key: 'overview', label: t('navOverview'), icon: 'overview' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'transactions' },
+          { key: 'reports', label: t('navReports'), icon: 'reports' },
+          { key: 'settings', label: t('navSettings'), icon: 'settings' },
+        ]}
+        onAdd={onAddTransaction}
+        onChange={(key) => {
+          if (key === 'overview') setView({ name: 'dashboard' });
+          if (key === 'transactions') setView({ name: 'transactions' });
+          if (key === 'settings') setView({ name: 'settings' });
+        }}
+      />
     </View>
   );
 }
@@ -372,9 +394,9 @@ function ConfiguredSettingsScreen({
         addAccessibilityLabel={t('dashboardAddTransaction')}
         items={[
           { key: 'overview', label: t('navOverview'), icon: 'overview' },
-          { key: 'transactions', label: t('navTransactions'), icon: 'list' },
-          { key: 'reports', label: t('navReports'), icon: 'target' },
-          { key: 'settings', label: t('navSettings'), icon: 'profile' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'transactions' },
+          { key: 'reports', label: t('navReports'), icon: 'reports' },
+          { key: 'settings', label: t('navSettings'), icon: 'settings' },
         ]}
         onAdd={onAddTransaction}
         onChange={(key) => {
@@ -530,9 +552,9 @@ function ConfiguredDashboardScreen({
         addAccessibilityLabel={t('dashboardAddTransaction')}
         items={[
           { key: 'overview', label: t('navOverview'), icon: 'overview' },
-          { key: 'transactions', label: t('navTransactions'), icon: 'list' },
-          { key: 'reports', label: t('navReports'), icon: 'target' },
-          { key: 'settings', label: t('navSettings'), icon: 'profile' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'transactions' },
+          { key: 'reports', label: t('navReports'), icon: 'reports' },
+          { key: 'settings', label: t('navSettings'), icon: 'settings' },
         ]}
         onAdd={onAddTransaction}
         onChange={(key) => {
@@ -577,9 +599,9 @@ function ConfiguredTransactionsScreen({
         addAccessibilityLabel={t('transactionsAdd')}
         items={[
           { key: 'overview', label: t('navOverview'), icon: 'overview' },
-          { key: 'transactions', label: t('navTransactions'), icon: 'list' },
-          { key: 'reports', label: t('navReports'), icon: 'target' },
-          { key: 'settings', label: t('navSettings'), icon: 'profile' },
+          { key: 'transactions', label: t('navTransactions'), icon: 'transactions' },
+          { key: 'reports', label: t('navReports'), icon: 'reports' },
+          { key: 'settings', label: t('navSettings'), icon: 'settings' },
         ]}
         onAdd={onAddTransaction}
         onChange={(key) => {

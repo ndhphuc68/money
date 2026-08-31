@@ -1,7 +1,7 @@
 export interface BottomNavItem {
   key: string;
   label: string;
-  icon: 'overview' | 'list' | 'target' | 'profile';
+  icon: 'overview' | 'list' | 'target' | 'profile' | 'transactions' | 'reports' | 'settings' | string;
 }
 
 export interface BottomNavProps {

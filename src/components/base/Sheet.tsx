@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
 import {
+  Animated,
   Modal,
+  PanResponder,
   Pressable,
   StyleSheet,
   Text,
@@ -45,6 +48,48 @@ export function Sheet({
   const showHandle = variant === 'bottomSheet';
   const bottomInset = applyBottomInset ? insets.bottom : 0;
 
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      translateY.setValue(0);
+    }
+  }, [visible, translateY]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return (
+          showHandle && gestureState.dy > 6 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy)
+        );
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 90 || gestureState.vy > 0.4) {
+          Animated.timing(translateY, {
+            toValue: 500,
+            duration: 180,
+            useNativeDriver: true,
+          }).start(() => {
+            onClose();
+            translateY.setValue(0);
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            bounciness: 4,
+          }).start();
+        }
+      },
+    }),
+  ).current;
+
   const Container = onBodyPress ? Pressable : View;
 
   return (
@@ -59,30 +104,36 @@ export function Sheet({
           onPress={onClose}
           style={StyleSheet.absoluteFillObject}
         />
-        <Container
-          onPress={onBodyPress}
+        <Animated.View
           style={[
             isDialog ? styles.dialogSheet : styles.bottomSheet,
             !isDialog ? { paddingBottom: spacing[5] + bottomInset } : null,
+            !isDialog ? { transform: [{ translateY }] } : null,
             style,
           ]}>
-          {showHandle ? <View style={styles.handle} /> : null}
-          {title ? (
-            <View style={styles.header}>
-              <View style={styles.headerText}>
-                <Text style={styles.title}>{title}</Text>
-                {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+          <Container onPress={onBodyPress}>
+            {showHandle ? (
+              <View style={styles.handleContainer} {...panResponder.panHandlers}>
+                <View style={styles.handle} />
               </View>
-              <IconButton
-                accessibilityLabel={closeLabel ?? ''}
-                backgroundColor={closeButtonBackgroundColor}
-                icon={<X color={colors.content.primary} size={20} strokeWidth={2.2} />}
-                onPress={onClose}
-              />
-            </View>
-          ) : null}
-          {children}
-        </Container>
+            ) : null}
+            {title ? (
+              <View style={styles.header} {...(showHandle ? panResponder.panHandlers : {})}>
+                <View style={styles.headerText}>
+                  <Text style={styles.title}>{title}</Text>
+                  {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+                </View>
+                <IconButton
+                  accessibilityLabel={closeLabel ?? ''}
+                  backgroundColor={closeButtonBackgroundColor}
+                  icon={<X color={colors.content.primary} size={20} strokeWidth={2.2} />}
+                  onPress={onClose}
+                />
+              </View>
+            ) : null}
+            {children}
+          </Container>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -111,11 +162,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border.strong,
     borderRadius: radius.sm,
     height: 5,
-    marginBottom: spacing[3],
+    marginBottom: spacing[2],
     width: 44,
   },
+  handleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
   header: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     flexDirection: 'row',
     gap: spacing[3],
     justifyContent: 'space-between',
