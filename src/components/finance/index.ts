@@ -16,6 +16,8 @@ export { PeriodSelector } from './PeriodSelector';
 export type { PeriodKind, PeriodSelectorLabels, PeriodSelectorProps } from './PeriodSelector';
 export { ReportCategoryChart } from './ReportCategoryChart';
 export type { ReportCategoryChartProps, ReportCategoryChartSlice } from './ReportCategoryChart';
+export { ReportTrendChart } from './ReportTrendChart';
+export type { ReportTrendChartPoint, ReportTrendChartProps } from './ReportTrendChart';
 export type { IconPickerSheetProps } from './IconPickerSheet';
 export { SegmentedControl } from './SegmentedControl';
 export { SettingsList } from './SettingsList';
