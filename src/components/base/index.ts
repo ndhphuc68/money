@@ -12,3 +12,6 @@ export type { PrimaryButtonProps } from './PrimaryButton';
 
 export { ListRow } from './ListRow';
 export type { ListRowProps } from './ListRow';
+
+export { PillChip } from './PillChip';
+export type { PillChipProps } from './PillChip';
