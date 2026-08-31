@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { Card, PrimaryButton } from '@/components/base';
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
 import {
@@ -9,7 +10,7 @@ import {
   type TransactionType,
 } from '@/core/domain/finance/transaction';
 import type { Translate } from '@/i18n/translations';
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { colors, radius, spacing, typography } from '@/theme';
 
 import { AccountPicker } from './AccountPicker';
 import { AmountInput } from './AmountInput';
@@ -127,7 +128,7 @@ export function TransactionForm({
   }
 
   return (
-    <View style={styles.container}>
+    <Card style={styles.container}>
       <SegmentedControl
         onChange={(option: string) =>
           setType(
@@ -204,14 +205,14 @@ export function TransactionForm({
         </Text>
       ) : null}
 
-      <Pressable
-        accessibilityLabel={t('transactionFormSave')}
-        accessibilityRole="button"
+      <PrimaryButton
+        label={t('transactionFormSave')}
         onPress={handleSubmit}
-        style={({ pressed }) => [styles.saveButton, pressed && styles.saveButtonPressed]}>
-        <Text style={styles.saveButtonText}>{t('transactionFormSave')}</Text>
-      </Pressable>
-    </View>
+        pressedBackgroundColor="#243247"
+        radius="sm"
+        textStyle={styles.saveButtonText}
+      />
+    </Card>
   );
 }
 
@@ -277,11 +278,7 @@ function NoteField({
 
 const styles = StyleSheet.create({
   container: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
     gap: spacing[4],
-    padding: spacing[4],
   },
   error: {
     color: colors.status.negative,
@@ -315,18 +312,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing[3],
     textAlignVertical: 'top',
   },
-  saveButton: {
-    alignItems: 'center',
-    backgroundColor: colors.content.primary,
-    borderRadius: radius.sm,
-    justifyContent: 'center',
-    minHeight: 52,
-  },
-  saveButtonPressed: {
-    backgroundColor: '#243247',
-  },
   saveButtonText: {
-    color: colors.content.inverse,
     fontSize: typography.sizes.bodyLg,
     fontWeight: typography.weights.bold,
   },

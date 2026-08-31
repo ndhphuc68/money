@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { Card } from '@/components/base';
 import { formatVnd, parseVndInput } from '@/core/domain/finance/money';
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 
 type AmountInputProps = {
   value: number | null;
@@ -61,7 +62,7 @@ export function AmountInput({
   }
 
   return (
-    <View style={[styles.container, displayedError && styles.containerError]}>
+    <Card style={[styles.container, displayedError && styles.containerError]}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.inputRow}>
         <TextInput
@@ -80,18 +81,13 @@ export function AmountInput({
           {displayedError}
         </Text>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
     gap: spacing[2],
-    paddingHorizontal: spacing[4],
-    paddingVertical: spacing[4],
   },
   containerError: {
     borderColor: colors.status.negative,

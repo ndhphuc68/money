@@ -2,10 +2,11 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ChevronLeft, ChevronRight, ListChecks } from 'lucide-react-native';
 import { useState } from 'react';
 
+import { Card } from '@/components/base';
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
 import type { TransactionType } from '@/core/domain/finance/transaction';
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { colors, radius, spacing, typography } from '@/theme';
 
 import { AccountPicker } from './AccountPicker';
 import { CategoryPicker } from './CategoryPicker';
@@ -82,8 +83,8 @@ export function FilterBar({
     ? TYPE_OPTIONS.filter((option) => option !== 'transfer')
     : TYPE_OPTIONS;
 
-  return (
-    <View style={compact ? styles.compactContainer : styles.container}>
+  const body = (
+    <>
       {!compact ? (
         <View style={styles.monthRow}>
           <Pressable
@@ -174,17 +175,19 @@ export function FilterBar({
           value={search}
         />
       ) : null}
-    </View>
+    </>
+  );
+
+  return compact ? (
+    <View style={styles.compactContainer}>{body}</View>
+  ) : (
+    <Card style={styles.container}>{body}</Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
     gap: spacing[3],
-    padding: spacing[4],
   },
   compactContainer: {
     gap: spacing[2],
