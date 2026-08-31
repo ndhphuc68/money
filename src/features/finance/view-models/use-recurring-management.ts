@@ -13,7 +13,7 @@ import { formatDateLabel } from './transaction-presentation';
 
 export type RecurringManagementDependencies = {
   getRecurringOverview: GetRecurringOverview;
-  occurrenceRepository: Pick<RecurringOccurrenceRepository, 'listByScheduleId'>;
+  recurringOccurrenceRepository: Pick<RecurringOccurrenceRepository, 'listByScheduleId'>;
   pauseRecurringSchedule: PauseRecurringSchedule;
   resumeRecurringSchedule: ResumeRecurringSchedule;
   endRecurringSchedule: EndRecurringSchedule;
@@ -111,7 +111,7 @@ export function useRecurringManagement({
   const openDetail = useCallback(
     async (id: string) => {
       setSelectedId(id);
-      const occurrences = await dependencies.occurrenceRepository.listByScheduleId(id);
+      const occurrences = await dependencies.recurringOccurrenceRepository.listByScheduleId(id);
       setHistory(
         occurrences
           .filter((occurrence) => occurrence.status === 'confirmed' || occurrence.status === 'skipped')

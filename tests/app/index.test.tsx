@@ -42,7 +42,7 @@ describe('RootScreen startup', () => {
     await waitFor(() => expect(screen.getByTestId('splash-logo')).toBeTruthy());
   });
 
-  it('keeps the branded splash visible for 30 seconds after dependencies resolve', async () => {
+  it('keeps the branded splash visible until timer finishes after dependencies resolve', async () => {
     jest.useFakeTimers();
     (createFinanceDependencies as jest.Mock).mockResolvedValue({
       onboarding: {},
@@ -57,7 +57,7 @@ describe('RootScreen startup', () => {
     expect(screen.getByTestId('splash-logo')).toBeTruthy();
 
     act(() => {
-      jest.advanceTimersByTime(29999);
+      jest.advanceTimersByTime(899);
     });
     expect(screen.getByTestId('splash-logo')).toBeTruthy();
 

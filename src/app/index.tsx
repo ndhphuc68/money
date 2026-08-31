@@ -18,12 +18,16 @@ import { ReportsScreen } from '@/features/finance/screens/reports-screen';
 import { SettingsScreen } from '@/features/finance/screens/settings-screen';
 import { AccountsScreen } from '@/features/finance/screens/accounts-screen';
 import { CategoriesScreen } from '@/features/finance/screens/categories-screen';
+import { RecurringOccurrencesScreen } from '@/features/finance/screens/recurring-occurrences-screen';
+import { RecurringManagementScreen } from '@/features/finance/screens/recurring-management-screen';
 import { useDashboard } from '@/features/finance/view-models/use-dashboard';
 import { useOnboarding } from '@/features/finance/view-models/use-onboarding';
 import { useTransactionForm } from '@/features/finance/view-models/use-transaction-form';
 import { useTransactions } from '@/features/finance/view-models/use-transactions';
 import { useReports } from '@/features/finance/view-models/use-reports';
 import { useSettings } from '@/features/finance/view-models/use-settings';
+import { useRecurringOccurrences } from '@/features/finance/view-models/use-recurring-occurrences';
+import { useRecurringManagement } from '@/features/finance/view-models/use-recurring-management';
 import { SyncScreen } from '@/features/sync/screens/sync-screen';
 import { BottomNav, TransactionFormSheet } from '@/components/finance';
 import { useSync } from '@/features/sync/view-models/use-sync';
@@ -38,7 +42,9 @@ type FinanceView =
   | { name: 'settings' }
   | { name: 'accounts' }
   | { name: 'categories' }
-  | { name: 'gold' };
+  | { name: 'gold' }
+  | { name: 'recurring' }
+  | { name: 'recurringManagement' };
 
 export default function RootScreen() {
   const database = useLocalDatabase();
@@ -49,11 +55,6 @@ export default function RootScreen() {
   const [view, setView] = useState<FinanceView>({ name: 'dashboard' });
   const t = useMemo(() => translate.bind(null, locale), [locale]);
 
-  // `database` comes from `useLocalDatabase()`, which in production is a
-  // stable object for the lifetime of the provider. Deliberately fetched
-  // once via a ref (not a `[database]` effect dependency): re-running this
-  // effect on every render would be wrong if a caller (e.g. a test double)
-  // ever returned a fresh object identity per render.
   const databaseRef = useRef(database);
   databaseRef.current = database;
 
@@ -62,6 +63,16 @@ export default function RootScreen() {
     createFinanceDependencies(databaseRef.current).then((financeDependencies) => {
       if (!cancelled) {
         setDependencies(financeDependencies);
+        financeDependencies.notificationScheduler
+          ?.requestPermissions()
+          ?.then((granted) => {
+            if (granted) {
+              return financeDependencies.scanAndScheduleRecurringNotifications?.execute();
+            }
+          })
+          .catch(() => {
+            // Best-effort: notification failures never block the app (spec §Xử lý lỗi).
+          });
       }
     });
     return () => {
@@ -112,24 +123,6 @@ function ConfiguredOnboardingScreen({
   return <OnboardingScreen {...viewModel} locale={locale} setLocale={setLocale} t={t} />;
 }
 
-/**
- * Renders the dashboard/transactions/transaction-form screens and owns the
- * `FinanceView` navigation state, mirroring `ConfiguredOnboardingScreen`
- * below. Each branch renders a *different* component (not a conditional
- * hook call in one component, which would break the Rules of Hooks), so
- * switching `view` unmounts the previous screen and mounts the next — that
- * makes refresh-after-mutation trivial, since every screen's view model
- * re-fetches fresh data on mount.
- *
- * A transaction can be added/edited from either the dashboard or the
- * transactions list, so its form sheet lives here (above the `view` switch)
- * as an overlay rather than as its own `FinanceView` — the underlying screen
- * stays mounted and visible behind it, matching how gold's sheets overlay
- * `GoldManagementScreen`. `formSession` is bumped on every open to force a
- * fresh `ConfiguredTransactionFormSheet` mount (so `useTransactionForm`
- * reloads instead of reusing a previous draft); `refreshKey` is bumped after
- * a save to remount the underlying screen so its view model re-fetches.
- */
 function ConfiguredFinanceScreen({
   dependencies,
   t,
@@ -232,6 +225,25 @@ function ConfiguredFinanceScreen({
   if (view.name === 'gold') {
     return <ConfiguredGoldManagementScreen onBack={() => setView({ name: 'settings' })} t={t} />;
   }
+  if (view.name === 'recurring') {
+    return (
+      <ConfiguredRecurringOccurrencesScreen
+        dependencies={dependencies}
+        onBack={() => setView({ name: 'settings' })}
+        onOpenManagement={() => setView({ name: 'recurringManagement' })}
+        t={t}
+      />
+    );
+  }
+  if (view.name === 'recurringManagement') {
+    return (
+      <ConfiguredRecurringManagementScreen
+        dependencies={dependencies}
+        onBack={() => setView({ name: 'recurring' })}
+        t={t}
+      />
+    );
+  }
 
   return (
     <>
@@ -269,6 +281,7 @@ function ConfiguredReportsScreen({
     </View>
   );
 }
+
 function ConfiguredSettingsScreen({
   dependencies,
   t,
@@ -298,6 +311,7 @@ function ConfiguredSettingsScreen({
           onOpenAccounts={onOpenAccounts}
           onOpenCategories={onOpenCategories}
           onOpenGoldManagement={() => setView({ name: 'gold' })}
+          onOpenRecurring={() => setView({ name: 'recurring' })}
           onOpenSync={onOpenSync}
           t={t}
         />
@@ -321,6 +335,7 @@ function ConfiguredSettingsScreen({
     </View>
   );
 }
+
 function ConfiguredAccountsScreen({
   dependencies,
   t,
@@ -332,6 +347,7 @@ function ConfiguredAccountsScreen({
 }) {
   return <AccountsScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />;
 }
+
 function ConfiguredCategoriesScreen({
   dependencies,
   t,
@@ -344,12 +360,6 @@ function ConfiguredCategoriesScreen({
   return <CategoriesScreen {...useSettings({ dependencies, t })} onBack={onBack} t={t} />;
 }
 
-/**
- * Owns the gold feature's own dependency container (separate from
- * `FinanceDependencies`, mirroring how `createFinanceDependencies` is
- * created once via a ref-based effect in `RootScreen` above) since gold
- * repositories are independent of the finance ones.
- */
 function ConfiguredGoldManagementScreen({ t, onBack }: { t: Translate; onBack(): void }) {
   const database = useLocalDatabase();
   const [goldDependencies, setGoldDependencies] = useState<GoldDependencies | null>(null);
@@ -390,6 +400,41 @@ function GoldManagementScreenWithViewModel({
 }) {
   const viewModel = useGoldManagement({ dependencies, t });
   return <GoldManagementScreen {...viewModel} onBack={onBack} t={t} />;
+}
+
+function ConfiguredRecurringOccurrencesScreen({
+  dependencies,
+  onBack,
+  onOpenManagement,
+  t,
+}: {
+  dependencies: FinanceDependencies;
+  onBack(): void;
+  onOpenManagement(): void;
+  t: Translate;
+}) {
+  const viewModel = useRecurringOccurrences({ dependencies, t });
+  return (
+    <RecurringOccurrencesScreen
+      {...viewModel}
+      onBack={onBack}
+      onOpenManagement={onOpenManagement}
+      t={t}
+    />
+  );
+}
+
+function ConfiguredRecurringManagementScreen({
+  dependencies,
+  onBack,
+  t,
+}: {
+  dependencies: FinanceDependencies;
+  onBack(): void;
+  t: Translate;
+}) {
+  const viewModel = useRecurringManagement({ dependencies, t });
+  return <RecurringManagementScreen {...viewModel} onBack={onBack} t={t} />;
 }
 
 function ConfiguredDashboardScreen({
@@ -512,12 +557,6 @@ function ConfiguredTransactionFormSheet({
   return <TransactionFormSheet {...viewModel} onClose={onClose} t={t} visible={visible} />;
 }
 
-/**
- * Configures and renders the sync screen, shared by the dashboard's
- * temporary "sync data" link (see `onOpenSync` above; reachability of
- * `/sync` is expected to move to a proper Settings entry point in Task 9)
- * and the `/sync` route (`src/app/sync.tsx`).
- */
 export function ConfiguredSyncScreen() {
   const database = useLocalDatabase();
   const [locale, setLocale] = useState<Locale>('vi');

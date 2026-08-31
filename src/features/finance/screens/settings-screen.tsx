@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ChevronRight, Coins, CreditCard, Database, EyeOff, UserRound } from 'lucide-react-native';
+import { ChevronRight, Coins, CreditCard, Database, EyeOff, Repeat, UserRound } from 'lucide-react-native';
 
 import type { SettingsViewModel } from '@/features/finance/view-models/use-settings';
 import type { Translate } from '@/i18n/translations';
@@ -12,6 +12,7 @@ type SettingsScreenProps = SettingsViewModel & {
   onOpenCategories(): void;
   onOpenSync(): void;
   onOpenGoldManagement?: () => void;
+  onOpenRecurring?: () => void;
   onOpenPersonalInfo?: () => void;
   onOpenLocalBackup?: () => void;
 };
@@ -20,6 +21,7 @@ export function SettingsScreen({
   t,
   onOpenAccounts,
   onOpenGoldManagement,
+  onOpenRecurring,
   onOpenPersonalInfo,
   onOpenLocalBackup,
 }: SettingsScreenProps) {
@@ -52,6 +54,13 @@ export function SettingsScreen({
             icon={<CreditCard color={colors.content.inverse} size={20} strokeWidth={1.8} />}
             label={t('settingsAccountsAndCategories')}
             onPress={onOpenAccounts}
+          />
+          <Row
+            accessibilityLabel={t('settingsManageRecurring')}
+            badgeColor={colors.brand.primary}
+            icon={<Repeat color={colors.content.inverse} size={20} strokeWidth={1.8} />}
+            label={t('settingsManageRecurring')}
+            onPress={onOpenRecurring}
           />
           <Row
             accessibilityLabel={t('settingsHideAmounts')}

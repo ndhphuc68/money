@@ -54,7 +54,7 @@ const confirmedOccurrence: RecurringOccurrence = {
 function buildDependencies() {
   return {
     getRecurringOverview: { execute: jest.fn().mockResolvedValue({ dueOccurrences: [], schedules: [schedule] }) },
-    occurrenceRepository: { listByScheduleId: jest.fn().mockResolvedValue([confirmedOccurrence]) },
+    recurringOccurrenceRepository: { listByScheduleId: jest.fn().mockResolvedValue([confirmedOccurrence]) },
     pauseRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'paused' }) },
     resumeRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'active' }) },
     endRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'ended' }) },
