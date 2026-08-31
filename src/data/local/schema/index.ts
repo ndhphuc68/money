@@ -6,5 +6,8 @@ export { goldBrands } from './gold-brands';
 export { goldLots } from './gold-lots';
 export { goldSellTransactions } from './gold-sell-transactions';
 export { profileSettings } from './profile-settings';
+export { recurringSchedules } from './recurring-schedules';
+export { recurringOccurrences } from './recurring-occurrences';
 export { syncMetadata } from './sync-metadata';
 export { transactions } from './transactions';
+

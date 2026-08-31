@@ -29,6 +29,13 @@
       "when": 1787850574961,
       "tag": "0003_high_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788172622429,
+      "tag": "0004_aberrant_black_knight",
+      "breakpoints": true
     }
   ]
 }
