@@ -1,6 +1,14 @@
-# Offline First Sync
+# Vimo
 
-Mobile-only Expo SDK 54 app for local-first data and signed sync-package transfer. The app targets Android and iOS; it has no web route or PWA workflow.
+Mobile-only Expo SDK 54 personal finance app. Local-first data with signed sync-package transfer between devices. The app targets Android and iOS; it has no web route or PWA workflow.
+
+## Features
+
+- **Finance**: manual income/expense/transfer transactions, accounts/wallets, categories, recent transaction list and detail/edit/delete flows.
+- **Gold**: track gold holdings and price history alongside cash accounts.
+- **Sync**: export/import a signed, passphrase-protected sync package to move data between devices without a server.
+
+See [docs/finance-feature-roadmap.md](docs/finance-feature-roadmap.md) for the product roadmap and what's intentionally out of scope for the current stage.
 
 ## Prerequisites
 
@@ -24,12 +32,27 @@ npm install
 
 If LAN discovery is blocked, start with `npx expo start --tunnel` and scan the new QR code.
 
+## Project layout
+
+```text
+src/app/            Expo Router routes
+src/features/       Screens + view-models per feature (finance, gold, sync)
+src/components/     base/ (shared UI building blocks) and feature-specific components
+src/data/local/     SQLite schema, Drizzle repositories
+src/data/sync/      Sync engine: authentication, conflict resolution, serializers, transports
+docs/                Roadmap, research notes, superpowers specs/plans
+tests/               Mirrors src/ (acceptance, features, components, data, ...)
+```
+
+Component convention: check `src/components/base/` before writing new UI — compose feature components from base building blocks instead of duplicating styles. See [CLAUDE.md](CLAUDE.md) for the full rule.
+
 ## Validate the project
 
 ```powershell
 npm test -- --runInBand
 npm test -- --runInBand tests/acceptance/income-expense-mvp.test.ts
 npm run typecheck
+npm run lint
 npx drizzle-kit check
 npx expo config --type public
 ```
@@ -39,7 +62,7 @@ npx expo config --type public
 After changing `src/data/local/schema/`, generate and review a migration before committing it:
 
 ```powershell
-npx drizzle-kit generate
+npm run db:generate
 npx drizzle-kit check
 ```
 
