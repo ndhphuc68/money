@@ -8,6 +8,7 @@ export function createIcon() {
 
 export const Car = createIcon();
 export const ArrowLeft = createIcon();
+export const Calendar = createIcon();
 export const ArrowUpRight = createIcon();
 export const CarFront = createIcon();
 export const ChevronDown = createIcon();
@@ -57,6 +58,7 @@ export const Filter = createIcon();
 const icons: Record<string, any> = {
   Car,
   ArrowLeft,
+  Calendar,
   ArrowUpRight,
   CarFront,
   ChevronDown,

@@ -12,6 +12,8 @@ export { DateField } from './DateField';
 export { FilterBar } from './FilterBar';
 export { GoalCard } from './GoalCard';
 export { IconPickerSheet } from './IconPickerSheet';
+export { PeriodSelector } from './PeriodSelector';
+export type { PeriodKind, PeriodSelectorLabels, PeriodSelectorProps } from './PeriodSelector';
 export type { IconPickerSheetProps } from './IconPickerSheet';
 export { SegmentedControl } from './SegmentedControl';
 export { SettingsList } from './SettingsList';
