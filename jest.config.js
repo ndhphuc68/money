@@ -11,5 +11,4 @@ module.exports = {
     '^lucide-react-native$': '<rootDir>/tests/mocks/lucide-react-native.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
 };

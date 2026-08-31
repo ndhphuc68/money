@@ -3,6 +3,10 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { Sheet } from '@/components/base';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
+
 describe('Sheet', () => {
   it('renders the title, subtitle, and children, and closes via the close button', () => {
     const onClose = jest.fn();
