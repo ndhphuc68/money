@@ -15,3 +15,6 @@ export type { ListRowProps } from './ListRow';
 
 export { PillChip } from './PillChip';
 export type { PillChipProps } from './PillChip';
+
+export { Sheet } from './Sheet';
+export type { SheetProps } from './Sheet';
