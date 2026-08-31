@@ -4,6 +4,15 @@ import {
   deriveAnchorDay,
   isBeyondScheduleLimit,
 } from '@/core/domain/finance/recurring-date';
+import {
+  RecurringScheduleInput,
+  validateRecurringScheduleInput,
+} from '@/core/domain/finance/recurring-schedule';
+import {
+  deriveOccurrenceDisplayStatus,
+  RecurringOccurrenceEdits,
+  validateRecurringOccurrenceEdits,
+} from '@/core/domain/finance/recurring-occurrence';
 
 describe('deriveAnchorDay', () => {
   it('returns the day of month for monthly/quarterly/yearly', () => {
@@ -90,5 +99,118 @@ describe('isBeyondScheduleLimit', () => {
         candidateDate: '2026-10-01',
       }),
     ).toBe(false);
+  });
+});
+
+const validScheduleInput: RecurringScheduleInput = {
+  displayName: 'YouTube Premium',
+  accountId: 'account-main',
+  categoryId: 'category-bills',
+  amount: 179000,
+  frequency: 'monthly',
+  anchorDay: 27,
+  startDate: '2026-08-27',
+};
+
+describe('validateRecurringScheduleInput', () => {
+  it('accepts a minimal valid input', () => {
+    expect(() => validateRecurringScheduleInput(validScheduleInput)).not.toThrow();
+  });
+
+  it('rejects a non-positive or non-integer amount', () => {
+    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, amount: 0 })).toThrow(
+      'Recurring schedule amount must be a positive integer',
+    );
+    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, amount: 1.5 })).toThrow(
+      'Recurring schedule amount must be a positive integer',
+    );
+  });
+
+  it('rejects an empty displayName, accountId or categoryId', () => {
+    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, displayName: '' })).toThrow(
+      'Recurring schedule displayName must not be empty',
+    );
+    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, accountId: '' })).toThrow(
+      'Recurring schedule accountId must not be empty',
+    );
+    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, categoryId: '' })).toThrow(
+      'Recurring schedule categoryId must not be empty',
+    );
+  });
+
+  it('rejects an unknown frequency', () => {
+    expect(() =>
+      validateRecurringScheduleInput({ ...validScheduleInput, frequency: 'daily' as never }),
+    ).toThrow('Recurring schedule frequency must be weekly, monthly, quarterly or yearly');
+  });
+
+  it('rejects an out-of-range anchorDay for the given frequency', () => {
+    expect(() =>
+      validateRecurringScheduleInput({ ...validScheduleInput, frequency: 'weekly', anchorDay: 7 }),
+    ).toThrow('Recurring schedule anchorDay must be between 0 and 6 for weekly frequency');
+    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, anchorDay: 32 })).toThrow(
+      'Recurring schedule anchorDay must be between 1 and 31 for monthly, quarterly or yearly frequency',
+    );
+  });
+
+  it('rejects a negative or non-integer remindDaysBefore', () => {
+    expect(() =>
+      validateRecurringScheduleInput({ ...validScheduleInput, remindDaysBefore: -1 }),
+    ).toThrow('Recurring schedule remindDaysBefore must be a non-negative integer');
+  });
+
+  it('rejects setting both endDate and occurrenceLimit', () => {
+    expect(() =>
+      validateRecurringScheduleInput({
+        ...validScheduleInput,
+        endDate: '2027-01-01',
+        occurrenceLimit: 6,
+      }),
+    ).toThrow('Recurring schedule cannot set both endDate and occurrenceLimit');
+  });
+
+  it('rejects a non-positive occurrenceLimit', () => {
+    expect(() =>
+      validateRecurringScheduleInput({ ...validScheduleInput, occurrenceLimit: 0 }),
+    ).toThrow('Recurring schedule occurrenceLimit must be a positive integer');
+  });
+});
+
+describe('validateRecurringOccurrenceEdits', () => {
+  it('accepts an empty edits object', () => {
+    expect(() => validateRecurringOccurrenceEdits({})).not.toThrow();
+  });
+
+  it('rejects a non-positive amount when provided', () => {
+    const edits: RecurringOccurrenceEdits = { amount: 0 };
+    expect(() => validateRecurringOccurrenceEdits(edits)).toThrow(
+      'Recurring occurrence amount must be a positive integer',
+    );
+  });
+
+  it('rejects an empty displayName when provided', () => {
+    expect(() => validateRecurringOccurrenceEdits({ displayName: '  ' })).toThrow(
+      'Recurring occurrence displayName must not be empty',
+    );
+  });
+});
+
+describe('deriveOccurrenceDisplayStatus', () => {
+  it('returns overdue when pending and past the scheduled date', () => {
+    expect(
+      deriveOccurrenceDisplayStatus({ status: 'pending', scheduledDate: '2026-08-26' }, '2026-08-27'),
+    ).toBe('overdue');
+  });
+
+  it('returns pending when not yet due', () => {
+    expect(
+      deriveOccurrenceDisplayStatus({ status: 'pending', scheduledDate: '2026-08-27' }, '2026-08-27'),
+    ).toBe('pending');
+  });
+
+  it('returns the stored status for confirmed/skipped regardless of date', () => {
+    expect(
+      deriveOccurrenceDisplayStatus({ status: 'confirmed', scheduledDate: '2020-01-01' }, '2026-08-27'),
+    ).toBe('confirmed');
   });
 });
