@@ -1,8 +1,13 @@
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
-import { PrimaryButton, Sheet } from '@/components/base';
+import { Card, Dropdown, PrimaryButton, Sheet } from '@/components/base';
+import type { RecurringFrequency } from '@/core/domain/finance/recurring-date';
 import type { TransactionType } from '@/core/domain/finance/transaction';
-import type { TransactionFormViewModel } from '@/features/finance/view-models/use-transaction-form';
+import type {
+  RecurringEndMode,
+  TransactionFormViewModel,
+} from '@/features/finance/view-models/use-transaction-form';
 import type { Translate } from '@/i18n/translations';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 
@@ -18,11 +23,24 @@ export type TransactionFormSheetProps = TransactionFormViewModel & {
 
 const TYPE_OPTIONS: TransactionType[] = ['expense', 'income'];
 
+const FREQUENCY_LABELS: Record<RecurringFrequency, string> = {
+  weekly: 'Hàng tuần',
+  monthly: 'Hàng tháng',
+  quarterly: 'Hàng quý',
+  yearly: 'Hàng năm',
+};
+const END_MODE_LABELS: Record<RecurringEndMode, string> = {
+  none: 'Không giới hạn',
+  date: 'Đến ngày',
+  count: 'Số kỳ',
+};
+
 export function TransactionFormSheet({ visible, t, onClose, ...props }: TransactionFormSheetProps) {
   const {
     loading,
     submitting,
     isEditing,
+    canEnableRecurring,
     values,
     errors,
     categories,
@@ -30,8 +48,15 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
     setAmount,
     setCategoryId,
     setNote,
+    setRecurringEnabled,
+    setRecurringFrequency,
+    setRecurringRemindDaysBefore,
+    setRecurringEndMode,
+    setRecurringOccurrenceLimit,
     submit,
   } = props;
+
+  const [openDropdown, setOpenDropdown] = useState<'frequency' | 'endMode' | null>(null);
 
   const typeLabels: Record<TransactionType, string> = {
     expense: t('transactionTypeExpense'),
@@ -84,6 +109,104 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
               type={selectedType}
             />
           </View>
+
+          {selectedType === 'expense' && canEnableRecurring ? (
+            <View style={styles.recurringCard} testID="recurring-toggle-card">
+              <Card>
+                <View style={styles.recurringToggleRow}>
+                  <View style={styles.recurringToggleCopy}>
+                    <Text style={styles.sectionLabel}>{t('recurringToggleLabel')}</Text>
+                    <Text style={styles.recurringToggleHint}>
+                      {values.recurringEnabled
+                        ? t('recurringToggleHintOn')
+                        : t('recurringToggleHintOff')}
+                    </Text>
+                  </View>
+                  <Switch
+                    accessibilityLabel={t('recurringToggleLabel')}
+                    onValueChange={setRecurringEnabled}
+                    thumbColor={colors.content.inverse}
+                    trackColor={{ false: colors.surface.muted, true: colors.brand.primary }}
+                    value={values.recurringEnabled}
+                  />
+                </View>
+
+                {values.recurringEnabled ? (
+                  <View style={styles.recurringFields}>
+                    <Dropdown
+                      fieldLabel={t('recurringFrequencyLabel')}
+                      onSelect={(key) => {
+                        setRecurringFrequency(key as RecurringFrequency);
+                        setOpenDropdown(null);
+                      }}
+                      onToggle={() =>
+                        setOpenDropdown(openDropdown === 'frequency' ? null : 'frequency')
+                      }
+                      open={openDropdown === 'frequency'}
+                      options={(Object.keys(FREQUENCY_LABELS) as RecurringFrequency[]).map(
+                        (key) => ({
+                          key,
+                          label: FREQUENCY_LABELS[key],
+                          isActive: key === values.recurringFrequency,
+                        }),
+                      )}
+                      valueLabel={FREQUENCY_LABELS[values.recurringFrequency]}
+                    />
+
+                    <View style={styles.field}>
+                      <Text style={styles.sectionLabel}>{t('recurringRemindDaysBeforeLabel')}</Text>
+                      <TextInput
+                        accessibilityLabel={t('recurringRemindDaysBeforeLabel')}
+                        inputMode="numeric"
+                        keyboardType="number-pad"
+                        onChangeText={(text) =>
+                          setRecurringRemindDaysBefore(Math.max(0, parseInt(text, 10) || 0))
+                        }
+                        style={styles.recurringNumberInput}
+                        value={String(values.recurringRemindDaysBefore)}
+                      />
+                    </View>
+
+                    <Dropdown
+                      fieldLabel={t('recurringEndLabel')}
+                      onSelect={(key) => {
+                        setRecurringEndMode(key as RecurringEndMode);
+                        setOpenDropdown(null);
+                      }}
+                      onToggle={() => setOpenDropdown(openDropdown === 'endMode' ? null : 'endMode')}
+                      open={openDropdown === 'endMode'}
+                      options={(Object.keys(END_MODE_LABELS) as RecurringEndMode[]).map((key) => ({
+                        key,
+                        label: END_MODE_LABELS[key],
+                        isActive: key === values.recurringEndMode,
+                      }))}
+                      valueLabel={END_MODE_LABELS[values.recurringEndMode]}
+                    />
+
+                    {values.recurringEndMode === 'count' ? (
+                      <View style={styles.field}>
+                        <Text style={styles.sectionLabel}>{t('recurringOccurrenceLimitLabel')}</Text>
+                        <TextInput
+                          accessibilityLabel={t('recurringOccurrenceLimitLabel')}
+                          inputMode="numeric"
+                          keyboardType="number-pad"
+                          onChangeText={(text) => setRecurringOccurrenceLimit(parseInt(text, 10) || null)}
+                          style={styles.recurringNumberInput}
+                          value={
+                            values.recurringOccurrenceLimit
+                              ? String(values.recurringOccurrenceLimit)
+                              : ''
+                          }
+                        />
+                      </View>
+                    ) : null}
+
+                    <Text style={styles.recurringNote}>{t('recurringFirstPeriodNote')}</Text>
+                  </View>
+                ) : null}
+              </Card>
+            </View>
+          ) : null}
 
           <View style={styles.noteCard}>
             <Text style={styles.sectionLabel}>{noteLabel}</Text>
@@ -150,6 +273,48 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     minHeight: 30,
     padding: 0,
+  },
+  recurringCard: {
+    marginBottom: spacing[4],
+  },
+  recurringFields: {
+    borderTopColor: colors.border.subtle,
+    borderTopWidth: 1,
+    gap: spacing[1],
+    marginTop: spacing[3],
+    paddingTop: spacing[3],
+  },
+  recurringNote: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.semibold,
+    lineHeight: 17,
+    marginTop: spacing[2],
+  },
+  recurringNumberInput: {
+    backgroundColor: colors.surface.input,
+    borderColor: colors.border.strong,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    color: colors.content.primary,
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
+    height: 48,
+    paddingHorizontal: spacing[3],
+  },
+  recurringToggleCopy: {
+    flex: 1,
+  },
+  recurringToggleHint: {
+    color: colors.content.secondary,
+    fontSize: typography.sizes.caption,
+    fontWeight: typography.weights.semibold,
+    marginTop: 2,
+  },
+  recurringToggleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   saveButtonSpacing: {
     marginTop: spacing[1],

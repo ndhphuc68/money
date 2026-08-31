@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import type { CreateRecurringExpense } from '@/core/application/finance/create-recurring-expense';
+import type { CreateTransaction } from '@/core/application/finance/create-transaction';
+import type { UpdateTransaction } from '@/core/application/finance/update-transaction';
 import type {
   AccountRepository,
   CategoryRepository,
   TransactionRepository,
 } from '@/core/application/ports/finance-repositories';
-import type { CreateTransaction } from '@/core/application/finance/create-transaction';
-import type { UpdateTransaction } from '@/core/application/finance/update-transaction';
 import type { Account } from '@/core/domain/finance/account';
 import type { Category } from '@/core/domain/finance/category';
+import type { RecurringFrequency } from '@/core/domain/finance/recurring-date';
 import {
   TransactionInput,
   TransactionType,
@@ -18,6 +20,8 @@ import type { Translate } from '@/i18n/translations';
 
 import { todayIsoDate } from './transaction-presentation';
 
+export type RecurringEndMode = 'none' | 'date' | 'count';
+
 /** The subset of `FinanceDependencies` (Task 7) this view model drives. */
 export type TransactionFormDependencies = {
   accountRepository: AccountRepository;
@@ -25,6 +29,7 @@ export type TransactionFormDependencies = {
   transactionRepository: TransactionRepository;
   createTransaction: CreateTransaction;
   updateTransaction: UpdateTransaction;
+  createRecurringExpense: CreateRecurringExpense;
 };
 
 export type TransactionFormValues = {
@@ -36,6 +41,12 @@ export type TransactionFormValues = {
   categoryId: string | null;
   date: string;
   note: string;
+  recurringEnabled: boolean;
+  recurringFrequency: RecurringFrequency;
+  recurringRemindDaysBefore: number;
+  recurringEndMode: RecurringEndMode;
+  recurringEndDate: string;
+  recurringOccurrenceLimit: number | null;
 };
 
 export type TransactionFormErrors = {
@@ -51,6 +62,7 @@ export type TransactionFormViewModel = {
   loading: boolean;
   submitting: boolean;
   isEditing: boolean;
+  canEnableRecurring: boolean;
   values: TransactionFormValues;
   errors: TransactionFormErrors;
   accounts: Account[];
@@ -63,6 +75,12 @@ export type TransactionFormViewModel = {
   setCategoryId(id: string | null): void;
   setDate(date: string): void;
   setNote(note: string): void;
+  setRecurringEnabled(enabled: boolean): void;
+  setRecurringFrequency(frequency: RecurringFrequency): void;
+  setRecurringRemindDaysBefore(days: number): void;
+  setRecurringEndMode(mode: RecurringEndMode): void;
+  setRecurringEndDate(date: string): void;
+  setRecurringOccurrenceLimit(limit: number | null): void;
   submit(): Promise<void>;
 };
 
@@ -86,16 +104,17 @@ function emptyValues(today: string): TransactionFormValues {
     categoryId: null,
     date: today,
     note: '',
+    recurringEnabled: false,
+    recurringFrequency: 'monthly',
+    recurringRemindDaysBefore: 1,
+    recurringEndMode: 'none',
+    recurringEndDate: today,
+    recurringOccurrenceLimit: null,
   };
 }
 
 /**
- * Thin UI view model over `CreateTransaction`/`UpdateTransaction` (Task 4).
- * Unlike `TransactionForm` (Task 6), which only accepts an `initialDate` and
- * always starts blank, this hook owns every field as controlled state so
- * `transaction-form-screen.tsx` can pre-fill an existing transaction for
- * editing (see the Task 8 report for why `TransactionForm` itself isn't
- * reused here).
+ * Thin UI view model over `CreateTransaction`/`UpdateTransaction`/`CreateRecurringExpense`.
  */
 export function useTransactionForm({
   dependencies,
@@ -129,6 +148,7 @@ export function useTransactionForm({
         const existing = await dependencies.transactionRepository.findById(transactionId);
         if (existing) {
           nextValues = {
+            ...emptyValues(today),
             type: existing.type,
             amount: existing.amount,
             name: existing.name,
@@ -160,7 +180,12 @@ export function useTransactionForm({
   }, [dependencies, transactionId]);
 
   const setType = useCallback(
-    (type: TransactionType) => setValues((current) => ({ ...current, type })),
+    (type: TransactionType) =>
+      setValues((current) => ({
+        ...current,
+        type,
+        recurringEnabled: type === 'expense' ? current.recurringEnabled : false,
+      })),
     [],
   );
   const setAmount = useCallback(
@@ -183,6 +208,36 @@ export function useTransactionForm({
   );
   const setDate = useCallback((date: string) => setValues((current) => ({ ...current, date })), []);
   const setNote = useCallback((note: string) => setValues((current) => ({ ...current, note })), []);
+  const setRecurringEnabled = useCallback(
+    (recurringEnabled: boolean) => setValues((current) => ({ ...current, recurringEnabled })),
+    [],
+  );
+  const setRecurringFrequency = useCallback(
+    (recurringFrequency: RecurringFrequency) =>
+      setValues((current) => ({ ...current, recurringFrequency })),
+    [],
+  );
+  const setRecurringRemindDaysBefore = useCallback(
+    (recurringRemindDaysBefore: number) =>
+      setValues((current) => ({ ...current, recurringRemindDaysBefore })),
+    [],
+  );
+  const setRecurringEndMode = useCallback(
+    (recurringEndMode: RecurringEndMode) =>
+      setValues((current) => ({ ...current, recurringEndMode })),
+    [],
+  );
+  const setRecurringEndDate = useCallback(
+    (recurringEndDate: string) => setValues((current) => ({ ...current, recurringEndDate })),
+    [],
+  );
+  const setRecurringOccurrenceLimit = useCallback(
+    (recurringOccurrenceLimit: number | null) =>
+      setValues((current) => ({ ...current, recurringOccurrenceLimit })),
+    [],
+  );
+
+  const canEnableRecurring = !transactionId && values.type === 'expense';
 
   const submit = useCallback(async () => {
     const isTransfer = values.type === 'transfer';
@@ -248,6 +303,23 @@ export function useTransactionForm({
     try {
       if (transactionId) {
         await dependencies.updateTransaction.execute(transactionId, input);
+      } else if (values.type === 'expense' && values.recurringEnabled) {
+        await dependencies.createRecurringExpense.execute({
+          transaction: input,
+          recurring: {
+            displayName: compactName,
+            accountId: selectedAccountId as string,
+            categoryId: values.categoryId as string,
+            amount: values.amount as number,
+            frequency: values.recurringFrequency,
+            startDate: values.date,
+            remindDaysBefore: values.recurringRemindDaysBefore,
+            endDate: values.recurringEndMode === 'date' ? values.recurringEndDate : null,
+            occurrenceLimit:
+              values.recurringEndMode === 'count' ? values.recurringOccurrenceLimit : null,
+            note: values.note.trim() === '' ? null : values.note.trim(),
+          },
+        });
       } else {
         await dependencies.createTransaction.execute(input);
       }
@@ -259,12 +331,13 @@ export function useTransactionForm({
     } finally {
       setSubmitting(false);
     }
-  }, [dependencies, onSaved, t, transactionId, values]);
+  }, [accounts, categories, dependencies, onSaved, t, transactionId, values]);
 
   return {
     loading,
     submitting,
     isEditing: Boolean(transactionId),
+    canEnableRecurring,
     values,
     errors,
     accounts,
@@ -277,6 +350,12 @@ export function useTransactionForm({
     setCategoryId,
     setDate,
     setNote,
+    setRecurringEnabled,
+    setRecurringFrequency,
+    setRecurringRemindDaysBefore,
+    setRecurringEndMode,
+    setRecurringEndDate,
+    setRecurringOccurrenceLimit,
     submit,
   };
 }

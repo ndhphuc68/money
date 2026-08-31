@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
 import {
@@ -298,6 +298,7 @@ function makeRepos() {
     updateTransaction: new UpdateTransaction({ transactionRepository, ...shared }),
     deleteTransaction: new DeleteTransaction({ transactionRepository, ...shared }),
     restoreTransaction: new RestoreTransaction({ transactionRepository, ...shared }),
+    createRecurringExpense: { execute: jest.fn().mockResolvedValue({ schedule: {}, occurrence: {} }) } as any,
     generateId,
   };
 }
@@ -607,4 +608,67 @@ describe('transactions list + view model', () => {
 
     alertSpy.mockRestore();
   });
+
+  describe('useTransactionForm recurring toggle', () => {
+    it('defaults recurringEnabled to false and only allows enabling it for a new expense', async () => {
+      const repos = makeRepos();
+      await seedAccountAndCategories(repos);
+      let hookResult!: ReturnType<typeof useTransactionForm>;
+
+      function TestComponent() {
+        hookResult = useTransactionForm({ dependencies: repos, now: () => new Date(NOW), onSaved: () => {}, t });
+        return null;
+      }
+
+      render(<TestComponent />);
+      await waitFor(() => expect(hookResult.loading).toBe(false));
+
+      expect(hookResult.values.recurringEnabled).toBe(false);
+      expect(hookResult.canEnableRecurring).toBe(true);
+
+      act(() => {
+        hookResult.setType('income');
+      });
+      expect(hookResult.canEnableRecurring).toBe(false);
+    });
+
+    it('creates a recurring schedule instead of a plain transaction when recurringEnabled is true on save', async () => {
+      const repos = makeRepos();
+      const { account, expenseCategory } = await seedAccountAndCategories(repos);
+      const executeMock = jest.fn().mockResolvedValue({ schedule: {}, occurrence: {} });
+      repos.createRecurringExpense = { execute: executeMock } as any;
+
+      let hookResult!: ReturnType<typeof useTransactionForm>;
+
+      function TestComponent() {
+        hookResult = useTransactionForm({ dependencies: repos, now: () => new Date(NOW), onSaved: () => {}, t });
+        return null;
+      }
+
+      render(<TestComponent />);
+      await waitFor(() => expect(hookResult.loading).toBe(false));
+
+      act(() => {
+        hookResult.setAmount(179000);
+        hookResult.setName('YouTube Premium');
+        hookResult.setCategoryId(expenseCategory.id);
+        hookResult.setAccountId(account.id);
+        hookResult.setRecurringEnabled(true);
+        hookResult.setRecurringFrequency('monthly');
+      });
+
+      await act(async () => {
+        await hookResult.submit();
+      });
+
+      expect(executeMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          transaction: expect.objectContaining({ amount: 179000, name: 'YouTube Premium' }),
+          recurring: expect.objectContaining({ frequency: 'monthly', remindDaysBefore: 1, endDate: null, occurrenceLimit: null }),
+        }),
+      );
+    });
+  });
+
 });
+
