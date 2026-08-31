@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { Card } from '@/components/base';
+import { colors, radius, spacing, typography } from '@/theme';
 
 type GoalCardProps = {
   name: string;
@@ -26,7 +27,7 @@ export function GoalCard({
   const normalizedPercent = Math.max(0, Math.min(percent, 100));
 
   return (
-    <View style={styles.card}>
+    <Card>
       <View style={styles.header}>
         <View style={[styles.avatar, { backgroundColor: color }]}>
           <Text style={styles.avatarText}>{initials}</Text>
@@ -52,7 +53,7 @@ export function GoalCard({
           {target}
         </Text>
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -68,12 +69,6 @@ const styles = StyleSheet.create({
     color: colors.content.inverse,
     fontSize: typography.sizes.small,
     fontWeight: typography.weights.black,
-  },
-  card: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
-    padding: spacing[4],
   },
   copy: {
     flex: 1,

@@ -1,7 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { Card, IconButton } from '@/components/base';
+import { colors, spacing, typography } from '@/theme';
 
 type BalanceCardProps = {
   label: string;
@@ -27,20 +28,26 @@ export function BalanceCard({
   hideBalanceLabel,
 }: BalanceCardProps) {
   return (
-    <View style={styles.card}>
+    <Card
+      backgroundColor={colors.gradient.balance[0]}
+      elevation="elevated"
+      padding={22}
+      radius="xl">
       <View style={styles.header}>
         <Text style={styles.label}>{label}</Text>
-        <Pressable
+        <IconButton
           accessibilityLabel={masked ? showBalanceLabel : hideBalanceLabel}
-          accessibilityRole="button"
+          backgroundColor="rgba(255, 255, 255, 0.15)"
+          icon={
+            masked ? (
+              <Eye color={colors.content.inverse} size={18} />
+            ) : (
+              <EyeOff color={colors.content.inverse} size={18} />
+            )
+          }
           onPress={onToggleMask}
-          style={({ pressed }) => [styles.maskButton, pressed && styles.maskButtonPressed]}>
-          {masked ? (
-            <Eye color={colors.content.inverse} size={18} />
-          ) : (
-            <EyeOff color={colors.content.inverse} size={18} />
-          )}
-        </Pressable>
+          pressedBackgroundColor="rgba(255, 255, 255, 0.25)"
+        />
       </View>
       <Text adjustsFontSizeToFit numberOfLines={1} style={styles.balance}>
         {masked ? maskedText : balance}
@@ -51,7 +58,7 @@ export function BalanceCard({
         </Text>
         <Text style={styles.expiry}>{expiry}</Text>
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -63,12 +70,6 @@ const styles = StyleSheet.create({
     lineHeight: typography.lineHeights.display,
     marginBottom: spacing[5],
     marginTop: spacing[3],
-  },
-  card: {
-    ...shadows.elevated,
-    backgroundColor: colors.gradient.balance[0],
-    borderRadius: radius.xl,
-    padding: 22,
   },
   cardNumber: {
     color: colors.content.inverse,
@@ -100,16 +101,5 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.small,
     fontWeight: typography.weights.semibold,
     opacity: 0.8,
-  },
-  maskButton: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: radius.circle,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
-  },
-  maskButtonPressed: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
 });
