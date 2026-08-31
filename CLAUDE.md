@@ -27,3 +27,16 @@ Dự án dùng Expo Router (SDK ~54) nên lint/format phải theo đúng toolcha
   ```
 - **Tích hợp ESLint + Prettier**: theo đúng hướng dẫn chính thức của Expo, dùng `eslint-plugin-prettier/recommended` (chạy Prettier như một ESLint rule) trong `eslint.config.js`, cùng với `eslint-config-prettier` để tắt các rule format xung đột — cả hai cài qua `npx expo install prettier eslint-config-prettier eslint-plugin-prettier --dev`. Nhờ vậy `npx expo lint` báo cả lỗi lint lẫn lỗi format trong một lệnh duy nhất.
 - Luôn chạy `npx expo lint` (và Prettier check nếu tách riêng) trước khi coi một task hoàn thành.
+
+## Component: Base & Feature-specific
+
+Component chia làm 2 lớp:
+
+- **Base component** (`src/components/base/`): building block UI thuần, không phụ thuộc domain logic, dùng chung cho toàn dự án (Card, IconButton, PrimaryButton, ListRow, PillChip, Sheet, Dropdown...).
+- **Feature component** (`src/components/finance/`, `src/components/gold/`...): đặc thù cho 1 tính năng, compose lại từ base component qua props (`style`, `variant`, màu sắc...) thay vì copy-paste style riêng.
+
+- Trước khi viết 1 UI element mới (card, button, list row, sheet, chip...), kiểm tra `src/components/base/` trước; nếu đã có pattern tương tự thì compose lại thay vì viết lại từ đầu.
+- Nếu phát hiện ≥2 chỗ dùng cùng 1 pattern UI mà chưa có trong `base/`, tách nó ra `base/` ngay, không chờ lặp lần 3.
+- Khi cần custom giao diện cho 1 base component ở 1 chỗ cụ thể, truyền prop để override, không tạo bản sao file khác.
+
+Backlog (chưa tách trong đợt refactor hiện tại, cân nhắc tách khi đụng tới): hợp nhất SegmentedControl/FilterBar chip, Badge tròn màu (đang hardcode `#FFF4D6`/`#A96308` ở 3 chỗ), ProgressBar (GoalCard/BudgetRow), error text dưới field.
