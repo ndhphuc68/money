@@ -40,3 +40,11 @@ Component chia làm 2 lớp:
 - Khi cần custom giao diện cho 1 base component ở 1 chỗ cụ thể, truyền prop để override, không tạo bản sao file khác.
 
 Backlog (chưa tách trong đợt refactor hiện tại, cân nhắc tách khi đụng tới): hợp nhất SegmentedControl/FilterBar chip, Badge tròn màu (đang hardcode `#FFF4D6`/`#A96308` ở 3 chỗ), ProgressBar (GoalCard/BudgetRow), error text dưới field.
+
+## Theo dõi trạng thái Spec/Plan/Code
+
+File [docs/superpowers/STATUS.md](docs/superpowers/STATUS.md) tổng hợp: mỗi spec (`docs/superpowers/specs/`) đã có plan coding (`docs/superpowers/plans/`) chưa, và plan đó đã thực sự được code trong `src/` chưa.
+
+- Khi cần kiểm tra "còn phần nào trong plan/spec chưa code", đọc file này trước thay vì audit lại toàn bộ từ đầu.
+- Sau khi tạo spec/plan mới, hoặc sau khi hoàn thành/thay đổi đáng kể 1 task lớn trong plan, cập nhật lại bảng trong file này ngay (đừng để tự nhớ hoặc chờ hỏi lại).
+- Lưu ý checkbox `- [ ]`/`- [x]` trong các file plan không đáng tin (thường không được tick khi làm xong) — trạng thái thật phải lấy từ STATUS.md hoặc đối chiếu trực tiếp với code.
