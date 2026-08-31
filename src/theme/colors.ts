@@ -13,6 +13,7 @@ export const colors = {
   },
   content: {
     primary: '#101828',
+    primaryPressed: '#243247',
     secondary: '#8B93A7',
     muted: '#8B93A7',
     muted2: '#9AA1B4',

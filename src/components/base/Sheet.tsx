@@ -18,17 +18,14 @@ import { IconButton } from './IconButton';
 export type SheetProps = {
   visible: boolean;
   onClose: () => void;
-  title?: string;
   subtitle?: string;
-  closeLabel?: string;
   variant?: 'bottomSheet' | 'dialog';
-  showHandle?: boolean;
   applyBottomInset?: boolean;
   closeButtonBackgroundColor?: string;
   onBodyPress?: () => void;
   style?: StyleProp<ViewStyle>;
   children: ReactNode;
-};
+} & ({ title: string; closeLabel: string } | { title?: undefined; closeLabel?: undefined });
 
 export function Sheet({
   visible,
@@ -37,7 +34,6 @@ export function Sheet({
   subtitle,
   closeLabel,
   variant = 'bottomSheet',
-  showHandle = variant === 'bottomSheet',
   applyBottomInset = true,
   closeButtonBackgroundColor = colors.surface.primary,
   onBodyPress,
@@ -46,6 +42,7 @@ export function Sheet({
 }: SheetProps) {
   const insets = useSafeAreaInsets();
   const isDialog = variant === 'dialog';
+  const showHandle = variant === 'bottomSheet';
   const bottomInset = applyBottomInset ? insets.bottom : 0;
 
   return (

@@ -208,7 +208,7 @@ export function TransactionForm({
       <PrimaryButton
         label={t('transactionFormSave')}
         onPress={handleSubmit}
-        pressedBackgroundColor="#243247"
+        pressedBackgroundColor={colors.content.primaryPressed}
         radius="sm"
         textStyle={styles.saveButtonText}
       />

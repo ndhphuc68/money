@@ -43,7 +43,7 @@ export function BottomNav({
         backgroundColor={colors.content.primary}
         icon={<Plus color={colors.content.inverse} size={28} strokeWidth={2.6} />}
         onPress={onAdd}
-        pressedBackgroundColor="#243247"
+        pressedBackgroundColor={colors.content.primaryPressed}
         size={52}
         style={styles.addButton}
       />
