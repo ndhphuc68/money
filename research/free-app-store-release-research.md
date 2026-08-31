@@ -15,6 +15,7 @@ Câu hỏi "release free thì dùng gì" có hai nghĩa khác nhau, và câu tr�
 Kết luận: **không có cách nào phát hành công khai trên cả hai store mà 0 đồng tuyệt đối** — tối thiểu phải trả 99 USD (Apple, hàng năm) + 25 USD (Google, một lần) = khoảng 124 USD cho năm đầu, sau đó 99 USD/năm nếu muốn duy trì trên App Store. Android có đường vòng thực sự miễn phí: phát hành APK để người dùng tự tải/cài trực tiếp (sideload), không cần qua Google Play và không cần trả phí gì — nhưng đây không phải "trên Google Play Store", chỉ là "cài được trên điện thoại Android". iOS thì không có đường vòng tương đương cho người dùng công khai — Apple bắt buộc ký code qua tài khoản trả phí cho bất kỳ hình thức phân phối nào ngoài "cài trên chính thiết bị của bạn qua Xcode" (miễn phí nhưng giới hạn 3 thiết bị/nền tảng, provisioning hết hạn sau 7 ngày). [Apple — Compare Memberships](https://developer.apple.com/support/compare-memberships/)
 
 **Đường đi rẻ nhất để có bản cài được trên điện thoại thật ngay hôm nay (test/dev, chưa lên store):**
+
 1. Cài Expo Go miễn phí trên điện thoại Android/iOS thật (tải free từ Play Store/App Store). `expo-sqlite` và `expo-secure-store` — hai module Vimo đang dùng — đều là module built-in trong Expo Go, chạy được ngay không cần custom dev client. [Expo SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/), [Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)
 2. Chạy `npx expo start`, quét QR bằng Expo Go — không tốn tiền, không cần tài khoản Apple/Google trả phí.
 3. Khi cần build binary thật (ví dụ để test native config sâu hơn hoặc chia sẻ file cài đặt cho người khác không cần Expo Go), dùng `eas build --profile preview` (Internal Distribution) trong free tier của EAS — 15 build Android/tháng free, tạo file APK cài trực tiếp, không cần tài khoản Apple/Google trả phí cho phía Android. [EAS Internal Distribution](https://docs.expo.dev/build/internal-distribution/)
@@ -32,14 +33,14 @@ Kết luận: **không có cách nào phát hành công khai trên cả hai stor
 
 Theo trang giá chính thức của Expo: [Expo Pricing](https://expo.dev/pricing)
 
-| Hạng mục | Free | Starter ($19/tháng) | Production ($199/tháng) |
-|---|---|---|---|
-| Build/tháng | 15 Android + 15 iOS | $45 build credit rồi tính theo usage | $225 build credit rồi tính theo usage |
-| Build đồng thời | 1 | 1 (thêm $50/build đến tối đa 5) | 2 (thêm $50/build đến tối đa 5) |
-| Build timeout | 45 phút | — | — |
-| Hàng đợi | Ưu tiên thấp | — | — |
-| EAS Update MAU | 1.000 MAU | 3.000 MAU rồi tính theo usage | 50.000 MAU rồi tính theo usage |
-| EAS Update bandwidth/storage | 100 GiB bandwidth, 20 GiB storage | — | — |
+| Hạng mục                     | Free                              | Starter ($19/tháng)                  | Production ($199/tháng)               |
+| ---------------------------- | --------------------------------- | ------------------------------------ | ------------------------------------- |
+| Build/tháng                  | 15 Android + 15 iOS               | $45 build credit rồi tính theo usage | $225 build credit rồi tính theo usage |
+| Build đồng thời              | 1                                 | 1 (thêm $50/build đến tối đa 5)      | 2 (thêm $50/build đến tối đa 5)       |
+| Build timeout                | 45 phút                           | —                                    | —                                     |
+| Hàng đợi                     | Ưu tiên thấp                      | —                                    | —                                     |
+| EAS Update MAU               | 1.000 MAU                         | 3.000 MAU rồi tính theo usage        | 50.000 MAU rồi tính theo usage        |
+| EAS Update bandwidth/storage | 100 GiB bandwidth, 20 GiB storage | —                                    | —                                     |
 
 Giá build lẻ khi vượt free tier: Android medium $1, Android large $2, iOS medium $2, iOS large $4 (theo [Expo Pricing](https://expo.dev/pricing)).
 
@@ -92,12 +93,12 @@ Nguồn chính thức: [Apple Developer Program](https://developer.apple.com/pro
 
 So sánh chính thức tại [Apple — Compare Memberships](https://developer.apple.com/support/compare-memberships/):
 
-| | Free Apple ID | Apple Developer Program ($99/năm) |
-|---|---|---|
-| Test app trên thiết bị của chính bạn qua Xcode | Có, nhưng tối đa 3 thiết bị test/nền tảng, App ID/provisioning profile hết hạn sau **7 ngày** (phải build lại/cài lại) | Có, không giới hạn 7 ngày |
-| TestFlight (mời người khác test) | Không | Có |
-| Phân phối App Store | Không | Có |
-| Ad-hoc distribution (chia sẻ build cho thiết bị đã đăng ký UDID) | Không | Có |
+|                                                                  | Free Apple ID                                                                                                          | Apple Developer Program ($99/năm) |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Test app trên thiết bị của chính bạn qua Xcode                   | Có, nhưng tối đa 3 thiết bị test/nền tảng, App ID/provisioning profile hết hạn sau **7 ngày** (phải build lại/cài lại) | Có, không giới hạn 7 ngày         |
+| TestFlight (mời người khác test)                                 | Không                                                                                                                  | Có                                |
+| Phân phối App Store                                              | Không                                                                                                                  | Có                                |
+| Ad-hoc distribution (chia sẻ build cho thiết bị đã đăng ký UDID) | Không                                                                                                                  | Có                                |
 
 **Kết luận:** tài khoản Apple free cho phép **bạn tự cài app lên chính iPhone của mình miễn phí qua Xcode** (personal team), nhưng không dùng được cho bất kỳ hình thức chia sẻ nào cho người khác (không TestFlight, không ad-hoc, không App Store) — những cái đó bắt buộc 99 USD/năm.
 
@@ -115,11 +116,11 @@ Android cho phép cài file APK trực tiếp (không qua Play Store) mà không
 
 ## 5. Đường vòng phân phối miễn phí — so sánh Android vs iOS
 
-| | Android | iOS |
-|---|---|---|
-| Cài trên chính thiết bị của bạn | Miễn phí, không cần tài khoản gì | Miễn phí qua Xcode + free Apple ID, nhưng giới hạn 3 thiết bị, hết hạn 7 ngày [Apple — Compare Memberships](https://developer.apple.com/support/compare-memberships/) |
+|                                                       | Android                                                                                                                            | iOS                                                                                                                                                                    |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cài trên chính thiết bị của bạn                       | Miễn phí, không cần tài khoản gì                                                                                                   | Miễn phí qua Xcode + free Apple ID, nhưng giới hạn 3 thiết bị, hết hạn 7 ngày [Apple — Compare Memberships](https://developer.apple.com/support/compare-memberships/)  |
 | Chia sẻ bản cài cho người khác test (không qua store) | Miễn phí — gửi file APK trực tiếp, không cần tài khoản [Internal distribution](https://docs.expo.dev/build/internal-distribution/) | **Bắt buộc** Apple Developer Program 99 USD/năm cho ad-hoc/TestFlight — không có cách lách [Internal distribution](https://docs.expo.dev/build/internal-distribution/) |
-| Phát hành công khai trên store chính thức | Google Play Console 25 USD một lần | Apple Developer Program 99 USD/năm |
+| Phát hành công khai trên store chính thức             | Google Play Console 25 USD một lần                                                                                                 | Apple Developer Program 99 USD/năm                                                                                                                                     |
 
 Kết luận quan trọng: **Android có "APK sideloading" như một con đường thực sự miễn phí và không giới hạn thời gian để đưa app tới bất kỳ ai có file APK.** iOS **không có** cơ chế tương đương cho người dùng công khai bất kỳ — mọi hình thức chia sẻ ngoài "tự cài lên máy mình qua Xcode" đều đòi hỏi ký code bằng tài khoản trả phí, do chính sách code-signing bắt buộc của Apple (xác nhận qua chính tài liệu Apple so sánh membership và tài liệu EAS Internal Distribution).
 

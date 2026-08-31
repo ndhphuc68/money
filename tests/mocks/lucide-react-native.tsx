@@ -31,6 +31,7 @@ export const List = createIcon();
 export const ListChecks = createIcon();
 export const MoreHorizontal = createIcon();
 export const Plus = createIcon();
+export const Check = createIcon();
 export const ReceiptText = createIcon();
 export const ShoppingBag = createIcon();
 export const Target = createIcon();

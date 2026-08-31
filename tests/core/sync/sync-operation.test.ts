@@ -56,6 +56,8 @@ describe('SyncOperation', () => {
     ['nested undefined array value', [undefined]],
     ['sparse array value', new Array(1)],
   ])('rejects a payload containing %s', (_, payload) => {
-    expect(() => parseSyncOperation({ ...validOperation, payload })).toThrow('Sync operation payload must be valid JSON data');
+    expect(() => parseSyncOperation({ ...validOperation, payload })).toThrow(
+      'Sync operation payload must be valid JSON data',
+    );
   });
 });

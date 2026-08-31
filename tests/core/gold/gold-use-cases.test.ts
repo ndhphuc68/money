@@ -11,7 +11,11 @@ jest.mock('expo-crypto', () => {
 
 import { randomUUID } from 'expo-crypto';
 
-import { CreateGoldBrand, DeleteGoldBrand, ListGoldBrands } from '@/core/application/gold/manage-gold-brands';
+import {
+  CreateGoldBrand,
+  DeleteGoldBrand,
+  ListGoldBrands,
+} from '@/core/application/gold/manage-gold-brands';
 import { CreateGoldLot } from '@/core/application/gold/create-gold-lot';
 import { SellGoldLot } from '@/core/application/gold/sell-gold-lot';
 import { TrashGoldLot, TrashGoldSale } from '@/core/application/gold/trash-gold-transaction';
@@ -48,9 +52,19 @@ describe('gold use cases', () => {
 
   describe('CreateGoldBrand / ListGoldBrands / DeleteGoldBrand', () => {
     it('creates a brand, lists it, then deletes it', async () => {
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const listGoldBrands = new ListGoldBrands({ goldBrandRepository });
-      const deleteGoldBrand = new DeleteGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const deleteGoldBrand = new DeleteGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'PNJ' });
       await expect(listGoldBrands.execute()).resolves.toEqual([brand]);
@@ -62,7 +76,12 @@ describe('gold use cases', () => {
 
   describe('CreateGoldLot', () => {
     it('creates a lot as held with normalized grams, referencing an existing brand', async () => {
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
 
       const brand = await createGoldBrand.execute({ name: 'SJC' });
@@ -74,21 +93,49 @@ describe('gold use cases', () => {
         totalAmount: 17000000,
       });
 
-      expect(lot).toMatchObject({ brandId: brand.id, quantity: 2, unit: 'chi', quantityGrams: 7.5, status: 'held' });
+      expect(lot).toMatchObject({
+        brandId: brand.id,
+        quantity: 2,
+        unit: 'chi',
+        quantityGrams: 7.5,
+        status: 'held',
+      });
     });
   });
 
   describe('SellGoldLot', () => {
     it('sells a held lot, marking it sold and computing the correct lotId link', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const createGoldBrand = new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand =
+        new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({
+          goldBrandRepository,
+          now,
+          deviceId,
+          generateId,
+        });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'PNJ' });
-      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const lot = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-12',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
 
-      const sale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+      const sale = await sellGoldLot.execute({
+        lotId: lot.id,
+        saleDate: '2026-08-25',
+        totalAmount: 8700000,
+      });
 
       expect(sale).toMatchObject({ lotId: lot.id, totalAmount: 8700000 });
       await expect(goldLotRepository.findById(lot.id)).resolves.toMatchObject({ status: 'sold' });
@@ -96,40 +143,82 @@ describe('gold use cases', () => {
 
     it('rejects selling a lot that does not exist', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
-      await expect(sellGoldLot.execute({ lotId: 'missing-lot', saleDate: '2026-08-25', totalAmount: 8700000 })).rejects.toThrow(
-        'Gold lot not found',
-      );
+      await expect(
+        sellGoldLot.execute({ lotId: 'missing-lot', saleDate: '2026-08-25', totalAmount: 8700000 }),
+      ).rejects.toThrow('Gold lot not found');
     });
 
     it('rejects selling a lot that is already sold', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const createGoldBrand = new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand =
+        new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({
+          goldBrandRepository,
+          now,
+          deviceId,
+          generateId,
+        });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'SJC' });
-      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const lot = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-12',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
       await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-20', totalAmount: 8700000 });
 
-      await expect(sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8800000 })).rejects.toThrow(
-        'Gold lot is not available to sell',
-      );
+      await expect(
+        sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8800000 }),
+      ).rejects.toThrow('Gold lot is not available to sell');
     });
 
     it('rejects a sale date earlier than the purchase date', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const createGoldBrand = new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand =
+        new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({
+          goldBrandRepository,
+          now,
+          deviceId,
+          generateId,
+        });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'DOJI' });
-      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-20', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const lot = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-20',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
 
-      await expect(sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-19', totalAmount: 8700000 })).rejects.toThrow(
-        'Sale date must not be before the lot purchase date',
-      );
+      await expect(
+        sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-19', totalAmount: 8700000 }),
+      ).rejects.toThrow('Sale date must not be before the lot purchase date');
     });
   });
 
@@ -137,21 +226,73 @@ describe('gold use cases', () => {
     it('blocks trashing a lot with an active sale, allows it once the sale is trashed, and restore round-trips', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
       const changeLogRepository = new ChangeLogRepository(database);
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-      const trashGoldLot = new TrashGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-      const trashGoldSale = new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
+      const trashGoldLot = new TrashGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
+      const trashGoldSale = new TrashGoldSale({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const restoreGoldLot = new RestoreGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const restoreGoldSale = new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-      const purgeGoldLot = new PurgeGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-      const purgeGoldSale = new PurgeGoldSale({ goldSellTransactionRepository, now, deviceId, generateId });
+      const restoreGoldSale = new RestoreGoldSale({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
+      const purgeGoldLot = new PurgeGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
+      const purgeGoldSale = new PurgeGoldSale({
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'PNJ' });
-      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
-      const sale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+      const lot = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-12',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
+      const sale = await sellGoldLot.execute({
+        lotId: lot.id,
+        saleDate: '2026-08-25',
+        totalAmount: 8700000,
+      });
 
-      await expect(trashGoldLot.execute(lot.id)).rejects.toThrow('Cannot trash a gold lot with an active sell transaction');
+      await expect(trashGoldLot.execute(lot.id)).rejects.toThrow(
+        'Cannot trash a gold lot with an active sell transaction',
+      );
 
       const trashedSale = await trashGoldSale.execute(sale.id);
       expect(trashedSale.deletedAt).not.toBeNull();
@@ -172,74 +313,187 @@ describe('gold use cases', () => {
       await purgeGoldLot.execute(lot.id);
       const changeLogRepo = changeLogRepository;
       await expect(changeLogRepo.listPending()).resolves.toEqual(
-        expect.arrayContaining([expect.objectContaining({ entityId: lot.id, operation: 'delete' })]),
+        expect.arrayContaining([
+          expect.objectContaining({ entityId: lot.id, operation: 'delete' }),
+        ]),
       );
 
       await purgeGoldSale.execute(sale.id);
       await expect(changeLogRepo.listPending()).resolves.toEqual(
-        expect.arrayContaining([expect.objectContaining({ entityId: sale.id, operation: 'delete' })]),
+        expect.arrayContaining([
+          expect.objectContaining({ entityId: sale.id, operation: 'delete' }),
+        ]),
       );
     });
 
     it('rejects restoring a sale whose lot has been re-sold to another sale', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-      const trashGoldSale = new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-      const restoreGoldSale = new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
+      const trashGoldSale = new TrashGoldSale({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
+      const restoreGoldSale = new RestoreGoldSale({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'SJC' });
-      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
-      const firstSale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-20', totalAmount: 8700000 });
+      const lot = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-12',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
+      const firstSale = await sellGoldLot.execute({
+        lotId: lot.id,
+        saleDate: '2026-08-20',
+        totalAmount: 8700000,
+      });
       await trashGoldSale.execute(firstSale.id);
       await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-22', totalAmount: 8600000 });
 
-      await expect(restoreGoldSale.execute(firstSale.id)).rejects.toThrow('Cannot restore: the gold lot is no longer available');
+      await expect(restoreGoldSale.execute(firstSale.id)).rejects.toThrow(
+        'Cannot restore: the gold lot is no longer available',
+      );
     });
 
     it('rejects purging a gold lot that was never trashed and leaves it queryable', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const purgeGoldLot = new PurgeGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const purgeGoldLot = new PurgeGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'PNJ' });
-      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const lot = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-12',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
 
-      await expect(purgeGoldLot.execute(lot.id)).rejects.toThrow('Cannot permanently delete a gold lot that is not in the trash');
-      await expect(goldLotRepository.findById(lot.id)).resolves.toMatchObject({ id: lot.id, deletedAt: null });
+      await expect(purgeGoldLot.execute(lot.id)).rejects.toThrow(
+        'Cannot permanently delete a gold lot that is not in the trash',
+      );
+      await expect(goldLotRepository.findById(lot.id)).resolves.toMatchObject({
+        id: lot.id,
+        deletedAt: null,
+      });
     });
 
     it('rejects purging a gold sell transaction that was never trashed and leaves it queryable', async () => {
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-      const purgeGoldSale = new PurgeGoldSale({ goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
+      const purgeGoldSale = new PurgeGoldSale({
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'SJC' });
-      const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
-      const sale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+      const lot = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-12',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
+      const sale = await sellGoldLot.execute({
+        lotId: lot.id,
+        saleDate: '2026-08-25',
+        totalAmount: 8700000,
+      });
 
       await expect(purgeGoldSale.execute(sale.id)).rejects.toThrow(
         'Cannot permanently delete a gold sell transaction that is not in the trash',
       );
-      await expect(goldSellTransactionRepository.findById(sale.id)).resolves.toMatchObject({ id: sale.id, deletedAt: null });
+      await expect(goldSellTransactionRepository.findById(sale.id)).resolves.toMatchObject({
+        id: sale.id,
+        deletedAt: null,
+      });
     });
   });
 
   describe('GetGoldOverview', () => {
     it('sums quantity and cost basis across held lots only', async () => {
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
       const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-      const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+      const sellGoldLot = new SellGoldLot({
+        goldLotRepository,
+        goldSellTransactionRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const getGoldOverview = new GetGoldOverview({ goldLotRepository });
 
       const brand = await createGoldBrand.execute({ name: 'PNJ' });
-      const lotA = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 2, unit: 'chi', totalAmount: 17000000 });
-      const lotB = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-20', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      const lotA = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-12',
+        quantity: 2,
+        unit: 'chi',
+        totalAmount: 17000000,
+      });
+      const lotB = await createGoldLot.execute({
+        brandId: brand.id,
+        purchaseDate: '2026-08-20',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
       await sellGoldLot.execute({ lotId: lotB.id, saleDate: '2026-08-25', totalAmount: 8700000 });
 
       const overview = await getGoldOverview.execute();

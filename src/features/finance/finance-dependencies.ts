@@ -132,7 +132,10 @@ export async function createFinanceDependencies(
       profileSettingsRepository,
       ...shared,
     }),
-    createRecurringExpense: new CreateRecurringExpense({ processing: recurringOccurrenceProcessing, ...shared }),
+    createRecurringExpense: new CreateRecurringExpense({
+      processing: recurringOccurrenceProcessing,
+      ...shared,
+    }),
     confirmRecurringOccurrence: new ConfirmRecurringOccurrence({
       processing: recurringOccurrenceProcessing,
       occurrenceRepository: recurringOccurrenceRepository,
@@ -144,9 +147,18 @@ export async function createFinanceDependencies(
       occurrenceRepository: recurringOccurrenceRepository,
       ...shared,
     }),
-    pauseRecurringSchedule: new PauseRecurringSchedule({ scheduleRepository: recurringScheduleRepository, ...shared }),
-    resumeRecurringSchedule: new ResumeRecurringSchedule({ scheduleRepository: recurringScheduleRepository, ...shared }),
-    endRecurringSchedule: new EndRecurringSchedule({ scheduleRepository: recurringScheduleRepository, ...shared }),
+    pauseRecurringSchedule: new PauseRecurringSchedule({
+      scheduleRepository: recurringScheduleRepository,
+      ...shared,
+    }),
+    resumeRecurringSchedule: new ResumeRecurringSchedule({
+      scheduleRepository: recurringScheduleRepository,
+      ...shared,
+    }),
+    endRecurringSchedule: new EndRecurringSchedule({
+      scheduleRepository: recurringScheduleRepository,
+      ...shared,
+    }),
     updateRecurringSchedule: new UpdateRecurringSchedule({
       scheduleRepository: recurringScheduleRepository,
       occurrenceRepository: recurringOccurrenceRepository,

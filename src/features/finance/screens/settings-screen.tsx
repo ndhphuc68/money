@@ -1,5 +1,13 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ChevronRight, Coins, CreditCard, Database, EyeOff, Repeat, UserRound } from 'lucide-react-native';
+import {
+  ChevronRight,
+  Coins,
+  CreditCard,
+  Database,
+  EyeOff,
+  Repeat,
+  UserRound,
+} from 'lucide-react-native';
 
 import type { SettingsViewModel } from '@/features/finance/view-models/use-settings';
 import type { Translate } from '@/i18n/translations';

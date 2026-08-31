@@ -19,7 +19,13 @@ function copyHeaders(res, upstreamRes) {
 
 const server = http.createServer((req, res) => {
   const upstreamReq = http.request(
-    { host: 'localhost', port: targetPort, path: req.url, method: req.method, headers: req.headers },
+    {
+      host: 'localhost',
+      port: targetPort,
+      path: req.url,
+      method: req.method,
+      headers: req.headers,
+    },
     (upstreamRes) => {
       copyHeaders(res, upstreamRes);
       res.writeHead(upstreamRes.statusCode);
@@ -57,5 +63,7 @@ server.on('upgrade', (req, clientSocket, head) => {
 });
 
 server.listen(proxyPort, () => {
-  console.log(`Web dev proxy listening on http://localhost:${proxyPort} -> http://localhost:${targetPort}`);
+  console.log(
+    `Web dev proxy listening on http://localhost:${proxyPort} -> http://localhost:${targetPort}`,
+  );
 });

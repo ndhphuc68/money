@@ -3,7 +3,10 @@ import {
   RecurringOccurrenceRepository,
   RecurringScheduleRepository,
 } from '@/core/application/ports/recurring-repositories';
-import { RecurringSchedule, RecurringScheduleInput } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleInput,
+} from '@/core/domain/finance/recurring-schedule';
 
 export type ManageRecurringScheduleDeps = {
   scheduleRepository: RecurringScheduleRepository;

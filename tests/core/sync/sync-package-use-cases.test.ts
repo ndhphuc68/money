@@ -24,7 +24,9 @@ describe('sync package use cases', () => {
 
   it('imports a package through the engine boundary and returns its summary', async () => {
     const summary: ImportSummary = { applied: 1, skipped: 2, conflicted: 3, rejected: 4 };
-    const useCase = new ImportSyncPackage({ import: async (incoming) => (incoming === pkg ? summary : Promise.reject(new Error())) });
+    const useCase = new ImportSyncPackage({
+      import: async (incoming) => (incoming === pkg ? summary : Promise.reject(new Error())),
+    });
 
     await expect(useCase.execute(pkg)).resolves.toEqual(summary);
   });

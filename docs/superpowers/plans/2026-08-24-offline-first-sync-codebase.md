@@ -25,12 +25,14 @@
 ### Task 1: Scaffold the Expo SDK 54 mobile project
 
 **Files:**
+
 - Create: `package.json`, `app.json`, `tsconfig.json`, `babel.config.js`, `metro.config.js`, `app/`, `assets/`, and Expo-generated files from the SDK 54 template
 - Create: `src/core/`, `src/data/`, `src/infrastructure/`, `src/features/`
 - Create: `jest.config.js`, `tests/smoke/app-starts.test.ts`
 - Modify: `package.json` scripts and dependency versions as needed for SDK 54
 
 **Interfaces:**
+
 - Produces the app entrypoint and TypeScript path aliases consumed by every later task.
 
 - [ ] **Step 1: Initialize the Expo SDK 54 project**
@@ -89,6 +91,7 @@ Run `npx expo start`, scan the QR code in Expo Go on a physical Android device, 
 ### Task 2: Define framework-independent domain and sync contracts
 
 **Files:**
+
 - Create: `src/core/domain/sync/sync-operation.ts`
 - Create: `src/core/domain/sync/sync-package.ts`
 - Create: `src/core/domain/sync/syncable-record.ts`
@@ -99,6 +102,7 @@ Run `npx expo start`, scan the QR code in Expo Go on a physical Android device, 
 - Create: `tests/core/sync/sync-operation.test.ts`
 
 **Interfaces:**
+
 - `SyncOperation`: `{ operationId, entityType, entityId, operation, payload, originDeviceId, revision, createdAt }`.
 - `SyncPackage`: `{ format: 'app-sync', formatVersion: 1, appVersion, schemaVersion, sourceDeviceId, exportedAt, changes, checksum }`.
 - `SyncTransport`: `exportChanges(): Promise<SyncPackage>` and `importChanges(pkg: SyncPackage): Promise<ImportSummary>`.
@@ -127,6 +131,7 @@ Expected: all focused tests PASS and `npm run typecheck` succeeds.
 ### Task 3: Add SQLite schema, Drizzle migrations, and local repositories
 
 **Files:**
+
 - Create: `src/data/local/db/client.ts`
 - Create: `src/data/local/db/provider.tsx`
 - Create: `src/data/local/schema/sync-meta.ts`
@@ -140,6 +145,7 @@ Expected: all focused tests PASS and `npm run typecheck` succeeds.
 - Create: `tests/data/local/example-record-repository.test.ts`
 
 **Interfaces:**
+
 - `ChangeLogRepository.append(operation): Promise<void>`
 - `ChangeLogRepository.hasOperation(operationId): Promise<boolean>`
 - `ChangeLogRepository.listPending(): Promise<SyncOperation[]>`
@@ -190,6 +196,7 @@ Expected: PASS with migration files generated and no type errors.
 ### Task 4: Implement deterministic merge and idempotent sync application
 
 **Files:**
+
 - Create: `src/data/sync/conflict-resolution/last-write-wins.ts`
 - Create: `src/data/sync/sync-engine/sync-engine.ts`
 - Create: `src/data/sync/serializers/sync-package-serializer.ts`
@@ -200,6 +207,7 @@ Expected: PASS with migration files generated and no type errors.
 - Create: `tests/core/sync/sync-package-serializer.test.ts`
 
 **Interfaces:**
+
 - `ConflictResolver.resolve(local, incoming): ConflictResolution`
 - `SyncEngine.exportPending(): Promise<SyncPackage>`
 - `SyncEngine.import(pkg): Promise<ImportSummary>`
@@ -232,6 +240,7 @@ Expected: PASS for validation, serialization, merge, tombstones, duplicate opera
 ### Task 5: Add file export/import and system sharing adapters
 
 **Files:**
+
 - Create: `src/infrastructure/expo/file-system/sync-package-file.ts`
 - Create: `src/infrastructure/expo/sharing/system-share.ts`
 - Create: `src/infrastructure/expo/file-system/system-file-picker.ts`
@@ -241,6 +250,7 @@ Expected: PASS for validation, serialization, merge, tombstones, duplicate opera
 - Create: `tests/data/sync/file-sync-transport.test.ts`
 
 **Interfaces:**
+
 - `SyncPackageFile.write(pkg): Promise<string>`
 - `SyncPackageFile.read(uri): Promise<SyncPackage>`
 - `SystemShare.shareFile(uri): Promise<void>`
@@ -270,6 +280,7 @@ Expected: PASS and no TypeScript errors. Verify the app still launches in Expo G
 ### Task 6: Wire the app shell and document the developer workflow
 
 **Files:**
+
 - Create: `app/_layout.tsx`
 - Create: `app/index.tsx`
 - Create: `src/features/sync/screens/sync-screen.tsx`
@@ -278,6 +289,7 @@ Expected: PASS and no TypeScript errors. Verify the app still launches in Expo G
 - Create: `tests/smoke/navigation.test.tsx`
 
 **Interfaces:**
+
 - The screen consumes `ExportSyncPackage` and `ImportSyncPackage` use cases through a view model; it does not access SQLite or Expo APIs directly.
 
 - [ ] **Step 1: Write the failing navigation smoke test**

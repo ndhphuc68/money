@@ -17,7 +17,11 @@ import { GetReport } from '@/core/application/finance/get-report';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { formatVnd } from '@/core/domain/finance/money';
-import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  Transaction,
+  TransactionInput,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 import { ReportsScreen } from '@/features/finance/screens/reports-screen';
 import { useReports } from '@/features/finance/view-models/use-reports';
 import { Locale, translate } from '@/i18n/translations';
@@ -50,7 +54,11 @@ class FakeAccountRepository implements AccountRepository {
     return account;
   }
 
-  async update(_id: string, _changes: UpdateAccountInput, _context: WriteContext): Promise<Account> {
+  async update(
+    _id: string,
+    _changes: UpdateAccountInput,
+    _context: WriteContext,
+  ): Promise<Account> {
     throw new Error('not implemented');
   }
 
@@ -90,7 +98,11 @@ class FakeCategoryRepository implements CategoryRepository {
     return category;
   }
 
-  async update(_id: string, _changes: UpdateCategoryInput, _context: WriteContext): Promise<Category> {
+  async update(
+    _id: string,
+    _changes: UpdateCategoryInput,
+    _context: WriteContext,
+  ): Promise<Category> {
     throw new Error('not implemented');
   }
 
@@ -103,7 +115,9 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 
   async listActiveByType(type: Category['type']): Promise<Category[]> {
-    return Array.from(this.store.values()).filter((category) => category.type === type && category.deletedAt === null);
+    return Array.from(this.store.values()).filter(
+      (category) => category.type === type && category.deletedAt === null,
+    );
   }
 
   async isUsedByTransaction(): Promise<boolean> {
@@ -121,25 +135,45 @@ class FakeTransactionRepository implements TransactionRepository {
   async create(input: CreateTransactionInput): Promise<Transaction> {
     const { id, originDeviceId, operationId: _operationId, now, ...rest } = input;
     validateTransactionInput(rest);
-    const transaction = buildTransaction(id, rest, { createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId });
+    const transaction = buildTransaction(id, rest, {
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId,
+    });
     this.store.set(id, transaction);
     return transaction;
   }
 
-  async update(_id: string, _changes: UpdateTransactionInput, _context: WriteContext): Promise<Transaction> {
+  async update(
+    _id: string,
+    _changes: UpdateTransactionInput,
+    _context: WriteContext,
+  ): Promise<Transaction> {
     throw new Error('not implemented');
   }
 
   async softDelete(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
 
   async restore(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: null, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: null,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
@@ -175,12 +209,40 @@ class FakeTransactionRepository implements TransactionRepository {
   }
 }
 
-function buildTransaction(id: string, input: TransactionInput, meta: { createdAt: string; updatedAt: string; deletedAt: string | null; revision: number; originDeviceId: string }): Transaction {
-  const base = { id, amount: input.amount, accountId: input.accountId, date: input.date, name: input.name, note: input.note ?? null, ...meta };
+function buildTransaction(
+  id: string,
+  input: TransactionInput,
+  meta: {
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    revision: number;
+    originDeviceId: string;
+  },
+): Transaction {
+  const base = {
+    id,
+    amount: input.amount,
+    accountId: input.accountId,
+    date: input.date,
+    name: input.name,
+    note: input.note ?? null,
+    ...meta,
+  };
   if (input.type === 'transfer') {
-    return { ...base, type: 'transfer', destinationAccountId: input.destinationAccountId as string, categoryId: null };
+    return {
+      ...base,
+      type: 'transfer',
+      destinationAccountId: input.destinationAccountId as string,
+      categoryId: null,
+    };
   }
-  return { ...base, type: input.type, categoryId: input.categoryId as string, destinationAccountId: null };
+  return {
+    ...base,
+    type: input.type,
+    categoryId: input.categoryId as string,
+    destinationAccountId: null,
+  };
 }
 
 function makeIdFactory(prefix: string): () => string {
@@ -202,7 +264,13 @@ function makeRepos() {
 
 type Repos = ReturnType<typeof makeRepos>;
 
-function Harness({ dependencies, now }: { dependencies: Repos & { getReport: GetReport }; now?: () => Date }) {
+function Harness({
+  dependencies,
+  now,
+}: {
+  dependencies: Repos & { getReport: GetReport };
+  now?: () => Date;
+}) {
   const viewModel = useReports({ dependencies, now: now ?? (() => new Date(NOW)), t });
   return <ReportsScreen {...viewModel} t={t} />;
 }
@@ -249,7 +317,8 @@ async function seed(repos: Repos) {
 describe('reports screen + view model', () => {
   it('shows income, expense, net cash flow, category totals and account totals for the current month, excluding transfers', async () => {
     const repos = makeRepos();
-    const { cashAccount, bankAccount, expenseCategory, incomeCategory, generateId } = await seed(repos);
+    const { cashAccount, bankAccount, expenseCategory, incomeCategory, generateId } =
+      await seed(repos);
 
     await repos.transactionRepository.create({
       id: generateId(),

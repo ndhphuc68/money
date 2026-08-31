@@ -12,10 +12,17 @@ import {
   WriteContext,
 } from '@/core/application/ports/finance-repositories';
 import { CreateAccount } from '@/core/application/finance/create-account';
-import { CreateCategory, HideCategory, UpdateCategory } from '@/core/application/finance/manage-categories';
+import {
+  CreateCategory,
+  HideCategory,
+  UpdateCategory,
+} from '@/core/application/finance/manage-categories';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
-import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
+import {
+  createDefaultProfileSettings,
+  ProfileSettings,
+} from '@/core/domain/finance/profile-settings';
 import { AccountsScreen } from '@/features/finance/screens/accounts-screen';
 import { CategoriesScreen } from '@/features/finance/screens/categories-screen';
 import { useSettings } from '@/features/finance/view-models/use-settings';
@@ -52,14 +59,25 @@ class FakeAccountRepository implements AccountRepository {
 
   async update(id: string, changes: UpdateAccountInput, context: WriteContext): Promise<Account> {
     const existing = this.requireById(id);
-    const updated: Account = { ...existing, ...changes, updatedAt: context.now, revision: existing.revision + 1 };
+    const updated: Account = {
+      ...existing,
+      ...changes,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    };
     this.store.set(id, updated);
     return updated;
   }
 
   async softDeleteOrHide(id: string, context: WriteContext): Promise<Account> {
     const existing = this.requireById(id);
-    const updated: Account = { ...existing, isArchived: true, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 };
+    const updated: Account = {
+      ...existing,
+      isArchived: true,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    };
     this.store.set(id, updated);
     return updated;
   }
@@ -106,14 +124,25 @@ class FakeCategoryRepository implements CategoryRepository {
 
   async update(id: string, changes: UpdateCategoryInput, context: WriteContext): Promise<Category> {
     const existing = this.requireById(id);
-    const updated: Category = { ...existing, ...changes, updatedAt: context.now, revision: existing.revision + 1 };
+    const updated: Category = {
+      ...existing,
+      ...changes,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    };
     this.store.set(id, updated);
     return updated;
   }
 
   async hide(id: string, context: WriteContext): Promise<Category> {
     const existing = this.requireById(id);
-    const updated: Category = { ...existing, isArchived: true, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 };
+    const updated: Category = {
+      ...existing,
+      isArchived: true,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    };
     this.store.set(id, updated);
     return updated;
   }
@@ -123,7 +152,9 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 
   async listActiveByType(type: Category['type']): Promise<Category[]> {
-    return Array.from(this.store.values()).filter((category) => category.type === type && category.deletedAt === null);
+    return Array.from(this.store.values()).filter(
+      (category) => category.type === type && category.deletedAt === null,
+    );
   }
 
   async isUsedByTransaction(): Promise<boolean> {
@@ -181,7 +212,11 @@ function makeDependencies() {
     createCategory: new CreateCategory({ categoryRepository, ...shared }),
     updateCategory: new UpdateCategory({ categoryRepository, ...shared }),
     hideCategory: new HideCategory({ categoryRepository, ...shared }),
-    buildWriteContext: (): WriteContext => ({ originDeviceId: DEVICE_ID, operationId: generateId(), now: now() }),
+    buildWriteContext: (): WriteContext => ({
+      originDeviceId: DEVICE_ID,
+      operationId: generateId(),
+      now: now(),
+    }),
   };
 }
 
@@ -198,7 +233,11 @@ function CategoriesHarness({ dependencies }: { dependencies: Dependencies }) {
 }
 
 async function seedAccountAndCategory(dependencies: Dependencies) {
-  const account = await dependencies.createAccount.execute({ name: 'Vi tien mat', type: 'cash', openingBalance: 1_000_000 });
+  const account = await dependencies.createAccount.execute({
+    name: 'Vi tien mat',
+    type: 'cash',
+    openingBalance: 1_000_000,
+  });
   const category = await dependencies.createCategory.execute({ name: 'An uong', type: 'expense' });
   return { account, category };
 }

@@ -6,9 +6,13 @@ import { CategoryIcon, NavIcon } from '@/components/finance/icons';
 describe('finance navigation controls', () => {
   it('renders an accessible segmented control and reports selection changes', () => {
     const onChange = jest.fn();
-    const screen = render(<SegmentedControl options={['Week', 'Month']} value="Week" onChange={onChange} />);
+    const screen = render(
+      <SegmentedControl options={['Week', 'Month']} value="Week" onChange={onChange} />,
+    );
 
-    expect(screen.getByRole('button', { name: 'Week' }).props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByRole('button', { name: 'Week' }).props.accessibilityState).toEqual({
+      selected: true,
+    });
     fireEvent.press(screen.getByRole('button', { name: 'Month' }));
     expect(onChange).toHaveBeenCalledWith('Month');
   });

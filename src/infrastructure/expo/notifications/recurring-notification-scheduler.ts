@@ -9,7 +9,12 @@ export class RecurringNotificationScheduler implements NotificationScheduler {
     return result.granted === true;
   }
 
-  async scheduleAt(params: { id: string; title: string; body: string; fireDate: Date }): Promise<void> {
+  async scheduleAt(params: {
+    id: string;
+    title: string;
+    body: string;
+    fireDate: Date;
+  }): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: params.id,
       content: { title: params.title, body: params.body },

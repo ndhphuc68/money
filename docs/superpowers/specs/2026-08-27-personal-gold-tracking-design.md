@@ -25,7 +25,7 @@ Quy đổi chuẩn:
 
 Hệ thống giữ cả số lượng và đơn vị người dùng nhập để đối soát, đồng thời chuẩn hóa khối lượng nội bộ về gram bằng kiểu số thập phân chính xác.
 
-## Không thuộc MVP  
+## Không thuộc MVP
 
 - Vàng miếng, vàng trang sức, đá quý hoặc vàng không phải nhẫn trơn 9999.
 - Mua bán vàng trực tiếp trong ứng dụng.

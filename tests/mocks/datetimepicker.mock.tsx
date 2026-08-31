@@ -14,13 +14,16 @@ type DateTimePickerProps = {
   testID?: string;
 };
 
-export default function DateTimePicker({ value, onChange, testID = 'native-date-picker' }: DateTimePickerProps) {
+export default function DateTimePicker({
+  value,
+  onChange,
+  testID = 'native-date-picker',
+}: DateTimePickerProps) {
   return (
     <Pressable
       accessibilityLabel={testID}
       onPress={() => onChange?.({ type: 'set' }, value)}
-      testID={testID}
-    >
+      testID={testID}>
       <Text>{value.toISOString()}</Text>
     </Pressable>
   );

@@ -56,7 +56,12 @@ describe('finance repositories', () => {
         now: '2026-08-24T10:00:00.000Z',
       });
 
-      expect(account).toMatchObject({ name: 'Cash wallet', type: 'cash', isArchived: false, revision: 1 });
+      expect(account).toMatchObject({
+        name: 'Cash wallet',
+        type: 'cash',
+        isArchived: false,
+        revision: 1,
+      });
       await expect(accounts.findById(account.id)).resolves.toEqual(account);
       await expect(changes.hasOperation(id('90001'))).resolves.toBe(true);
       await expect(accounts.listActive()).resolves.toEqual([account]);
@@ -73,7 +78,11 @@ describe('finance repositories', () => {
         now: '2026-08-24T10:00:00.000Z',
       });
 
-      const updated = await accounts.update(account.id, { name: 'Main bank' }, ctx({ operationId: id('90003'), now: '2026-08-24T11:00:00.000Z' }));
+      const updated = await accounts.update(
+        account.id,
+        { name: 'Main bank' },
+        ctx({ operationId: id('90003'), now: '2026-08-24T11:00:00.000Z' }),
+      );
 
       expect(updated).toMatchObject({ name: 'Main bank', revision: 2 });
       await expect(accounts.findById(account.id)).resolves.toEqual(updated);
@@ -90,7 +99,10 @@ describe('finance repositories', () => {
         now: '2026-08-24T10:00:00.000Z',
       });
 
-      const result = await accounts.softDeleteOrHide(account.id, ctx({ operationId: id('90005'), now: '2026-08-24T12:00:00.000Z' }));
+      const result = await accounts.softDeleteOrHide(
+        account.id,
+        ctx({ operationId: id('90005'), now: '2026-08-24T12:00:00.000Z' }),
+      );
 
       expect(result.deletedAt).toBe('2026-08-24T12:00:00.000Z');
       expect(result.isArchived).toBe(false);
@@ -128,7 +140,10 @@ describe('finance repositories', () => {
         now: '2026-08-24T10:05:00.000Z',
       });
 
-      const result = await accounts.softDeleteOrHide(account.id, ctx({ operationId: id('90009'), now: '2026-08-24T12:00:00.000Z' }));
+      const result = await accounts.softDeleteOrHide(
+        account.id,
+        ctx({ operationId: id('90009'), now: '2026-08-24T12:00:00.000Z' }),
+      );
 
       expect(result.isArchived).toBe(true);
       expect(result.deletedAt).toBeNull();
@@ -149,7 +164,10 @@ describe('finance repositories', () => {
 
       await expect(categories.listActiveByType('income')).resolves.toEqual([category]);
 
-      const hidden = await categories.hide(category.id, ctx({ operationId: id('91002'), now: '2026-08-24T11:00:00.000Z' }));
+      const hidden = await categories.hide(
+        category.id,
+        ctx({ operationId: id('91002'), now: '2026-08-24T11:00:00.000Z' }),
+      );
 
       expect(hidden.isArchived).toBe(true);
       await expect(categories.findById(category.id)).resolves.toEqual(hidden);
@@ -201,7 +219,10 @@ describe('finance repositories', () => {
 
       await expect(categories.isUsedByTransaction(category.id)).resolves.toBe(true);
 
-      await transactionsRepo.softDelete(transaction.id, ctx({ operationId: id('91007'), now: '2026-08-24T11:00:00.000Z' }));
+      await transactionsRepo.softDelete(
+        transaction.id,
+        ctx({ operationId: id('91007'), now: '2026-08-24T11:00:00.000Z' }),
+      );
 
       await expect(categories.isUsedByTransaction(category.id)).resolves.toBe(true);
     });
@@ -246,7 +267,12 @@ describe('finance repositories', () => {
         now: '2026-08-24T10:00:00.000Z',
       });
 
-      expect(transaction).toMatchObject({ type: 'expense', amount: 50000, categoryId: category.id, destinationAccountId: null });
+      expect(transaction).toMatchObject({
+        type: 'expense',
+        amount: 50000,
+        categoryId: category.id,
+        destinationAccountId: null,
+      });
       await expect(transactionsRepo.findById(transaction.id)).resolves.toEqual(transaction);
     });
 
@@ -283,7 +309,11 @@ describe('finance repositories', () => {
         now: '2026-08-24T10:00:00.000Z',
       });
 
-      expect(transaction).toMatchObject({ type: 'transfer', destinationAccountId: destination.id, categoryId: null });
+      expect(transaction).toMatchObject({
+        type: 'transfer',
+        destinationAccountId: destination.id,
+        categoryId: null,
+      });
     });
 
     it('rejects an invalid transaction input before writing anything', async () => {
@@ -365,12 +395,18 @@ describe('finance repositories', () => {
         now: '2026-08-24T10:00:00.000Z',
       });
 
-      const deleted = await transactionsRepo.softDelete(transaction.id, ctx({ operationId: id('92010'), now: '2026-08-24T11:00:00.000Z' }));
+      const deleted = await transactionsRepo.softDelete(
+        transaction.id,
+        ctx({ operationId: id('92010'), now: '2026-08-24T11:00:00.000Z' }),
+      );
       expect(deleted.deletedAt).toBe('2026-08-24T11:00:00.000Z');
       await expect(transactionsRepo.list()).resolves.toEqual([]);
       await expect(transactionsRepo.list({ includeDeleted: true })).resolves.toEqual([deleted]);
 
-      const restored = await transactionsRepo.restore(transaction.id, ctx({ operationId: id('92011'), now: '2026-08-24T12:00:00.000Z' }));
+      const restored = await transactionsRepo.restore(
+        transaction.id,
+        ctx({ operationId: id('92011'), now: '2026-08-24T12:00:00.000Z' }),
+      );
       expect(restored.deletedAt).toBeNull();
       expect(restored.revision).toBe(3);
       await expect(transactionsRepo.list()).resolves.toEqual([restored]);
@@ -433,7 +469,9 @@ describe('finance repositories', () => {
       await expect(transactionsRepo.list({ accountId: otherAccount.id })).resolves.toHaveLength(1);
       await expect(transactionsRepo.list({ categoryId: category.id })).resolves.toHaveLength(3);
       await expect(transactionsRepo.list({ query: 'salary' })).resolves.toEqual([income]);
-      await expect(transactionsRepo.list({ from: '2026-08-16', to: '2026-08-31' })).resolves.toEqual([income]);
+      await expect(
+        transactionsRepo.list({ from: '2026-08-16', to: '2026-08-31' }),
+      ).resolves.toEqual([income]);
     });
   });
 

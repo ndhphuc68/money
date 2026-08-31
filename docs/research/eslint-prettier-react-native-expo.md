@@ -50,12 +50,9 @@ Xác nhận bằng cách đọc trực tiếp template mà Expo CLI sinh ra (`no
 ```js
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
-const expoConfig = require("eslint-config-expo/flat");
+const expoConfig = require('eslint-config-expo/flat');
 
-module.exports = defineConfig([
-  expoConfig,
-  { ignores: ["dist/*"] }
-]);
+module.exports = defineConfig([expoConfig, { ignores: ['dist/*'] }]);
 ```
 
 README chính thức của package ([github.com/expo/expo/tree/main/packages/eslint-config-expo](https://github.com/expo/expo/tree/main/packages/eslint-config-expo)) xác nhận cách dùng flat config y hệt, và ghi rõ package "**is intended to be composed with the linter rules of your choice**" — tức đây là base config tối giản, không phải bộ rule toàn diện.
@@ -110,14 +107,14 @@ module.exports = {
 
 Khác biệt cốt lõi:
 
-| | `eslint-config-expo` | `@react-native/eslint-config` |
-|---|---|---|
-| Đối tượng | Expo-managed / Expo Router apps | Bare React Native (không qua Expo CLI) |
-| Plugin RN gốc | Không có `eslint-plugin-react-native` | Có `eslint-plugin-react-native`, `@react-native/eslint-plugin` |
-| Flow type | Không hỗ trợ | Có override cho Flow (`.js` + `@babel/eslint-parser` + `ft-flow`) — di sản từ codebase Meta nội bộ dùng Flow song song TS |
-| Jest plugin | Không kèm sẵn | Có `eslint-plugin-jest` kèm sẵn |
-| Prettier | Khuyến nghị `eslint-plugin-prettier/recommended` (xem mục 4) | Đã `extends: ['prettier']` (tức `eslint-config-prettier`) ngay trong core, không dùng `eslint-plugin-prettier` |
-| Global đặc thù Expo | Có (`__DEV__`, extension `.ios.js/.android.js/.web.js` qua `eslint-plugin-expo`) | Không có khái niệm Expo Router/platform extension của Expo |
+|                     | `eslint-config-expo`                                                             | `@react-native/eslint-config`                                                                                             |
+| ------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Đối tượng           | Expo-managed / Expo Router apps                                                  | Bare React Native (không qua Expo CLI)                                                                                    |
+| Plugin RN gốc       | Không có `eslint-plugin-react-native`                                            | Có `eslint-plugin-react-native`, `@react-native/eslint-plugin`                                                            |
+| Flow type           | Không hỗ trợ                                                                     | Có override cho Flow (`.js` + `@babel/eslint-parser` + `ft-flow`) — di sản từ codebase Meta nội bộ dùng Flow song song TS |
+| Jest plugin         | Không kèm sẵn                                                                    | Có `eslint-plugin-jest` kèm sẵn                                                                                           |
+| Prettier            | Khuyến nghị `eslint-plugin-prettier/recommended` (xem mục 4)                     | Đã `extends: ['prettier']` (tức `eslint-config-prettier`) ngay trong core, không dùng `eslint-plugin-prettier`            |
+| Global đặc thù Expo | Có (`__DEV__`, extension `.ios.js/.android.js/.web.js` qua `eslint-plugin-expo`) | Không có khái niệm Expo Router/platform extension của Expo                                                                |
 
 **Kết luận cho dự án này**: vì đây là dự án Expo Router (`expo-router: ~6.0.0`) chạy qua Expo CLI/Metro managed workflow, **`eslint-config-expo` là lựa chọn đúng và chính thức được Expo doc khuyến nghị**. `@react-native/eslint-config` được thiết kế cho bare RN CLI project (không có Expo CLI, không có Expo Router platform extensions, có Flow — không liên quan gì tới stack TS-only của dự án này) nên không phù hợp.
 
@@ -168,11 +165,11 @@ Theo tài liệu chính thức của `typescript-eslint` project (package hợp 
 
 ## 3. Prettier: phân biệt "chính thức" và "convention cộng đồng"
 
-### Không có "Prettier config chính thức của Expo/RN team" dưới dạng package publish riêng cho *app* — chỉ có ví dụ trong docs và config nội bộ của chính repo `facebook/react-native`
+### Không có "Prettier config chính thức của Expo/RN team" dưới dạng package publish riêng cho _app_ — chỉ có ví dụ trong docs và config nội bộ của chính repo `facebook/react-native`
 
 Cần phân biệt rõ 3 loại nguồn, không được gộp chung:
 
-**(a) Chính thức — Expo docs, chỉ là *ví dụ*, không phải mặc định bắt buộc:**
+**(a) Chính thức — Expo docs, chỉ là _ví dụ_, không phải mặc định bắt buộc:**
 
 Tài liệu chính thức [docs.expo.dev/guides/using-eslint/#prettier](https://docs.expo.dev/guides/using-eslint/) chỉ nói:
 
@@ -200,11 +197,11 @@ module.exports = {
   arrowParens: 'avoid',
   bracketSameLine: true,
   bracketSpacing: false,
-  requirePragma: true,       // <-- đặc thù monorepo Meta, KHÔNG áp dụng cho app thường
+  requirePragma: true, // <-- đặc thù monorepo Meta, KHÔNG áp dụng cho app thường
   singleQuote: true,
   trailingComma: 'all',
   endOfLine: 'lf',
-  overrides: [ /* xử lý Flow (*.js.flow), markdown nội bộ, yaml */ ],
+  overrides: [/* xử lý Flow (*.js.flow), markdown nội bộ, yaml */],
 };
 ```
 
@@ -212,15 +209,15 @@ module.exports = {
 
 **(c) Convention cộng đồng (phổ biến, không chính thức)** cho các giá trị Prettier thường thấy ở app RN/Expo (KHÔNG lấy từ trang chính thức nào của Expo/RN team làm chuẩn, mà là suy ra/tổng hợp từ (a) + (b) + thực hành phổ biến chung của Prettier cho JS/TS + JSX):
 
-| Option | Giá trị phổ biến | Ghi chú |
-|---|---|---|
-| `semi` | `true` | Prettier mặc định là `true`; đây là mặc định gốc của Prettier (không riêng RN) |
-| `singleQuote` | `true` | Xuất hiện ở cả (a) và (b) — điểm đồng thuận rõ ràng nhất giữa Meta và ví dụ Expo |
-| `trailingComma` | `"all"` | Dùng ở (b); Prettier 3.x đổi mặc định gốc thành `"all"` từ Prettier 3.0 (trước đó mặc định `"es5"`) — cần TS ≥3.7 hỗ trợ trailing comma sau rest, dự án này TS 5.9 không vấn đề |
-| `printWidth` | `100` | Dùng ở (a) — Prettier mặc định gốc là `80`; nhiều dự án RN nới ra `100` vì JSX dài dòng |
-| `tabWidth` | `2` | Trùng mặc định gốc Prettier, dùng ở (a) |
-| `bracketSameLine` (JSX `>` cùng dòng cuối) | `true` | Dùng ở cả (a) và (b) — đây là option thay thế cho `jsxBracketSameLine` cũ (đã deprecate từ Prettier 2.4, xem [prettier.io/docs/options#bracket-line](https://prettier.io/docs/en/options.html#bracket-line)) |
-| `arrowParens` | `"avoid"` (Meta dùng) hoặc mặc định gốc `"always"` | Đây là điểm KHÔNG đồng thuận: (b) dùng `avoid`, nhưng mặc định gốc Prettier từ v2 là `always`; cộng đồng RN/Expo rộng hơn không thống nhất — nên coi là lựa chọn tùy dự án, không phải chuẩn |
+| Option                                     | Giá trị phổ biến                                   | Ghi chú                                                                                                                                                                                                      |
+| ------------------------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `semi`                                     | `true`                                             | Prettier mặc định là `true`; đây là mặc định gốc của Prettier (không riêng RN)                                                                                                                               |
+| `singleQuote`                              | `true`                                             | Xuất hiện ở cả (a) và (b) — điểm đồng thuận rõ ràng nhất giữa Meta và ví dụ Expo                                                                                                                             |
+| `trailingComma`                            | `"all"`                                            | Dùng ở (b); Prettier 3.x đổi mặc định gốc thành `"all"` từ Prettier 3.0 (trước đó mặc định `"es5"`) — cần TS ≥3.7 hỗ trợ trailing comma sau rest, dự án này TS 5.9 không vấn đề                              |
+| `printWidth`                               | `100`                                              | Dùng ở (a) — Prettier mặc định gốc là `80`; nhiều dự án RN nới ra `100` vì JSX dài dòng                                                                                                                      |
+| `tabWidth`                                 | `2`                                                | Trùng mặc định gốc Prettier, dùng ở (a)                                                                                                                                                                      |
+| `bracketSameLine` (JSX `>` cùng dòng cuối) | `true`                                             | Dùng ở cả (a) và (b) — đây là option thay thế cho `jsxBracketSameLine` cũ (đã deprecate từ Prettier 2.4, xem [prettier.io/docs/options#bracket-line](https://prettier.io/docs/en/options.html#bracket-line)) |
+| `arrowParens`                              | `"avoid"` (Meta dùng) hoặc mặc định gốc `"always"` | Đây là điểm KHÔNG đồng thuận: (b) dùng `avoid`, nhưng mặc định gốc Prettier từ v2 là `always`; cộng đồng RN/Expo rộng hơn không thống nhất — nên coi là lựa chọn tùy dự án, không phải chuẩn                 |
 
 **Kết luận mục 3**: Không tồn tại một "Prettier config chính thức cho RN app" được publish thành package chuẩn dùng được ngay (kiểu `@react-native/prettier-config`). Điểm gần nhất với "chính thức" là ví dụ trong Expo docs (mục a) — nên dùng ví dụ đó làm điểm khởi đầu cho dự án này, không nên copy nguyên `.prettierrc.js` của Meta (mục b) vì có `requirePragma` không phù hợp app thường.
 
@@ -237,8 +234,8 @@ module.exports = {
 Và hướng dẫn dùng với flat config:
 
 ```js
-import eslintConfigPrettier from "eslint-config-prettier/flat";
-export default [ someConfig, eslintConfigPrettier ];
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
+export default [someConfig, eslintConfigPrettier];
 ```
 
 Đây thuần túy là **tắt rule**, không chạy Prettier qua ESLint — đây là cách được cộng đồng ESLint nói chung khuyến nghị rộng rãi để tránh 2 công cụ đè lẫn nhau (chạy `eslint` và `prettier --check` như hai bước riêng, không lồng nhau) vì hiệu năng tốt hơn và tránh double-reporting.
@@ -283,6 +280,7 @@ extends: ['prettier'],
 ### Kết luận mục 4 — khuyến nghị cho dự án này
 
 Có 2 cách chính thức, khác nguồn:
+
 1. **Cách của Expo (docs.expo.dev, cho Expo Router apps)**: `eslint-plugin-prettier/recommended` — chạy Prettier như 1 ESLint rule, một lệnh `npx expo lint` báo cả lỗi format. Đánh đổi: chậm hơn (Prettier chạy qua ESLint mỗi file), và có thể trùng lặp báo lỗi giữa 2 công cụ nếu editor cũng chạy Prettier riêng.
 2. **Cách của React Native core (`@react-native/eslint-config`)**: chỉ `eslint-config-prettier` để tắt rule, chạy `eslint` và `prettier --write`/`--check` như 2 bước tách biệt (thường qua `lint-staged`/script npm riêng). Nhanh hơn, tách biệt rõ trách nhiệm 2 công cụ — đây cũng là cách được khuyến nghị phổ biến trong hệ sinh thái ESLint nói chung (không riêng RN).
 
@@ -294,14 +292,14 @@ Vì dự án dùng **Expo Router** và tài liệu Expo chính thức hướng d
 
 ### Version cụ thể tại thời điểm khảo sát (2026-08-29), tra trực tiếp từ npm registry / GitHub
 
-| Package | Version đề xuất | Nguồn tra cứu |
-|---|---|---|
-| `eslint-config-expo` | `10.0.0` (khớp SDK 54, xem mục 1) — **không dùng `57.0.2` "latest" vì đó là bản cho SDK 57** | `package.json` tại tag `sdk-54`, github.com/expo/expo |
-| `eslint` | `^9.18.0` (bản `eslint-config-expo@10.0.0` build/test cùng); npm "latest" hiện là `10.9.1` nhưng nên theo peer range mà `eslint-config-expo@10.0.0` đã test (`eslint@^9.18.0` trong `devDependencies` của chính nó) để tránh vênh | npm registry `eslint@latest` = 10.9.1; `eslint-config-expo` package.json |
-| `eslint-plugin-prettier` | `^5.5.6` (bản mới nhất hiện có) | npm registry `eslint-plugin-prettier@latest` |
-| `eslint-config-prettier` | `^10.1.8` | npm registry `eslint-config-prettier@latest` |
-| `prettier` | `^3.9.6` | npm registry `prettier@latest` |
-| `typescript-eslint` (nếu augment typed rules) | `^8.68.0`, peer `typescript: ">=4.8.4 <6.1.0"` — khớp `typescript@~5.9.2` của dự án | npm registry `typescript-eslint@latest` |
+| Package                                       | Version đề xuất                                                                                                                                                                                                                   | Nguồn tra cứu                                                            |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `eslint-config-expo`                          | `10.0.0` (khớp SDK 54, xem mục 1) — **không dùng `57.0.2` "latest" vì đó là bản cho SDK 57**                                                                                                                                      | `package.json` tại tag `sdk-54`, github.com/expo/expo                    |
+| `eslint`                                      | `^9.18.0` (bản `eslint-config-expo@10.0.0` build/test cùng); npm "latest" hiện là `10.9.1` nhưng nên theo peer range mà `eslint-config-expo@10.0.0` đã test (`eslint@^9.18.0` trong `devDependencies` của chính nó) để tránh vênh | npm registry `eslint@latest` = 10.9.1; `eslint-config-expo` package.json |
+| `eslint-plugin-prettier`                      | `^5.5.6` (bản mới nhất hiện có)                                                                                                                                                                                                   | npm registry `eslint-plugin-prettier@latest`                             |
+| `eslint-config-prettier`                      | `^10.1.8`                                                                                                                                                                                                                         | npm registry `eslint-config-prettier@latest`                             |
+| `prettier`                                    | `^3.9.6`                                                                                                                                                                                                                          | npm registry `prettier@latest`                                           |
+| `typescript-eslint` (nếu augment typed rules) | `^8.68.0`, peer `typescript: ">=4.8.4 <6.1.0"` — khớp `typescript@~5.9.2` của dự án                                                                                                                                               | npm registry `typescript-eslint@latest`                                  |
 
 Package `@typescript-eslint/eslint-plugin` và `@typescript-eslint/parser` (`^8.18.2` theo `eslint-config-expo@10.0.0`) **đã được cài tự động như dependency của `eslint-config-expo`** — không cần khai riêng trong `devDependencies` trừ khi cần version khác hoặc dùng package hợp nhất `typescript-eslint` để augment typed rules.
 

@@ -52,7 +52,13 @@ describe('useGoldManagement', () => {
     const brandId = result.current.brands[0].id;
 
     await act(async () => {
-      await result.current.createLot({ brandId, purchaseDate: '2026-08-24', quantity: 2, unit: 'chi', totalAmount: 17000000 });
+      await result.current.createLot({
+        brandId,
+        purchaseDate: '2026-08-24',
+        quantity: 2,
+        unit: 'chi',
+        totalAmount: 17000000,
+      });
     });
     expect(result.current.heldLots).toHaveLength(1);
     expect(result.current.overview?.totalCostBasis).toBe(17000000);
@@ -76,7 +82,13 @@ describe('useGoldManagement', () => {
     });
     const brandId = result.current.brands[0].id;
     await act(async () => {
-      await result.current.createLot({ brandId, purchaseDate: '2026-08-24', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      await result.current.createLot({
+        brandId,
+        purchaseDate: '2026-08-24',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
     });
     const lotId = result.current.heldLots[0].id;
 

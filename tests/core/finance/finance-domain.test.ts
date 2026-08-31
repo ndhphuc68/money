@@ -2,12 +2,18 @@ import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { Transaction, TransactionInput } from '@/core/domain/finance/transaction';
 import { validateTransactionInput } from '@/core/domain/finance/transaction';
-import { calculateAccountBalance, calculatePeriodSummary } from '@/core/domain/finance/finance-calculations';
+import {
+  calculateAccountBalance,
+  calculatePeriodSummary,
+} from '@/core/domain/finance/finance-calculations';
 import { formatVnd, parseVndInput } from '@/core/domain/finance/money';
 
 const DEVICE_ID = '550e8400-e29b-41d4-a716-446655440099';
 
-function syncFields(id: string, overrides: Partial<{ deletedAt: string | null; revision: number }> = {}) {
+function syncFields(
+  id: string,
+  overrides: Partial<{ deletedAt: string | null; revision: number }> = {},
+) {
   return {
     id,
     createdAt: '2026-08-01T00:00:00.000Z',
@@ -114,7 +120,8 @@ describe('validateTransactionInput', () => {
   });
 
   it('rejects a transfer transaction missing destinationAccountId', () => {
-    const { destinationAccountId: _destinationAccountId, ...withoutDestination } = validTransferInput;
+    const { destinationAccountId: _destinationAccountId, ...withoutDestination } =
+      validTransferInput;
     expect(() => validateTransactionInput(withoutDestination as TransactionInput)).toThrow();
   });
 
@@ -156,8 +163,20 @@ describe('calculateAccountBalance', () => {
   it('applies opening balance plus income minus expense', () => {
     const account = makeAccount(CASH, 1000000);
     const transactions: Transaction[] = [
-      makeTransaction({ id: 't1', type: 'income', categoryId: SALARY, accountId: CASH, amount: 500000 } as Transaction),
-      makeTransaction({ id: 't2', type: 'expense', categoryId: FOOD, accountId: CASH, amount: 200000 } as Transaction),
+      makeTransaction({
+        id: 't1',
+        type: 'income',
+        categoryId: SALARY,
+        accountId: CASH,
+        amount: 500000,
+      } as Transaction),
+      makeTransaction({
+        id: 't2',
+        type: 'expense',
+        categoryId: FOOD,
+        accountId: CASH,
+        amount: 200000,
+      } as Transaction),
     ];
 
     expect(calculateAccountBalance(account, transactions)).toBe(1300000);
@@ -167,7 +186,13 @@ describe('calculateAccountBalance', () => {
     const cash = makeAccount(CASH, 1000000);
     const bank = makeAccount(BANK, 0);
     const transactions: Transaction[] = [
-      makeTransaction({ id: 't1', type: 'transfer', accountId: CASH, destinationAccountId: BANK, amount: 300000 } as Transaction),
+      makeTransaction({
+        id: 't1',
+        type: 'transfer',
+        accountId: CASH,
+        destinationAccountId: BANK,
+        amount: 300000,
+      } as Transaction),
     ];
 
     expect(calculateAccountBalance(cash, transactions)).toBe(700000);
@@ -193,7 +218,13 @@ describe('calculateAccountBalance', () => {
   it('ignores transactions belonging to other accounts', () => {
     const account = makeAccount(CASH, 1000000);
     const transactions: Transaction[] = [
-      makeTransaction({ id: 't1', type: 'income', categoryId: SALARY, accountId: BANK, amount: 500000 } as Transaction),
+      makeTransaction({
+        id: 't1',
+        type: 'income',
+        categoryId: SALARY,
+        accountId: BANK,
+        amount: 500000,
+      } as Transaction),
     ];
 
     expect(calculateAccountBalance(account, transactions)).toBe(1000000);
@@ -202,14 +233,56 @@ describe('calculateAccountBalance', () => {
 
 describe('calculatePeriodSummary', () => {
   const transactions: Transaction[] = [
-    makeTransaction({ id: 't1', type: 'income', categoryId: SALARY, accountId: CASH, amount: 1000000, date: '2026-08-05' } as Transaction),
-    makeTransaction({ id: 't2', type: 'expense', categoryId: FOOD, accountId: CASH, amount: 200000, date: '2026-08-10' } as Transaction),
-    makeTransaction({ id: 't3', type: 'expense', categoryId: FOOD, accountId: BANK, amount: 50000, date: '2026-08-15' } as Transaction),
-    makeTransaction({ id: 't4', type: 'transfer', accountId: CASH, destinationAccountId: BANK, amount: 300000, date: '2026-08-12' } as Transaction),
+    makeTransaction({
+      id: 't1',
+      type: 'income',
+      categoryId: SALARY,
+      accountId: CASH,
+      amount: 1000000,
+      date: '2026-08-05',
+    } as Transaction),
+    makeTransaction({
+      id: 't2',
+      type: 'expense',
+      categoryId: FOOD,
+      accountId: CASH,
+      amount: 200000,
+      date: '2026-08-10',
+    } as Transaction),
+    makeTransaction({
+      id: 't3',
+      type: 'expense',
+      categoryId: FOOD,
+      accountId: BANK,
+      amount: 50000,
+      date: '2026-08-15',
+    } as Transaction),
+    makeTransaction({
+      id: 't4',
+      type: 'transfer',
+      accountId: CASH,
+      destinationAccountId: BANK,
+      amount: 300000,
+      date: '2026-08-12',
+    } as Transaction),
     // Out of range: previous month.
-    makeTransaction({ id: 't5', type: 'income', categoryId: SALARY, accountId: CASH, amount: 999999, date: '2026-07-31' } as Transaction),
+    makeTransaction({
+      id: 't5',
+      type: 'income',
+      categoryId: SALARY,
+      accountId: CASH,
+      amount: 999999,
+      date: '2026-07-31',
+    } as Transaction),
     // Out of range: next month.
-    makeTransaction({ id: 't6', type: 'expense', categoryId: FOOD, accountId: CASH, amount: 999999, date: '2026-09-01' } as Transaction),
+    makeTransaction({
+      id: 't6',
+      type: 'expense',
+      categoryId: FOOD,
+      accountId: CASH,
+      amount: 999999,
+      date: '2026-09-01',
+    } as Transaction),
     // Soft-deleted, must be excluded.
     makeTransaction({
       id: 't7',
@@ -232,8 +305,22 @@ describe('calculatePeriodSummary', () => {
 
   it('includes transactions on the exact from/to boundary dates', () => {
     const boundaryTransactions: Transaction[] = [
-      makeTransaction({ id: 'b1', type: 'income', categoryId: SALARY, accountId: CASH, amount: 111, date: '2026-08-01' } as Transaction),
-      makeTransaction({ id: 'b2', type: 'expense', categoryId: FOOD, accountId: CASH, amount: 22, date: '2026-08-31' } as Transaction),
+      makeTransaction({
+        id: 'b1',
+        type: 'income',
+        categoryId: SALARY,
+        accountId: CASH,
+        amount: 111,
+        date: '2026-08-01',
+      } as Transaction),
+      makeTransaction({
+        id: 'b2',
+        type: 'expense',
+        categoryId: FOOD,
+        accountId: CASH,
+        amount: 22,
+        date: '2026-08-31',
+      } as Transaction),
     ];
 
     const summary = calculatePeriodSummary(boundaryTransactions, '2026-08-01', '2026-08-31');

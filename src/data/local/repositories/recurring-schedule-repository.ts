@@ -6,13 +6,19 @@ import {
   UpdateRecurringScheduleInput,
 } from '@/core/application/ports/recurring-repositories';
 import { WriteContext } from '@/core/application/ports/finance-repositories';
-import { RecurringSchedule, RecurringScheduleStatus } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleStatus,
+} from '@/core/domain/finance/recurring-schedule';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, recurringSchedules } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
-import { toRecurringScheduleEntity, toRecurringScheduleRowValues } from './recurring-record-mappers';
+import {
+  toRecurringScheduleEntity,
+  toRecurringScheduleRowValues,
+} from './recurring-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
 import {
   canonicalizeSyncableRecordIdentifiers,

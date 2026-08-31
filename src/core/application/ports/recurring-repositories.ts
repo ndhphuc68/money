@@ -37,7 +37,11 @@ export interface RecurringOccurrenceRepository {
   listByScheduleId(scheduleId: string): Promise<RecurringOccurrence[]>;
   markNotified(id: string, notifiedAt: string, context: WriteContext): Promise<RecurringOccurrence>;
   /** Refreshes an unresolved occurrence's copied default fields, e.g. after editing its schedule (spec §Quản lý định kỳ). */
-  update(id: string, changes: RecurringOccurrenceEdits, context: WriteContext): Promise<RecurringOccurrence>;
+  update(
+    id: string,
+    changes: RecurringOccurrenceEdits,
+    context: WriteContext,
+  ): Promise<RecurringOccurrence>;
   saveWithOperation(record: RecurringOccurrence, operation: SyncOperation): Promise<void>;
 }
 

@@ -160,4 +160,3 @@ Chạm giao dịch để mở chi tiết và sửa các trường được phép
 ## Quyết định UX còn mở
 
 Người dùng đã xác nhận giữ nguyên các trường bắt buộc trong spec. Tuy nhiên, tốc độ nhập liệu là rủi ro adoption quan trọng vì người dùng thường bỏ các app thu–chi khi form quá dài. Khi triển khai UI, cần prototype và đo số thao tác; không tự ý nới lỏng validation nếu chưa có quyết định sản phẩm mới.
-

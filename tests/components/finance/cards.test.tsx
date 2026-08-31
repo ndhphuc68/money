@@ -28,9 +28,31 @@ describe('finance card components', () => {
     const screen = render(
       <>
         <StatCard label="Income" value="+$3,200" tone="positive" />
-        <TransactionRow name="Coffee" category="Food" meta="Today" amount="-$4.50" icon="food" positive={false} />
-        <BudgetRow accessibilityLabel="Dining budget 64%" category="Dining" spent="$320" limit="$500" percent={64} color="#F2734A" />
-        <GoalCard accessibilityLabel="Emergency fund goal 42%" name="Emergency fund" initials="EF" due="Due Dec 2026" percent={42} saved="$4,200 saved" target="Target $10,000" />
+        <TransactionRow
+          name="Coffee"
+          category="Food"
+          meta="Today"
+          amount="-$4.50"
+          icon="food"
+          positive={false}
+        />
+        <BudgetRow
+          accessibilityLabel="Dining budget 64%"
+          category="Dining"
+          spent="$320"
+          limit="$500"
+          percent={64}
+          color="#F2734A"
+        />
+        <GoalCard
+          accessibilityLabel="Emergency fund goal 42%"
+          name="Emergency fund"
+          initials="EF"
+          due="Due Dec 2026"
+          percent={42}
+          saved="$4,200 saved"
+          target="Target $10,000"
+        />
       </>,
     );
 

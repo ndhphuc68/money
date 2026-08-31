@@ -1,576 +1,1893 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet data-dc-atomics>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-body{margin:0}
-*{box-sizing:border-box;font-family:'Manrope',system-ui,sans-serif}
-::-webkit-scrollbar{display:none}
-.gold-control{appearance:none;-webkit-appearance:none;border:0;margin:0;font:inherit;text-align:inherit;color:inherit;transition:opacity 120ms ease,background-color 120ms ease}
-.gold-control:active{opacity:.72}
-.gold-control:disabled{opacity:.42;cursor:not-allowed}
-.gold-back:active{background:#E7E9F0!important}
-.gold-control:focus-visible{outline:3px solid rgba(47,111,237,.35);outline-offset:2px}
-.gold-field{width:100%;height:48px;border:1px solid #D0D5DD;border-radius:12px;background:#fff;padding:0 13px;color:#101828;font-size:14px;font-weight:600;outline:0}
-.gold-field:focus{border-color:#2F6FED;box-shadow:0 0 0 3px rgba(47,111,237,.14)}
-.gold-label{display:block;font-size:12px;line-height:18px;font-weight:800;color:#344054;margin-bottom:6px}
-.gold-sheet{width:100%;max-height:86%;overflow:auto;background:#F4F5FA;border-radius:24px 24px 0 0;padding:10px 20px 34px;box-shadow:0 -16px 40px rgba(16,24,40,.18)}
-.gold-handle{width:44px;height:5px;border-radius:4px;background:#D0D5DD;margin:0 auto 14px}
-.gold-save{width:100%;min-height:54px;border-radius:16px;padding:0 18px;background:linear-gradient(135deg,#F4B942 0%,#C98213 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;text-align:center;cursor:pointer;box-shadow:0 8px 18px rgba(201,130,19,.24)}
-.gold-save:active{opacity:1;box-shadow:0 4px 10px rgba(201,130,19,.2)}
-@media (prefers-reduced-motion:reduce){.gold-control{transition:none}}
-</style>
-</helmet>
-<div style="min-height:960px;display:flex;align-items:center;justify-content:center;background:#EAEBF1;padding:48px">
-  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
-    <div style="height:100%;display:flex;flex-direction:column;background:#F4F5FA;position:relative;overflow:hidden">
-      <header style="flex:none;padding:58px 20px 12px;display:flex;align-items:center;gap:12px">
-        <button type="button" class="gold-control gold-back" aria-label="Quay lại" onClick="{{goBack}}" style="width:44px;height:44px;padding:0;cursor:pointer;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(16,24,40,.06);flex-shrink:0">
-          <svg aria-hidden="true" width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M8.5 1.5 1.5 9l7 7.5" stroke="#101828" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <h1 style="margin:0;font-size:20px;line-height:28px;font-weight:800;color:#101828">Quản lý vàng</h1>
-      </header>
-
-      <main style="flex:1;min-height:0;overflow:auto;padding:4px 20px 116px">
-        <section aria-label="Tổng quan vàng" style="border-radius:20px;padding:20px;color:#fff;background:linear-gradient(135deg,#F4B942 0%,#C98213 100%);margin-bottom:24px;box-shadow:0 10px 20px rgba(201,130,19,.2)">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px">
-            <div style="min-width:0">
-              <div style="font-size:15px;font-weight:800;margin-bottom:4px">Vàng của tôi</div>
-              <div style="font-size:12px;line-height:18px;opacity:.9;font-weight:600">Tổng quan tài sản vàng đã mua</div>
-            </div>
-            <div aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0">Au</div>
-          </div>
-          <div style="display:grid;grid-template-columns:minmax(72px,.7fr) minmax(0,1.5fr);gap:20px">
-            <div>
-              <div style="font-size:12px;opacity:.92;font-weight:700;margin-bottom:4px">Khối lượng</div>
-              <div style="font-size:20px;line-height:28px;font-weight:800;white-space:nowrap">5 chỉ</div>
-            </div>
-            <div style="min-width:0">
-              <div style="font-size:12px;opacity:.92;font-weight:700;margin-bottom:4px">Giá vốn</div>
-              <div style="font-size:19px;line-height:28px;font-weight:800;white-space:nowrap">42.500.000 ₫</div>
-            </div>
-          </div>
-        </section>
-
-        <section aria-labelledby="gold-history-title">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <h2 id="gold-history-title" style="font-size:12px;line-height:18px;font-weight:800;color:#667085;text-transform:uppercase;letter-spacing:.08em;margin:0">Lịch sử giao dịch</h2>
-            <button type="button" class="gold-control" onClick="{{openTrash}}" style="min-height:44px;padding:0 4px;background:transparent;color:#667085;font-size:12px;font-weight:800;cursor:pointer">Thùng rác</button>
-          </div>
-          <div style="background:#fff;border-radius:18px;padding:4px 16px;box-shadow:0 2px 10px rgba(16,24,40,.05)">
-            <button type="button" class="gold-control" onClick="{{openPurchaseDetail}}" style="width:100%;background:#fff;display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(16,24,40,.08);cursor:pointer">
-              <div aria-hidden="true" style="width:40px;height:40px;border-radius:20px;background:#FFF4D6;color:#A96308;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0">Au</div>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:14px;line-height:20px;font-weight:800;color:#101828">Nhẫn trơn 9999</div>
-                <div style="font-size:12px;line-height:17px;color:#667085;font-weight:600;margin-top:4px">24/08/2026 · 2 chỉ</div>
-              </div>
-              <div style="font-size:12px;line-height:18px;font-weight:800;color:#101828;text-align:right;white-space:nowrap;flex-shrink:0">17.000.000 ₫</div>
-            </button>
-            <button type="button" class="gold-control" onClick="{{openSaleDetail}}" style="width:100%;background:#fff;display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer">
-              <div aria-hidden="true" style="width:40px;height:40px;border-radius:20px;background:#ECFDF3;color:#067647;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9h12M11 5l4 4-4 4" stroke="#067647" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:14px;line-height:20px;font-weight:800;color:#101828">Bán nhẫn trơn 9999</div>
-                <div style="font-size:12px;line-height:17px;color:#667085;font-weight:600;margin-top:4px">12/08/2026 · 1 chỉ · lô PNJ</div>
-              </div>
-              <div style="font-size:12px;line-height:18px;font-weight:800;color:#067647;text-align:right;white-space:nowrap;flex-shrink:0">+8.700.000 ₫</div>
-            </button>
-          </div>
-        </section>
-      </main>
-
-      <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 20px 34px;background:linear-gradient(180deg,rgba(244,245,250,0) 0%,#F4F5FA 22%)">
-        <button ref="{{purchaseCtaRef}}" type="button" class="gold-control" aria-label="Thêm giao dịch" onClick="{{openActionPicker}}" style="width:100%;cursor:pointer;min-height:60px;border-radius:16px;padding:12px 16px;background:#101828;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 8px 18px rgba(16,24,40,.16)">
-          <div style="min-width:0">
-            <div style="font-size:14px;line-height:20px;font-weight:800">Thêm giao dịch</div>
-            <div style="font-size:12px;line-height:17px;color:#D0D5DD;margin-top:4px;font-weight:600">Ghi lại lần mua hoặc bán vàng</div>
-          </div>
-          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 22 22" fill="none" style="flex-shrink:0"><path d="M11 3v16M3 11h16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-
-      <sc-if value="{{actionPickerVisible}}" hint-placeholder-val="{{false}}">
-        <div ref="{{purchaseDialogRef}}" role="dialog" aria-modal="true" aria-labelledby="purchase-notice-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:70;background:rgba(16,24,40,.48);display:flex;align-items:flex-end;padding:20px 20px 34px">
-          <div style="width:100%;background:#fff;border-radius:20px;padding:20px;box-shadow:0 20px 40px rgba(16,24,40,.2)">
-            <div style="display:flex;align-items:flex-start;gap:12px">
-              <div style="flex:1;min-width:0">
-                <div id="purchase-notice-title" style="font-size:18px;line-height:26px;font-weight:800;color:#101828">Thêm giao dịch</div>
-                <div style="font-size:13px;line-height:20px;font-weight:600;color:#667085;margin-top:4px">Bạn muốn ghi lại hoạt động nào?</div>
-              </div>
-              <button ref="{{noticeCloseRef}}" type="button" class="gold-control gold-back" aria-label="Đóng thông báo" onClick="{{dismissNotice}}" style="width:44px;height:44px;padding:0;border-radius:22px;cursor:pointer;background:#F2F4F7;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet data-dc-atomics>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet" />
+        <style>
+          body {
+            margin: 0;
+          }
+          * {
+            box-sizing: border-box;
+            font-family: 'Manrope', system-ui, sans-serif;
+          }
+          ::-webkit-scrollbar {
+            display: none;
+          }
+          .gold-control {
+            appearance: none;
+            -webkit-appearance: none;
+            border: 0;
+            margin: 0;
+            font: inherit;
+            text-align: inherit;
+            color: inherit;
+            transition:
+              opacity 120ms ease,
+              background-color 120ms ease;
+          }
+          .gold-control:active {
+            opacity: 0.72;
+          }
+          .gold-control:disabled {
+            opacity: 0.42;
+            cursor: not-allowed;
+          }
+          .gold-back:active {
+            background: #e7e9f0 !important;
+          }
+          .gold-control:focus-visible {
+            outline: 3px solid rgba(47, 111, 237, 0.35);
+            outline-offset: 2px;
+          }
+          .gold-field {
+            width: 100%;
+            height: 48px;
+            border: 1px solid #d0d5dd;
+            border-radius: 12px;
+            background: #fff;
+            padding: 0 13px;
+            color: #101828;
+            font-size: 14px;
+            font-weight: 600;
+            outline: 0;
+          }
+          .gold-field:focus {
+            border-color: #2f6fed;
+            box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.14);
+          }
+          .gold-label {
+            display: block;
+            font-size: 12px;
+            line-height: 18px;
+            font-weight: 800;
+            color: #344054;
+            margin-bottom: 6px;
+          }
+          .gold-sheet {
+            width: 100%;
+            max-height: 86%;
+            overflow: auto;
+            background: #f4f5fa;
+            border-radius: 24px 24px 0 0;
+            padding: 10px 20px 34px;
+            box-shadow: 0 -16px 40px rgba(16, 24, 40, 0.18);
+          }
+          .gold-handle {
+            width: 44px;
+            height: 5px;
+            border-radius: 4px;
+            background: #d0d5dd;
+            margin: 0 auto 14px;
+          }
+          .gold-save {
+            width: 100%;
+            min-height: 54px;
+            border-radius: 16px;
+            padding: 0 18px;
+            background: linear-gradient(135deg, #f4b942 0%, #c98213 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(201, 130, 19, 0.24);
+          }
+          .gold-save:active {
+            opacity: 1;
+            box-shadow: 0 4px 10px rgba(201, 130, 19, 0.2);
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .gold-control {
+              transition: none;
+            }
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          min-height: 960px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #eaebf1;
+          padding: 48px;
+        ">
+        <x-import
+          component-from-global-scope="IOSDevice"
+          from="./ios-frame.jsx"
+          hint-size="402,874">
+          <div
+            style="
+              height: 100%;
+              display: flex;
+              flex-direction: column;
+              background: #f4f5fa;
+              position: relative;
+              overflow: hidden;
+            ">
+            <header
+              style="
+                flex: none;
+                padding: 58px 20px 12px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+              ">
+              <button
+                type="button"
+                class="gold-control gold-back"
+                aria-label="Quay lại"
+                onClick="{{goBack}}"
+                style="
+                  width: 44px;
+                  height: 44px;
+                  padding: 0;
+                  cursor: pointer;
+                  border-radius: 22px;
+                  background: #fff;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.06);
+                  flex-shrink: 0;
+                ">
+                <svg aria-hidden="true" width="10" height="18" viewBox="0 0 10 18" fill="none">
+                  <path
+                    d="M8.5 1.5 1.5 9l7 7.5"
+                    stroke="#101828"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
               </button>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px">
-              <button type="button" class="gold-control" onClick="{{openBuyForm}}" style="min-height:96px;border-radius:16px;background:#FFF4D6;color:#A96308;padding:16px;cursor:pointer;text-align:left">
-                <div style="font-size:15px;font-weight:800">Mua vàng</div><div style="font-size:12px;line-height:18px;font-weight:600;margin-top:6px">Tạo một lô nhẫn trơn 9999 mới</div>
-              </button>
-              <button type="button" class="gold-control" onClick="{{openSellForm}}" style="min-height:96px;border-radius:16px;background:#ECFDF3;color:#067647;padding:16px;cursor:pointer;text-align:left">
-                <div style="font-size:15px;font-weight:800">Bán vàng</div><div style="font-size:12px;line-height:18px;font-weight:600;margin-top:6px">Chọn lô mua và lượng muốn bán</div>
-              </button>
-            </div>
-          </div>
-        </div>
-      </sc-if>
+              <h1
+                style="
+                  margin: 0;
+                  font-size: 20px;
+                  line-height: 28px;
+                  font-weight: 800;
+                  color: #101828;
+                ">
+                Quản lý vàng
+              </h1>
+            </header>
 
-      <sc-if value="{{formVisible}}" hint-placeholder-val="{{false}}">
-        <div role="dialog" aria-modal="true" aria-labelledby="gold-form-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:80;background:rgba(16,24,40,.48);display:flex;align-items:flex-end">
-          <div class="gold-sheet">
-            <div class="gold-handle"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-              <div><div id="gold-form-title" style="font-size:18px;line-height:26px;font-weight:800;color:#101828">{{formTitle}}</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:3px">Nhẫn trơn 9999</div></div>
-              <button type="button" class="gold-control gold-back" aria-label="Đóng biểu mẫu" onClick="{{dismissNotice}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg>
-              </button>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:14px;margin-top:18px">
-              <label>
-                <span class="gold-label">Ngày giao dịch</span>
-                <button type="button" class="gold-control" onClick="{{toggleDatePicker}}" style="width:100%;height:48px;border:1px solid #D0D5DD;border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer">
-                  <span style="font-size:14px;font-weight:600;color:#101828">{{dateDisplay}}</span>
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink:0"><rect x="2.5" y="3.5" width="13" height="12" rx="2.5" stroke="#667085" stroke-width="1.5"/><path d="M2.5 7h13M6 2v3M12 2v3" stroke="#667085" stroke-width="1.5" stroke-linecap="round"/></svg>
-                </button>
-              </label>
-
-              <sc-if value="{{isBuyForm}}">
-                <div style="position:relative">
-                  <span class="gold-label">{{placeLabel}}</span>
-                  <button type="button" class="gold-control" onClick="{{toggleBrandDropdown}}" style="width:100%;height:48px;border:1px solid {{brandFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;box-shadow:{{brandFieldShadow}}">
-                    <span style="font-size:14px;font-weight:600;color:#101828;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{placeValue}}</span>
-                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="flex-shrink:0;transform:{{brandChevronRotate}}"><path d="M1 1.5 6 6.5l5-5" stroke="#667085" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
-                  <sc-if value="{{brandDropdownOpen}}" hint-placeholder-val="{{false}}">
-                    <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 28px rgba(16,24,40,.16);border:1px solid rgba(16,24,40,.06);max-height:240px;overflow-y:auto">
-                      <sc-for list="{{brandOptions}}" as="b" hint-placeholder-count="3">
-                        <div class="gold-control" onClick="{{b.onSelect}}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{b.bg}};color:{{b.color}};font-size:14px;font-weight:{{b.weight}}">
-                          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{b.label}}</span>
-                          <sc-if value="{{b.active}}"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" style="flex-shrink:0"><path d="M1 5.5 5 9.5 13 1.5" stroke="#2F6FED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if>
-                        </div>
-                      </sc-for>
-                      <div class="gold-control" onClick="{{selectAddNewBrand}}" style="display:flex;align-items:center;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;color:#2F6FED;font-size:14px;font-weight:800">+ Thêm thương hiệu mới…</div>
+            <main style="flex: 1; min-height: 0; overflow: auto; padding: 4px 20px 116px">
+              <section
+                aria-label="Tổng quan vàng"
+                style="
+                  border-radius: 20px;
+                  padding: 20px;
+                  color: #fff;
+                  background: linear-gradient(135deg, #f4b942 0%, #c98213 100%);
+                  margin-bottom: 24px;
+                  box-shadow: 0 10px 20px rgba(201, 130, 19, 0.2);
+                ">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 16px;
+                    margin-bottom: 20px;
+                  ">
+                  <div style="min-width: 0">
+                    <div style="font-size: 15px; font-weight: 800; margin-bottom: 4px">
+                      Vàng của tôi
                     </div>
-                  </sc-if>
-                </div>
-              </sc-if>
-
-              <sc-if value="{{isSellForm}}">
-                <div style="position:relative">
-                  <span class="gold-label">Vàng đã mua</span>
-                  <button type="button" class="gold-control" onClick="{{toggleLotDropdown}}" style="width:100%;height:48px;border:1px solid {{lotFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;box-shadow:{{lotFieldShadow}}">
-                    <span style="font-size:14px;font-weight:600;color:#101828;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{lotValue}}</span>
-                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="flex-shrink:0;transform:{{lotChevronRotate}}"><path d="M1 1.5 6 6.5l5-5" stroke="#667085" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
-                  <sc-if value="{{lotDropdownOpen}}" hint-placeholder-val="{{false}}">
-                    <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 28px rgba(16,24,40,.16);border:1px solid rgba(16,24,40,.06)">
-                      <sc-for list="{{lotOptions}}" as="l" hint-placeholder-count="2">
-                        <div class="gold-control" onClick="{{l.onSelect}}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{l.bg}};color:{{l.color}};font-size:13px;font-weight:{{l.weight}}">
-                          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{l.label}}</span>
-                          <sc-if value="{{l.active}}"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" style="flex-shrink:0"><path d="M1 5.5 5 9.5 13 1.5" stroke="#2F6FED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if>
-                        </div>
-                      </sc-for>
+                    <div style="font-size: 12px; line-height: 18px; opacity: 0.9; font-weight: 600">
+                      Tổng quan tài sản vàng đã mua
                     </div>
-                  </sc-if>
-                </div>
-              </sc-if>
-              <sc-if value="{{isBuyForm}}">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                  <label><span class="gold-label">Khối lượng</span><input class="gold-field" type="number" value="1"></label>
-                  <div style="position:relative">
-                    <span class="gold-label">Đơn vị</span>
-                    <button type="button" class="gold-control" onClick="{{toggleUnitDropdown}}" style="width:100%;height:48px;border:1px solid {{unitFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;box-shadow:{{unitFieldShadow}}">
-                      <span style="font-size:14px;font-weight:600;color:#101828">{{unitValue}}</span>
-                      <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style="flex-shrink:0;transform:{{unitChevronRotate}}"><path d="M1 1.5 6 6.5l5-5" stroke="#667085" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                    <sc-if value="{{unitDropdownOpen}}" hint-placeholder-val="{{false}}">
-                      <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 28px rgba(16,24,40,.16);border:1px solid rgba(16,24,40,.06)">
-                        <sc-for list="{{unitOptions}}" as="u" hint-placeholder-count="4">
-                          <div class="gold-control" onClick="{{u.onSelect}}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{u.bg}};color:{{u.color}};font-size:14px;font-weight:{{u.weight}}">
-                            <span>{{u.label}}</span>
-                            <sc-if value="{{u.active}}"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" style="flex-shrink:0"><path d="M1 5.5 5 9.5 13 1.5" stroke="#2F6FED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if>
-                          </div>
-                        </sc-for>
-                      </div>
-                    </sc-if>
+                  </div>
+                  <div
+                    aria-hidden="true"
+                    style="
+                      width: 44px;
+                      height: 44px;
+                      border-radius: 22px;
+                      background: rgba(255, 255, 255, 0.22);
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 17px;
+                      font-weight: 700;
+                      flex-shrink: 0;
+                    ">
+                    Au
                   </div>
                 </div>
-              </sc-if>
-              <label><span class="gold-label">{{totalLabel}}</span><input class="gold-field" type="text" value="{{totalValue}}"></label>
-              <button type="button" class="gold-control gold-save" onClick="{{saveForm}}">
-                <span>{{saveLabel}}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </sc-if>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: minmax(72px, 0.7fr) minmax(0, 1.5fr);
+                    gap: 20px;
+                  ">
+                  <div>
+                    <div
+                      style="font-size: 12px; opacity: 0.92; font-weight: 700; margin-bottom: 4px">
+                      Khối lượng
+                    </div>
+                    <div
+                      style="
+                        font-size: 20px;
+                        line-height: 28px;
+                        font-weight: 800;
+                        white-space: nowrap;
+                      ">
+                      5 chỉ
+                    </div>
+                  </div>
+                  <div style="min-width: 0">
+                    <div
+                      style="font-size: 12px; opacity: 0.92; font-weight: 700; margin-bottom: 4px">
+                      Giá vốn
+                    </div>
+                    <div
+                      style="
+                        font-size: 19px;
+                        line-height: 28px;
+                        font-weight: 800;
+                        white-space: nowrap;
+                      ">
+                      42.500.000 ₫
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-      <sc-if value="{{datePickerOpen}}" hint-placeholder-val="{{false}}">
-        <div role="dialog" aria-modal="true" aria-labelledby="date-picker-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:95;background:rgba(16,24,40,.48);display:flex;align-items:center;justify-content:center;padding:20px">
-          <div style="width:100%;max-width:320px;background:#fff;border-radius:20px;padding:18px;box-shadow:0 20px 40px rgba(16,24,40,.2)">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-              <div id="date-picker-title" style="font-size:16px;font-weight:800;color:#101828">Chọn ngày giao dịch</div>
-              <button type="button" class="gold-control gold-back" aria-label="Đóng lịch" onClick="{{closeDatePicker}}" style="width:36px;height:36px;border-radius:18px;background:#F2F4F7;display:flex;align-items:center;justify-content:center;cursor:pointer">
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg>
-              </button>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <button type="button" class="gold-control" aria-label="Tháng trước" onClick="{{prevMonth}}" style="width:32px;height:32px;border-radius:16px;background:#F2F4F7;display:flex;align-items:center;justify-content:center;cursor:pointer">
-                <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M6 1 1 6l5 5" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div style="font-size:14px;font-weight:800;color:#101828">{{calendarMonthLabel}}</div>
-              <button type="button" class="gold-control" aria-label="Tháng sau" onClick="{{nextMonth}}" style="width:32px;height:32px;border-radius:16px;background:#F2F4F7;display:flex;align-items:center;justify-content:center;cursor:pointer">
-                <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1 6 6l-5 5" stroke="#344054" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
-              <sc-for list="{{weekdayLabels}}" as="w" hint-placeholder-count="7">
-                <div style="text-align:center;font-size:11px;font-weight:800;color:#9AA1B4;padding:4px 0">{{w}}</div>
-              </sc-for>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
-              <sc-for list="{{calendarCells}}" as="cell" hint-placeholder-count="35">
-                <button type="button" class="gold-control" disabled="{{cell.empty}}" onClick="{{cell.onSelect}}" style="aspect-ratio:1;border-radius:10px;background:{{cell.bg}};color:{{cell.color}};font-size:13px;font-weight:{{cell.weight}};cursor:pointer;position:relative">{{cell.label}}</button>
-              </sc-for>
-            </div>
-          </div>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{brandManageVisible}}" hint-placeholder-val="{{false}}">
-        <div role="dialog" aria-modal="true" aria-labelledby="brand-manage-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:90;background:rgba(16,24,40,.48);display:flex;align-items:flex-end">
-          <div class="gold-sheet">
-            <div class="gold-handle"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-              <div><div id="brand-manage-title" style="font-size:18px;line-height:26px;font-weight:800;color:#101828">Thương hiệu vàng</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:3px">Quản lý danh sách chọn khi thêm giao dịch mua</div></div>
-              <button type="button" class="gold-control gold-back" aria-label="Đóng" onClick="{{closeBrandManage}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg>
-              </button>
-            </div>
-            <div style="background:#fff;border-radius:18px;padding:4px 16px;margin-top:18px;box-shadow:0 2px 10px rgba(16,24,40,.05)">
-              <sc-for list="{{brandRows}}" as="b" hint-placeholder-count="4">
-                <div style="display:flex;align-items:center;gap:12px;padding:12px 0;{{b.dividerStyle}}">
-                  <div aria-hidden="true" style="width:36px;height:36px;border-radius:18px;background:#FFF4D6;color:#A96308;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;line-height:1">{{b.initials}}</div>
-                  <div style="flex:1;min-width:0;font-size:14px;line-height:20px;font-weight:800;color:#101828;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{b.name}}</div>
-                  <button type="button" class="gold-control" aria-label="Xoá thương hiệu" onClick="{{b.onDelete}}" style="width:36px;height:36px;border-radius:12px;background:#FEF3F2;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
-                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5 5 13a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.5-8.5M6.5 7.3v4M9.5 7.3v4" stroke="#B42318" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <section aria-labelledby="gold-history-title">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                  ">
+                  <h2
+                    id="gold-history-title"
+                    style="
+                      font-size: 12px;
+                      line-height: 18px;
+                      font-weight: 800;
+                      color: #667085;
+                      text-transform: uppercase;
+                      letter-spacing: 0.08em;
+                      margin: 0;
+                    ">
+                    Lịch sử giao dịch
+                  </h2>
+                  <button
+                    type="button"
+                    class="gold-control"
+                    onClick="{{openTrash}}"
+                    style="
+                      min-height: 44px;
+                      padding: 0 4px;
+                      background: transparent;
+                      color: #667085;
+                      font-size: 12px;
+                      font-weight: 800;
+                      cursor: pointer;
+                    ">
+                    Thùng rác
                   </button>
                 </div>
-              </sc-for>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:14px;margin-top:18px">
-              <label><span class="gold-label">Thêm thương hiệu mới</span><input class="gold-field" type="text" placeholder="VD: PNJ, SJC, DOJI..." value="{{newBrandName}}" onChange="{{handleNewBrandChange}}"></label>
-              <button type="button" class="gold-control gold-save" disabled="{{addBrandDisabled}}" onClick="{{addBrand}}">
-                <span>Thêm thương hiệu</span>
+                <div
+                  style="
+                    background: #fff;
+                    border-radius: 18px;
+                    padding: 4px 16px;
+                    box-shadow: 0 2px 10px rgba(16, 24, 40, 0.05);
+                  ">
+                  <button
+                    type="button"
+                    class="gold-control"
+                    onClick="{{openPurchaseDetail}}"
+                    style="
+                      width: 100%;
+                      background: #fff;
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 12px 0;
+                      border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+                      cursor: pointer;
+                    ">
+                    <div
+                      aria-hidden="true"
+                      style="
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 20px;
+                        background: #fff4d6;
+                        color: #a96308;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 13px;
+                        font-weight: 800;
+                        flex-shrink: 0;
+                      ">
+                      Au
+                    </div>
+                    <div style="flex: 1; min-width: 0">
+                      <div
+                        style="
+                          font-size: 14px;
+                          line-height: 20px;
+                          font-weight: 800;
+                          color: #101828;
+                        ">
+                        Nhẫn trơn 9999
+                      </div>
+                      <div
+                        style="
+                          font-size: 12px;
+                          line-height: 17px;
+                          color: #667085;
+                          font-weight: 600;
+                          margin-top: 4px;
+                        ">
+                        24/08/2026 · 2 chỉ
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        font-size: 12px;
+                        line-height: 18px;
+                        font-weight: 800;
+                        color: #101828;
+                        text-align: right;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                      ">
+                      17.000.000 ₫
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    class="gold-control"
+                    onClick="{{openSaleDetail}}"
+                    style="
+                      width: 100%;
+                      background: #fff;
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 12px 0;
+                      cursor: pointer;
+                    ">
+                    <div
+                      aria-hidden="true"
+                      style="
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 20px;
+                        background: #ecfdf3;
+                        color: #067647;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-shrink: 0;
+                      ">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path
+                          d="M3 9h12M11 5l4 4-4 4"
+                          stroke="#067647"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div style="flex: 1; min-width: 0">
+                      <div
+                        style="
+                          font-size: 14px;
+                          line-height: 20px;
+                          font-weight: 800;
+                          color: #101828;
+                        ">
+                        Bán nhẫn trơn 9999
+                      </div>
+                      <div
+                        style="
+                          font-size: 12px;
+                          line-height: 17px;
+                          color: #667085;
+                          font-weight: 600;
+                          margin-top: 4px;
+                        ">
+                        12/08/2026 · 1 chỉ · lô PNJ
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        font-size: 12px;
+                        line-height: 18px;
+                        font-weight: 800;
+                        color: #067647;
+                        text-align: right;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                      ">
+                      +8.700.000 ₫
+                    </div>
+                  </button>
+                </div>
+              </section>
+            </main>
+
+            <div
+              style="
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                padding: 12px 20px 34px;
+                background: linear-gradient(180deg, rgba(244, 245, 250, 0) 0%, #f4f5fa 22%);
+              ">
+              <button
+                ref="{{purchaseCtaRef}}"
+                type="button"
+                class="gold-control"
+                aria-label="Thêm giao dịch"
+                onClick="{{openActionPicker}}"
+                style="
+                  width: 100%;
+                  cursor: pointer;
+                  min-height: 60px;
+                  border-radius: 16px;
+                  padding: 12px 16px;
+                  background: #101828;
+                  color: #fff;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  gap: 16px;
+                  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.16);
+                ">
+                <div style="min-width: 0">
+                  <div style="font-size: 14px; line-height: 20px; font-weight: 800">
+                    Thêm giao dịch
+                  </div>
+                  <div
+                    style="
+                      font-size: 12px;
+                      line-height: 17px;
+                      color: #d0d5dd;
+                      margin-top: 4px;
+                      font-weight: 600;
+                    ">
+                    Ghi lại lần mua hoặc bán vàng
+                  </div>
+                </div>
+                <svg
+                  aria-hidden="true"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  style="flex-shrink: 0">
+                  <path
+                    d="M11 3v16M3 11h16"
+                    stroke="#fff"
+                    stroke-width="2"
+                    stroke-linecap="round" />
+                </svg>
               </button>
             </div>
-          </div>
-        </div>
-      </sc-if>
 
-      <sc-if value="{{detailVisible}}" hint-placeholder-val="{{false}}">
-        <div role="dialog" aria-modal="true" aria-labelledby="detail-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:80;background:rgba(16,24,40,.48);display:flex;align-items:flex-end">
-          <div class="gold-sheet">
-            <div class="gold-handle"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between"><div><div id="detail-title" style="font-size:18px;font-weight:800;color:#101828">{{detailTitle}}</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:4px">{{detailSubtitle}}</div></div><button type="button" class="gold-control gold-back" aria-label="Đóng chi tiết" onClick="{{dismissNotice}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
-            <div style="background:#fff;border-radius:16px;padding:4px 16px;margin-top:18px">
-              <div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(16,24,40,.08);font-size:13px"><span style="color:#667085;font-weight:600">Khối lượng</span><strong>{{detailWeight}}</strong></div>
-              <div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(16,24,40,.08);font-size:13px"><span style="color:#667085;font-weight:600">Tổng tiền</span><strong>{{detailTotal}}</strong></div>
-              <div style="display:flex;justify-content:space-between;padding:14px 0;font-size:13px"><span style="color:#667085;font-weight:600">{{detailExtraLabel}}</span><strong>{{detailExtra}}</strong></div>
-            </div>
-            <div style="padding:14px;border-radius:14px;background:#FEF3F2;color:#B42318;font-size:12px;line-height:18px;font-weight:600;margin-top:16px">{{deleteMessage}}</div>
-            <button type="button" class="gold-control" disabled="{{deleteDisabled}}" onClick="{{moveToTrash}}" style="width:100%;min-height:52px;border-radius:16px;background:#E25050;color:#fff;font-size:14px;font-weight:800;cursor:pointer;margin-top:14px">Chuyển vào thùng rác</button>
-          </div>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{trashVisible}}" hint-placeholder-val="{{false}}">
-        <div role="dialog" aria-modal="true" aria-labelledby="trash-title" onKeyDown="{{handleDialogKeyDown}}" style="position:absolute;inset:0;z-index:80;background:rgba(16,24,40,.48);display:flex;align-items:flex-end">
-          <div class="gold-sheet">
-            <div class="gold-handle"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between"><div><div id="trash-title" style="font-size:18px;font-weight:800;color:#101828">Thùng rác</div><div style="font-size:12px;color:#667085;font-weight:600;margin-top:4px">Giao dịch không còn được tính vào số liệu</div></div><button type="button" class="gold-control gold-back" aria-label="Đóng thùng rác" onClick="{{dismissNotice}}" style="width:44px;height:44px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m2 2 12 12M14 2 2 14" stroke="#101828" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
-            <div style="background:#fff;border-radius:16px;padding:4px 16px;margin-top:18px">
-              <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
-                <div style="width:40px;height:40px;border-radius:20px;background:#ECFDF3;color:#067647;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">Bán</div>
-                <div style="flex:1"><div style="font-size:13px;font-weight:800">SJC · 1 chỉ</div><div style="font-size:11px;color:#667085;font-weight:600;margin-top:3px">Đã xoá 27/08/2026</div></div>
-                <button type="button" class="gold-control" onClick="{{restoreTrash}}" style="min-height:44px;padding:0 10px;border-radius:12px;background:#F2F4F7;color:#101828;font-size:11px;font-weight:800;cursor:pointer">Khôi phục</button>
-                <button type="button" class="gold-control" aria-label="Xoá vĩnh viễn" onClick="{{purgeTrash}}" style="width:44px;height:44px;border-radius:12px;background:#FEF3F2;display:flex;align-items:center;justify-content:center;cursor:pointer">
-                  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5 5 13a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.5-8.5M6.5 7.3v4M9.5 7.3v4" stroke="#B42318" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
+            <sc-if value="{{actionPickerVisible}}" hint-placeholder-val="{{false}}">
+              <div
+                ref="{{purchaseDialogRef}}"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="purchase-notice-title"
+                onKeyDown="{{handleDialogKeyDown}}"
+                style="
+                  position: absolute;
+                  inset: 0;
+                  z-index: 70;
+                  background: rgba(16, 24, 40, 0.48);
+                  display: flex;
+                  align-items: flex-end;
+                  padding: 20px 20px 34px;
+                ">
+                <div
+                  style="
+                    width: 100%;
+                    background: #fff;
+                    border-radius: 20px;
+                    padding: 20px;
+                    box-shadow: 0 20px 40px rgba(16, 24, 40, 0.2);
+                  ">
+                  <div style="display: flex; align-items: flex-start; gap: 12px">
+                    <div style="flex: 1; min-width: 0">
+                      <div
+                        id="purchase-notice-title"
+                        style="
+                          font-size: 18px;
+                          line-height: 26px;
+                          font-weight: 800;
+                          color: #101828;
+                        ">
+                        Thêm giao dịch
+                      </div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          line-height: 20px;
+                          font-weight: 600;
+                          color: #667085;
+                          margin-top: 4px;
+                        ">
+                        Bạn muốn ghi lại hoạt động nào?
+                      </div>
+                    </div>
+                    <button
+                      ref="{{noticeCloseRef}}"
+                      type="button"
+                      class="gold-control gold-back"
+                      aria-label="Đóng thông báo"
+                      onClick="{{dismissNotice}}"
+                      style="
+                        width: 44px;
+                        height: 44px;
+                        padding: 0;
+                        border-radius: 22px;
+                        cursor: pointer;
+                        background: #f2f4f7;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-shrink: 0;
+                      ">
+                      <svg
+                        aria-hidden="true"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none">
+                        <path
+                          d="m2 2 12 12M14 2 2 14"
+                          stroke="#101828"
+                          stroke-width="1.8"
+                          stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 12px;
+                      margin-top: 20px;
+                    ">
+                    <button
+                      type="button"
+                      class="gold-control"
+                      onClick="{{openBuyForm}}"
+                      style="
+                        min-height: 96px;
+                        border-radius: 16px;
+                        background: #fff4d6;
+                        color: #a96308;
+                        padding: 16px;
+                        cursor: pointer;
+                        text-align: left;
+                      ">
+                      <div style="font-size: 15px; font-weight: 800">Mua vàng</div>
+                      <div
+                        style="
+                          font-size: 12px;
+                          line-height: 18px;
+                          font-weight: 600;
+                          margin-top: 6px;
+                        ">
+                        Tạo một lô nhẫn trơn 9999 mới
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      class="gold-control"
+                      onClick="{{openSellForm}}"
+                      style="
+                        min-height: 96px;
+                        border-radius: 16px;
+                        background: #ecfdf3;
+                        color: #067647;
+                        padding: 16px;
+                        cursor: pointer;
+                        text-align: left;
+                      ">
+                      <div style="font-size: 15px; font-weight: 800">Bán vàng</div>
+                      <div
+                        style="
+                          font-size: 12px;
+                          line-height: 18px;
+                          font-weight: 600;
+                          margin-top: 6px;
+                        ">
+                        Chọn lô mua và lượng muốn bán
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            </sc-if>
+
+            <sc-if value="{{formVisible}}" hint-placeholder-val="{{false}}">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="gold-form-title"
+                onKeyDown="{{handleDialogKeyDown}}"
+                style="
+                  position: absolute;
+                  inset: 0;
+                  z-index: 80;
+                  background: rgba(16, 24, 40, 0.48);
+                  display: flex;
+                  align-items: flex-end;
+                ">
+                <div class="gold-sheet">
+                  <div class="gold-handle"></div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                      gap: 12px;
+                    ">
+                    <div>
+                      <div
+                        id="gold-form-title"
+                        style="
+                          font-size: 18px;
+                          line-height: 26px;
+                          font-weight: 800;
+                          color: #101828;
+                        ">
+                        {{formTitle}}
+                      </div>
+                      <div
+                        style="font-size: 12px; color: #667085; font-weight: 600; margin-top: 3px">
+                        Nhẫn trơn 9999
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="gold-control gold-back"
+                      aria-label="Đóng biểu mẫu"
+                      onClick="{{dismissNotice}}"
+                      style="
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 22px;
+                        background: #fff;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                      ">
+                      <svg
+                        aria-hidden="true"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none">
+                        <path
+                          d="m2 2 12 12M14 2 2 14"
+                          stroke="#101828"
+                          stroke-width="1.8"
+                          stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 18px">
+                    <label>
+                      <span class="gold-label">Ngày giao dịch</span>
+                      <button
+                        type="button"
+                        class="gold-control"
+                        onClick="{{toggleDatePicker}}"
+                        style="
+                          width: 100%;
+                          height: 48px;
+                          border: 1px solid #d0d5dd;
+                          border-radius: 12px;
+                          background: #fff;
+                          padding: 0 13px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          gap: 8px;
+                          cursor: pointer;
+                        ">
+                        <span style="font-size: 14px; font-weight: 600; color: #101828"
+                          >{{dateDisplay}}</span
+                        >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 18 18"
+                          fill="none"
+                          style="flex-shrink: 0">
+                          <rect
+                            x="2.5"
+                            y="3.5"
+                            width="13"
+                            height="12"
+                            rx="2.5"
+                            stroke="#667085"
+                            stroke-width="1.5" />
+                          <path
+                            d="M2.5 7h13M6 2v3M12 2v3"
+                            stroke="#667085"
+                            stroke-width="1.5"
+                            stroke-linecap="round" />
+                        </svg>
+                      </button>
+                    </label>
+
+                    <sc-if value="{{isBuyForm}}">
+                      <div style="position: relative">
+                        <span class="gold-label">{{placeLabel}}</span>
+                        <button
+                          type="button"
+                          class="gold-control"
+                          onClick="{{toggleBrandDropdown}}"
+                          style="width:100%;height:48px;border:1px solid {{brandFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;box-shadow:{{brandFieldShadow}}">
+                          <span
+                            style="
+                              font-size: 14px;
+                              font-weight: 600;
+                              color: #101828;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                            >{{placeValue}}</span
+                          >
+                          <svg
+                            width="12"
+                            height="8"
+                            viewBox="0 0 12 8"
+                            fill="none"
+                            style="flex-shrink:0;transform:{{brandChevronRotate}}">
+                            <path
+                              d="M1 1.5 6 6.5l5-5"
+                              stroke="#667085"
+                              stroke-width="1.8"
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+                          </svg>
+                        </button>
+                        <sc-if value="{{brandDropdownOpen}}" hint-placeholder-val="{{false}}">
+                          <div
+                            style="
+                              position: absolute;
+                              left: 0;
+                              right: 0;
+                              top: calc(100% + 6px);
+                              z-index: 30;
+                              background: #fff;
+                              border-radius: 14px;
+                              padding: 6px;
+                              box-shadow: 0 12px 28px rgba(16, 24, 40, 0.16);
+                              border: 1px solid rgba(16, 24, 40, 0.06);
+                              max-height: 240px;
+                              overflow-y: auto;
+                            ">
+                            <sc-for list="{{brandOptions}}" as="b" hint-placeholder-count="3">
+                              <div
+                                class="gold-control"
+                                onClick="{{b.onSelect}}"
+                                style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{b.bg}};color:{{b.color}};font-size:14px;font-weight:{{b.weight}}">
+                                <span
+                                  style="
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                  >{{b.label}}</span
+                                >
+                                <sc-if value="{{b.active}}"
+                                  ><svg
+                                    width="14"
+                                    height="11"
+                                    viewBox="0 0 14 11"
+                                    fill="none"
+                                    style="flex-shrink: 0">
+                                    <path
+                                      d="M1 5.5 5 9.5 13 1.5"
+                                      stroke="#2F6FED"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round" /></svg
+                                ></sc-if>
+                              </div>
+                            </sc-for>
+                            <div
+                              class="gold-control"
+                              onClick="{{selectAddNewBrand}}"
+                              style="
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                                padding: 11px 10px;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                color: #2f6fed;
+                                font-size: 14px;
+                                font-weight: 800;
+                              ">
+                              + Thêm thương hiệu mới…
+                            </div>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{isSellForm}}">
+                      <div style="position: relative">
+                        <span class="gold-label">Vàng đã mua</span>
+                        <button
+                          type="button"
+                          class="gold-control"
+                          onClick="{{toggleLotDropdown}}"
+                          style="width:100%;height:48px;border:1px solid {{lotFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;box-shadow:{{lotFieldShadow}}">
+                          <span
+                            style="
+                              font-size: 14px;
+                              font-weight: 600;
+                              color: #101828;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                            >{{lotValue}}</span
+                          >
+                          <svg
+                            width="12"
+                            height="8"
+                            viewBox="0 0 12 8"
+                            fill="none"
+                            style="flex-shrink:0;transform:{{lotChevronRotate}}">
+                            <path
+                              d="M1 1.5 6 6.5l5-5"
+                              stroke="#667085"
+                              stroke-width="1.8"
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+                          </svg>
+                        </button>
+                        <sc-if value="{{lotDropdownOpen}}" hint-placeholder-val="{{false}}">
+                          <div
+                            style="
+                              position: absolute;
+                              left: 0;
+                              right: 0;
+                              top: calc(100% + 6px);
+                              z-index: 30;
+                              background: #fff;
+                              border-radius: 14px;
+                              padding: 6px;
+                              box-shadow: 0 12px 28px rgba(16, 24, 40, 0.16);
+                              border: 1px solid rgba(16, 24, 40, 0.06);
+                            ">
+                            <sc-for list="{{lotOptions}}" as="l" hint-placeholder-count="2">
+                              <div
+                                class="gold-control"
+                                onClick="{{l.onSelect}}"
+                                style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{l.bg}};color:{{l.color}};font-size:13px;font-weight:{{l.weight}}">
+                                <span
+                                  style="
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                  "
+                                  >{{l.label}}</span
+                                >
+                                <sc-if value="{{l.active}}"
+                                  ><svg
+                                    width="14"
+                                    height="11"
+                                    viewBox="0 0 14 11"
+                                    fill="none"
+                                    style="flex-shrink: 0">
+                                    <path
+                                      d="M1 5.5 5 9.5 13 1.5"
+                                      stroke="#2F6FED"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round" /></svg
+                                ></sc-if>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{isBuyForm}}">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+                        <label
+                          ><span class="gold-label">Khối lượng</span
+                          ><input class="gold-field" type="number" value="1"
+                        /></label>
+                        <div style="position: relative">
+                          <span class="gold-label">Đơn vị</span>
+                          <button
+                            type="button"
+                            class="gold-control"
+                            onClick="{{toggleUnitDropdown}}"
+                            style="width:100%;height:48px;border:1px solid {{unitFieldBorder}};border-radius:12px;background:#fff;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;box-shadow:{{unitFieldShadow}}">
+                            <span style="font-size: 14px; font-weight: 600; color: #101828"
+                              >{{unitValue}}</span
+                            >
+                            <svg
+                              width="12"
+                              height="8"
+                              viewBox="0 0 12 8"
+                              fill="none"
+                              style="flex-shrink:0;transform:{{unitChevronRotate}}">
+                              <path
+                                d="M1 1.5 6 6.5l5-5"
+                                stroke="#667085"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            </svg>
+                          </button>
+                          <sc-if value="{{unitDropdownOpen}}" hint-placeholder-val="{{false}}">
+                            <div
+                              style="
+                                position: absolute;
+                                left: 0;
+                                right: 0;
+                                top: calc(100% + 6px);
+                                z-index: 30;
+                                background: #fff;
+                                border-radius: 14px;
+                                padding: 6px;
+                                box-shadow: 0 12px 28px rgba(16, 24, 40, 0.16);
+                                border: 1px solid rgba(16, 24, 40, 0.06);
+                              ">
+                              <sc-for list="{{unitOptions}}" as="u" hint-placeholder-count="4">
+                                <div
+                                  class="gold-control"
+                                  onClick="{{u.onSelect}}"
+                                  style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:10px;cursor:pointer;background:{{u.bg}};color:{{u.color}};font-size:14px;font-weight:{{u.weight}}">
+                                  <span>{{u.label}}</span>
+                                  <sc-if value="{{u.active}}"
+                                    ><svg
+                                      width="14"
+                                      height="11"
+                                      viewBox="0 0 14 11"
+                                      fill="none"
+                                      style="flex-shrink: 0">
+                                      <path
+                                        d="M1 5.5 5 9.5 13 1.5"
+                                        stroke="#2F6FED"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round" /></svg
+                                  ></sc-if>
+                                </div>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </sc-if>
+                    <label
+                      ><span class="gold-label">{{totalLabel}}</span
+                      ><input class="gold-field" type="text" value="{{totalValue}}"
+                    /></label>
+                    <button type="button" class="gold-control gold-save" onClick="{{saveForm}}">
+                      <span>{{saveLabel}}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{datePickerOpen}}" hint-placeholder-val="{{false}}">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="date-picker-title"
+                onKeyDown="{{handleDialogKeyDown}}"
+                style="
+                  position: absolute;
+                  inset: 0;
+                  z-index: 95;
+                  background: rgba(16, 24, 40, 0.48);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  padding: 20px;
+                ">
+                <div
+                  style="
+                    width: 100%;
+                    max-width: 320px;
+                    background: #fff;
+                    border-radius: 20px;
+                    padding: 18px;
+                    box-shadow: 0 20px 40px rgba(16, 24, 40, 0.2);
+                  ">
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                      margin-bottom: 14px;
+                    ">
+                    <div
+                      id="date-picker-title"
+                      style="font-size: 16px; font-weight: 800; color: #101828">
+                      Chọn ngày giao dịch
+                    </div>
+                    <button
+                      type="button"
+                      class="gold-control gold-back"
+                      aria-label="Đóng lịch"
+                      onClick="{{closeDatePicker}}"
+                      style="
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 18px;
+                        background: #f2f4f7;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                      ">
+                      <svg
+                        aria-hidden="true"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none">
+                        <path
+                          d="m2 2 12 12M14 2 2 14"
+                          stroke="#101828"
+                          stroke-width="1.8"
+                          stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                      margin-bottom: 10px;
+                    ">
+                    <button
+                      type="button"
+                      class="gold-control"
+                      aria-label="Tháng trước"
+                      onClick="{{prevMonth}}"
+                      style="
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 16px;
+                        background: #f2f4f7;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                      ">
+                      <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+                        <path
+                          d="M6 1 1 6l5 5"
+                          stroke="#344054"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </button>
+                    <div style="font-size: 14px; font-weight: 800; color: #101828">
+                      {{calendarMonthLabel}}
+                    </div>
+                    <button
+                      type="button"
+                      class="gold-control"
+                      aria-label="Tháng sau"
+                      onClick="{{nextMonth}}"
+                      style="
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 16px;
+                        background: #f2f4f7;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                      ">
+                      <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+                        <path
+                          d="M1 1 6 6l-5 5"
+                          stroke="#344054"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: repeat(7, 1fr);
+                      gap: 2px;
+                      margin-bottom: 4px;
+                    ">
+                    <sc-for list="{{weekdayLabels}}" as="w" hint-placeholder-count="7">
+                      <div
+                        style="
+                          text-align: center;
+                          font-size: 11px;
+                          font-weight: 800;
+                          color: #9aa1b4;
+                          padding: 4px 0;
+                        ">
+                        {{w}}
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px">
+                    <sc-for list="{{calendarCells}}" as="cell" hint-placeholder-count="35">
+                      <button
+                        type="button"
+                        class="gold-control"
+                        disabled="{{cell.empty}}"
+                        onClick="{{cell.onSelect}}"
+                        style="aspect-ratio:1;border-radius:10px;background:{{cell.bg}};color:{{cell.color}};font-size:13px;font-weight:{{cell.weight}};cursor:pointer;position:relative">
+                        {{cell.label}}
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{brandManageVisible}}" hint-placeholder-val="{{false}}">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="brand-manage-title"
+                onKeyDown="{{handleDialogKeyDown}}"
+                style="
+                  position: absolute;
+                  inset: 0;
+                  z-index: 90;
+                  background: rgba(16, 24, 40, 0.48);
+                  display: flex;
+                  align-items: flex-end;
+                ">
+                <div class="gold-sheet">
+                  <div class="gold-handle"></div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                      gap: 12px;
+                    ">
+                    <div>
+                      <div
+                        id="brand-manage-title"
+                        style="
+                          font-size: 18px;
+                          line-height: 26px;
+                          font-weight: 800;
+                          color: #101828;
+                        ">
+                        Thương hiệu vàng
+                      </div>
+                      <div
+                        style="font-size: 12px; color: #667085; font-weight: 600; margin-top: 3px">
+                        Quản lý danh sách chọn khi thêm giao dịch mua
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="gold-control gold-back"
+                      aria-label="Đóng"
+                      onClick="{{closeBrandManage}}"
+                      style="
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 22px;
+                        background: #fff;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                      ">
+                      <svg
+                        aria-hidden="true"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none">
+                        <path
+                          d="m2 2 12 12M14 2 2 14"
+                          stroke="#101828"
+                          stroke-width="1.8"
+                          stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      background: #fff;
+                      border-radius: 18px;
+                      padding: 4px 16px;
+                      margin-top: 18px;
+                      box-shadow: 0 2px 10px rgba(16, 24, 40, 0.05);
+                    ">
+                    <sc-for list="{{brandRows}}" as="b" hint-placeholder-count="4">
+                      <div
+                        style="display:flex;align-items:center;gap:12px;padding:12px 0;{{b.dividerStyle}}">
+                        <div
+                          aria-hidden="true"
+                          style="
+                            width: 36px;
+                            height: 36px;
+                            border-radius: 18px;
+                            background: #fff4d6;
+                            color: #a96308;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 12px;
+                            font-weight: 800;
+                            flex-shrink: 0;
+                            line-height: 1;
+                          ">
+                          {{b.initials}}
+                        </div>
+                        <div
+                          style="
+                            flex: 1;
+                            min-width: 0;
+                            font-size: 14px;
+                            line-height: 20px;
+                            font-weight: 800;
+                            color: #101828;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                          ">
+                          {{b.name}}
+                        </div>
+                        <button
+                          type="button"
+                          class="gold-control"
+                          aria-label="Xoá thương hiệu"
+                          onClick="{{b.onDelete}}"
+                          style="
+                            width: 36px;
+                            height: 36px;
+                            border-radius: 12px;
+                            background: #fef3f2;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            flex-shrink: 0;
+                          ">
+                          <svg
+                            aria-hidden="true"
+                            width="15"
+                            height="15"
+                            viewBox="0 0 16 16"
+                            fill="none">
+                            <path
+                              d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5 5 13a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.5-8.5M6.5 7.3v4M9.5 7.3v4"
+                              stroke="#B42318"
+                              stroke-width="1.4"
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+                          </svg>
+                        </button>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 18px">
+                    <label
+                      ><span class="gold-label">Thêm thương hiệu mới</span
+                      ><input
+                        class="gold-field"
+                        type="text"
+                        placeholder="VD: PNJ, SJC, DOJI..."
+                        value="{{newBrandName}}"
+                        onChange="{{handleNewBrandChange}}"
+                    /></label>
+                    <button
+                      type="button"
+                      class="gold-control gold-save"
+                      disabled="{{addBrandDisabled}}"
+                      onClick="{{addBrand}}">
+                      <span>Thêm thương hiệu</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{detailVisible}}" hint-placeholder-val="{{false}}">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="detail-title"
+                onKeyDown="{{handleDialogKeyDown}}"
+                style="
+                  position: absolute;
+                  inset: 0;
+                  z-index: 80;
+                  background: rgba(16, 24, 40, 0.48);
+                  display: flex;
+                  align-items: flex-end;
+                ">
+                <div class="gold-sheet">
+                  <div class="gold-handle"></div>
+                  <div style="display: flex; align-items: center; justify-content: space-between">
+                    <div>
+                      <div
+                        id="detail-title"
+                        style="font-size: 18px; font-weight: 800; color: #101828">
+                        {{detailTitle}}
+                      </div>
+                      <div
+                        style="font-size: 12px; color: #667085; font-weight: 600; margin-top: 4px">
+                        {{detailSubtitle}}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="gold-control gold-back"
+                      aria-label="Đóng chi tiết"
+                      onClick="{{dismissNotice}}"
+                      style="
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 22px;
+                        background: #fff;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                      ">
+                      <svg
+                        aria-hidden="true"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none">
+                        <path
+                          d="m2 2 12 12M14 2 2 14"
+                          stroke="#101828"
+                          stroke-width="1.8"
+                          stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      background: #fff;
+                      border-radius: 16px;
+                      padding: 4px 16px;
+                      margin-top: 18px;
+                    ">
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 14px 0;
+                        border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+                        font-size: 13px;
+                      ">
+                      <span style="color: #667085; font-weight: 600">Khối lượng</span
+                      ><strong>{{detailWeight}}</strong>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 14px 0;
+                        border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+                        font-size: 13px;
+                      ">
+                      <span style="color: #667085; font-weight: 600">Tổng tiền</span
+                      ><strong>{{detailTotal}}</strong>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 14px 0;
+                        font-size: 13px;
+                      ">
+                      <span style="color: #667085; font-weight: 600">{{detailExtraLabel}}</span
+                      ><strong>{{detailExtra}}</strong>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      padding: 14px;
+                      border-radius: 14px;
+                      background: #fef3f2;
+                      color: #b42318;
+                      font-size: 12px;
+                      line-height: 18px;
+                      font-weight: 600;
+                      margin-top: 16px;
+                    ">
+                    {{deleteMessage}}
+                  </div>
+                  <button
+                    type="button"
+                    class="gold-control"
+                    disabled="{{deleteDisabled}}"
+                    onClick="{{moveToTrash}}"
+                    style="
+                      width: 100%;
+                      min-height: 52px;
+                      border-radius: 16px;
+                      background: #e25050;
+                      color: #fff;
+                      font-size: 14px;
+                      font-weight: 800;
+                      cursor: pointer;
+                      margin-top: 14px;
+                    ">
+                    Chuyển vào thùng rác
+                  </button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{trashVisible}}" hint-placeholder-val="{{false}}">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="trash-title"
+                onKeyDown="{{handleDialogKeyDown}}"
+                style="
+                  position: absolute;
+                  inset: 0;
+                  z-index: 80;
+                  background: rgba(16, 24, 40, 0.48);
+                  display: flex;
+                  align-items: flex-end;
+                ">
+                <div class="gold-sheet">
+                  <div class="gold-handle"></div>
+                  <div style="display: flex; align-items: center; justify-content: space-between">
+                    <div>
+                      <div
+                        id="trash-title"
+                        style="font-size: 18px; font-weight: 800; color: #101828">
+                        Thùng rác
+                      </div>
+                      <div
+                        style="font-size: 12px; color: #667085; font-weight: 600; margin-top: 4px">
+                        Giao dịch không còn được tính vào số liệu
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="gold-control gold-back"
+                      aria-label="Đóng thùng rác"
+                      onClick="{{dismissNotice}}"
+                      style="
+                        width: 44px;
+                        height: 44px;
+                        border-radius: 22px;
+                        background: #fff;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                      ">
+                      <svg
+                        aria-hidden="true"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none">
+                        <path
+                          d="m2 2 12 12M14 2 2 14"
+                          stroke="#101828"
+                          stroke-width="1.8"
+                          stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      background: #fff;
+                      border-radius: 16px;
+                      padding: 4px 16px;
+                      margin-top: 18px;
+                    ">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0">
+                      <div
+                        style="
+                          width: 40px;
+                          height: 40px;
+                          border-radius: 20px;
+                          background: #ecfdf3;
+                          color: #067647;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          font-size: 12px;
+                          font-weight: 800;
+                        ">
+                        Bán
+                      </div>
+                      <div style="flex: 1">
+                        <div style="font-size: 13px; font-weight: 800">SJC · 1 chỉ</div>
+                        <div
+                          style="
+                            font-size: 11px;
+                            color: #667085;
+                            font-weight: 600;
+                            margin-top: 3px;
+                          ">
+                          Đã xoá 27/08/2026
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        class="gold-control"
+                        onClick="{{restoreTrash}}"
+                        style="
+                          min-height: 44px;
+                          padding: 0 10px;
+                          border-radius: 12px;
+                          background: #f2f4f7;
+                          color: #101828;
+                          font-size: 11px;
+                          font-weight: 800;
+                          cursor: pointer;
+                        ">
+                        Khôi phục
+                      </button>
+                      <button
+                        type="button"
+                        class="gold-control"
+                        aria-label="Xoá vĩnh viễn"
+                        onClick="{{purgeTrash}}"
+                        style="
+                          width: 44px;
+                          height: 44px;
+                          border-radius: 12px;
+                          background: #fef3f2;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          cursor: pointer;
+                        ">
+                        <svg
+                          aria-hidden="true"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none">
+                          <path
+                            d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4.5 4.5 5 13a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.5-8.5M6.5 7.3v4M9.5 7.3v4"
+                            stroke="#B42318"
+                            stroke-width="1.4"
+                            stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
           </div>
-        </div>
-      </sc-if>
-    </div>
-  </x-import>
-</div>
-</x-dc>
-<script type="text/x-dc" data-dc-script>
-class Component extends DCLogic {
-  purchaseCtaRef = React.createRef();
-  purchaseDialogRef = React.createRef();
-  noticeCloseRef = React.createRef();
-  state = {
-    actionPickerVisible: false,
-    formVisible: false,
-    formType: 'BUY',
-    detailVisible: false,
-    detailType: 'BUY',
-    trashVisible: false,
-    brands: ['PNJ', 'SJC', 'DOJI', 'Bảo Tín Minh Châu'],
-    brandManageVisible: false,
-    newBrandName: '',
-    datePickerOpen: false,
-    selectedDate: '2026-08-27',
-    calendarYear: 2026,
-    calendarMonth: 7,
-    brandDropdownOpen: false,
-    units: ['chỉ', 'lượng/cây', 'phân', 'gram'],
-    selectedUnit: 'chỉ',
-    unitDropdownOpen: false,
-    lots: ['PNJ · mua 24/08/2026 · còn 2 chỉ', 'SJC · mua 12/08/2026 · còn 2 chỉ'],
-    selectedLot: 'PNJ · mua 24/08/2026 · còn 2 chỉ',
-    lotDropdownOpen: false,
-  };
+        </x-import>
+      </div>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script>
+      class Component extends DCLogic {
+        purchaseCtaRef = React.createRef();
+        purchaseDialogRef = React.createRef();
+        noticeCloseRef = React.createRef();
+        state = {
+          actionPickerVisible: false,
+          formVisible: false,
+          formType: 'BUY',
+          detailVisible: false,
+          detailType: 'BUY',
+          trashVisible: false,
+          brands: ['PNJ', 'SJC', 'DOJI', 'Bảo Tín Minh Châu'],
+          brandManageVisible: false,
+          newBrandName: '',
+          datePickerOpen: false,
+          selectedDate: '2026-08-27',
+          calendarYear: 2026,
+          calendarMonth: 7,
+          brandDropdownOpen: false,
+          units: ['chỉ', 'lượng/cây', 'phân', 'gram'],
+          selectedUnit: 'chỉ',
+          unitDropdownOpen: false,
+          lots: ['PNJ · mua 24/08/2026 · còn 2 chỉ', 'SJC · mua 12/08/2026 · còn 2 chỉ'],
+          selectedLot: 'PNJ · mua 24/08/2026 · còn 2 chỉ',
+          lotDropdownOpen: false,
+        };
 
-  goBack() { window.location.href = './Finance App.gold.dc.html'; }
-  openActionPicker() {
-    this.setState({ actionPickerVisible: true }, () => {
-      if (this.noticeCloseRef.current) this.noticeCloseRef.current.focus();
-    });
-  }
-  openBuyForm() { this.setState({ actionPickerVisible: false, formVisible: true, formType: 'BUY' }); }
-  openSellForm() { this.setState({ actionPickerVisible: false, formVisible: true, formType: 'SELL' }); }
-  openPurchaseDetail() { this.setState({ detailVisible: true, detailType: 'BUY' }); }
-  openSaleDetail() { this.setState({ detailVisible: true, detailType: 'SELL' }); }
-  openTrash() { this.setState({ trashVisible: true }); }
-  dismissNotice() {
-    this.setState({ actionPickerVisible: false, formVisible: false, detailVisible: false, trashVisible: false, brandManageVisible: false, datePickerOpen: false, brandDropdownOpen: false, unitDropdownOpen: false, lotDropdownOpen: false }, () => {
-      if (this.purchaseCtaRef.current) this.purchaseCtaRef.current.focus();
-    });
-  }
-  saveForm() { this.dismissNotice(); }
-  moveToTrash() {
-    if (this.state.detailType === 'BUY') return;
-    this.setState({ detailVisible: false, trashVisible: true });
-  }
-  restoreTrash() { this.setState({ trashVisible: false }); }
-  closeBrandManage() { this.setState({ brandManageVisible: false }); }
-  handleNewBrandChange(event) { this.setState({ newBrandName: event.target.value }); }
-  addBrand() {
-    const name = this.state.newBrandName.trim();
-    if (!name) return;
-    this.setState({ brands: [...this.state.brands, name], newBrandName: '', selectedBrand: name });
-  }
-  deleteBrand(index) {
-    this.setState({ brands: this.state.brands.filter((_, i) => i !== index) });
-  }
-  toggleDatePicker() {
-    this.setState({ datePickerOpen: !this.state.datePickerOpen, brandDropdownOpen: false, unitDropdownOpen: false, lotDropdownOpen: false });
-  }
-  closeDatePicker() {
-    this.setState({ datePickerOpen: false });
-  }
-  prevMonth() {
-    let m = this.state.calendarMonth - 1, y = this.state.calendarYear;
-    if (m < 0) { m = 11; y -= 1; }
-    this.setState({ calendarMonth: m, calendarYear: y });
-  }
-  nextMonth() {
-    let m = this.state.calendarMonth + 1, y = this.state.calendarYear;
-    if (m > 11) { m = 0; y += 1; }
-    this.setState({ calendarMonth: m, calendarYear: y });
-  }
-  selectDate(iso) {
-    this.setState({ selectedDate: iso, datePickerOpen: false });
-  }
-  toggleBrandDropdown() {
-    this.setState({ brandDropdownOpen: !this.state.brandDropdownOpen, datePickerOpen: false, unitDropdownOpen: false, lotDropdownOpen: false });
-  }
-  selectBrand(name) {
-    this.setState({ selectedBrand: name, brandDropdownOpen: false });
-  }
-  selectAddNewBrand() {
-    this.setState({ brandDropdownOpen: false, brandManageVisible: true, newBrandName: '' });
-  }
-  toggleUnitDropdown() {
-    this.setState({ unitDropdownOpen: !this.state.unitDropdownOpen, datePickerOpen: false, brandDropdownOpen: false, lotDropdownOpen: false });
-  }
-  selectUnit(unit) {
-    this.setState({ selectedUnit: unit, unitDropdownOpen: false });
-  }
-  toggleLotDropdown() {
-    this.setState({ lotDropdownOpen: !this.state.lotDropdownOpen, datePickerOpen: false, brandDropdownOpen: false, unitDropdownOpen: false });
-  }
-  selectLot(lot) {
-    this.setState({ selectedLot: lot, lotDropdownOpen: false });
-  }
-  purgeTrash() {
-    if (window.confirm('Xoá vĩnh viễn giao dịch này? Thao tác không thể hoàn tác.')) {
-      this.setState({ trashVisible: false });
-    }
-  }
-  handleDialogKeyDown(event) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      if (this.state.datePickerOpen) {
-        this.closeDatePicker();
-        return;
+        goBack() { window.location.href = './Finance App.gold.dc.html'; }
+        openActionPicker() {
+          this.setState({ actionPickerVisible: true }, () => {
+            if (this.noticeCloseRef.current) this.noticeCloseRef.current.focus();
+          });
+        }
+        openBuyForm() { this.setState({ actionPickerVisible: false, formVisible: true, formType: 'BUY' }); }
+        openSellForm() { this.setState({ actionPickerVisible: false, formVisible: true, formType: 'SELL' }); }
+        openPurchaseDetail() { this.setState({ detailVisible: true, detailType: 'BUY' }); }
+        openSaleDetail() { this.setState({ detailVisible: true, detailType: 'SELL' }); }
+        openTrash() { this.setState({ trashVisible: true }); }
+        dismissNotice() {
+          this.setState({ actionPickerVisible: false, formVisible: false, detailVisible: false, trashVisible: false, brandManageVisible: false, datePickerOpen: false, brandDropdownOpen: false, unitDropdownOpen: false, lotDropdownOpen: false }, () => {
+            if (this.purchaseCtaRef.current) this.purchaseCtaRef.current.focus();
+          });
+        }
+        saveForm() { this.dismissNotice(); }
+        moveToTrash() {
+          if (this.state.detailType === 'BUY') return;
+          this.setState({ detailVisible: false, trashVisible: true });
+        }
+        restoreTrash() { this.setState({ trashVisible: false }); }
+        closeBrandManage() { this.setState({ brandManageVisible: false }); }
+        handleNewBrandChange(event) { this.setState({ newBrandName: event.target.value }); }
+        addBrand() {
+          const name = this.state.newBrandName.trim();
+          if (!name) return;
+          this.setState({ brands: [...this.state.brands, name], newBrandName: '', selectedBrand: name });
+        }
+        deleteBrand(index) {
+          this.setState({ brands: this.state.brands.filter((_, i) => i !== index) });
+        }
+        toggleDatePicker() {
+          this.setState({ datePickerOpen: !this.state.datePickerOpen, brandDropdownOpen: false, unitDropdownOpen: false, lotDropdownOpen: false });
+        }
+        closeDatePicker() {
+          this.setState({ datePickerOpen: false });
+        }
+        prevMonth() {
+          let m = this.state.calendarMonth - 1, y = this.state.calendarYear;
+          if (m < 0) { m = 11; y -= 1; }
+          this.setState({ calendarMonth: m, calendarYear: y });
+        }
+        nextMonth() {
+          let m = this.state.calendarMonth + 1, y = this.state.calendarYear;
+          if (m > 11) { m = 0; y += 1; }
+          this.setState({ calendarMonth: m, calendarYear: y });
+        }
+        selectDate(iso) {
+          this.setState({ selectedDate: iso, datePickerOpen: false });
+        }
+        toggleBrandDropdown() {
+          this.setState({ brandDropdownOpen: !this.state.brandDropdownOpen, datePickerOpen: false, unitDropdownOpen: false, lotDropdownOpen: false });
+        }
+        selectBrand(name) {
+          this.setState({ selectedBrand: name, brandDropdownOpen: false });
+        }
+        selectAddNewBrand() {
+          this.setState({ brandDropdownOpen: false, brandManageVisible: true, newBrandName: '' });
+        }
+        toggleUnitDropdown() {
+          this.setState({ unitDropdownOpen: !this.state.unitDropdownOpen, datePickerOpen: false, brandDropdownOpen: false, lotDropdownOpen: false });
+        }
+        selectUnit(unit) {
+          this.setState({ selectedUnit: unit, unitDropdownOpen: false });
+        }
+        toggleLotDropdown() {
+          this.setState({ lotDropdownOpen: !this.state.lotDropdownOpen, datePickerOpen: false, brandDropdownOpen: false, unitDropdownOpen: false });
+        }
+        selectLot(lot) {
+          this.setState({ selectedLot: lot, lotDropdownOpen: false });
+        }
+        purgeTrash() {
+          if (window.confirm('Xoá vĩnh viễn giao dịch này? Thao tác không thể hoàn tác.')) {
+            this.setState({ trashVisible: false });
+          }
+        }
+        handleDialogKeyDown(event) {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            if (this.state.datePickerOpen) {
+              this.closeDatePicker();
+              return;
+            }
+            this.dismissNotice();
+          }
+        }
+        buildCalendarCells() {
+          const { calendarYear: y, calendarMonth: m, selectedDate } = this.state;
+          const first = new Date(y, m, 1);
+          const startOffset = (first.getDay() + 6) % 7;
+          const daysInMonth = new Date(y, m + 1, 0).getDate();
+          const cells = [];
+          for (let i = 0; i < startOffset; i++) {
+            cells.push({ empty: true, label: '', bg: 'transparent', color: 'transparent', weight: 600, onSelect: () => {} });
+          }
+          for (let d = 1; d <= daysInMonth; d++) {
+            const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const isSelected = iso === selectedDate;
+            cells.push({
+              empty: false,
+              label: String(d),
+              bg: isSelected ? 'linear-gradient(135deg,#F4B942 0%,#C98213 100%)' : 'transparent',
+              color: isSelected ? '#fff' : '#101828',
+              weight: isSelected ? 800 : 600,
+              onSelect: () => this.selectDate(iso),
+            });
+          }
+          return cells;
+        }
+
+        renderVals() {
+          return {
+            goBack: () => this.goBack(),
+            openActionPicker: () => this.openActionPicker(),
+            openBuyForm: () => this.openBuyForm(),
+            openSellForm: () => this.openSellForm(),
+            openPurchaseDetail: () => this.openPurchaseDetail(),
+            openSaleDetail: () => this.openSaleDetail(),
+            openTrash: () => this.openTrash(),
+            dismissNotice: () => this.dismissNotice(),
+            saveForm: () => this.saveForm(),
+            moveToTrash: () => this.moveToTrash(),
+            restoreTrash: () => this.restoreTrash(),
+            purgeTrash: () => this.purgeTrash(),
+            closeBrandManage: () => this.closeBrandManage(),
+            handleNewBrandChange: (event) => this.handleNewBrandChange(event),
+            addBrand: () => this.addBrand(),
+            handleDialogKeyDown: (event) => this.handleDialogKeyDown(event),
+            brandManageVisible: this.state.brandManageVisible,
+            newBrandName: this.state.newBrandName,
+            addBrandDisabled: this.state.newBrandName.trim() === '',
+            brandRows: this.state.brands.map((name, i) => ({
+              name,
+              initials: name.slice(0, 2).toUpperCase(),
+              dividerStyle: i < this.state.brands.length - 1 ? 'border-bottom:1px solid rgba(16,24,40,.08)' : '',
+              onDelete: () => this.deleteBrand(i),
+            })),
+            actionPickerVisible: this.state.actionPickerVisible,
+            formVisible: this.state.formVisible,
+            isSellForm: this.state.formType === 'SELL',
+            isBuyForm: this.state.formType === 'BUY',
+            formTitle: this.state.formType === 'SELL' ? 'Thêm giao dịch bán' : 'Thêm giao dịch mua',
+            placeLabel: this.state.formType === 'SELL' ? 'Nơi bán' : 'Thương hiệu / nơi mua',
+            placeValue: this.state.selectedBrand || (this.state.formType === 'SELL' ? 'SJC' : 'PNJ'),
+            toggleDatePicker: () => this.toggleDatePicker(),
+            closeDatePicker: () => this.closeDatePicker(),
+            prevMonth: () => this.prevMonth(),
+            nextMonth: () => this.nextMonth(),
+            datePickerOpen: this.state.datePickerOpen,
+            dateDisplay: (() => {
+              const [y, m, d] = this.state.selectedDate.split('-');
+              return `${d}/${m}/${y}`;
+            })(),
+            calendarMonthLabel: `Tháng ${this.state.calendarMonth + 1} ${this.state.calendarYear}`,
+            weekdayLabels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+            calendarCells: this.buildCalendarCells(),
+            toggleBrandDropdown: () => this.toggleBrandDropdown(),
+            selectAddNewBrand: () => this.selectAddNewBrand(),
+            brandDropdownOpen: this.state.brandDropdownOpen,
+            brandFieldBorder: this.state.brandDropdownOpen ? '#2F6FED' : '#D0D5DD',
+            brandFieldShadow: this.state.brandDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
+            brandChevronRotate: this.state.brandDropdownOpen ? 'rotate(180deg)' : 'none',
+            brandOptions: this.state.brands.map((name) => {
+              const active = name === (this.state.selectedBrand || (this.state.formType === 'SELL' ? 'SJC' : 'PNJ'));
+              return {
+                label: name,
+                active,
+                bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
+                color: active ? '#2F6FED' : '#101828',
+                weight: active ? 800 : 600,
+                onSelect: () => this.selectBrand(name),
+              };
+            }),
+            toggleUnitDropdown: () => this.toggleUnitDropdown(),
+            unitDropdownOpen: this.state.unitDropdownOpen,
+            unitFieldBorder: this.state.unitDropdownOpen ? '#2F6FED' : '#D0D5DD',
+            unitFieldShadow: this.state.unitDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
+            unitChevronRotate: this.state.unitDropdownOpen ? 'rotate(180deg)' : 'none',
+            unitValue: this.state.selectedUnit,
+            unitOptions: this.state.units.map((u) => {
+              const active = u === this.state.selectedUnit;
+              return {
+                label: u,
+                active,
+                bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
+                color: active ? '#2F6FED' : '#101828',
+                weight: active ? 800 : 600,
+                onSelect: () => this.selectUnit(u),
+              };
+            }),
+            toggleLotDropdown: () => this.toggleLotDropdown(),
+            lotDropdownOpen: this.state.lotDropdownOpen,
+            lotFieldBorder: this.state.lotDropdownOpen ? '#2F6FED' : '#D0D5DD',
+            lotFieldShadow: this.state.lotDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
+            lotChevronRotate: this.state.lotDropdownOpen ? 'rotate(180deg)' : 'none',
+            lotValue: this.state.selectedLot,
+            lotOptions: this.state.lots.map((lot) => {
+              const active = lot === this.state.selectedLot;
+              return {
+                label: lot,
+                active,
+                bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
+                color: active ? '#2F6FED' : '#101828',
+                weight: active ? 800 : 600,
+                onSelect: () => this.selectLot(lot),
+              };
+            }),
+            totalLabel: this.state.formType === 'SELL' ? 'Tổng tiền thực nhận' : 'Tổng tiền thực trả',
+            totalValue: this.state.formType === 'SELL' ? '8.700.000' : '8.500.000',
+            saveLabel: this.state.formType === 'SELL' ? 'Lưu giao dịch bán' : 'Lưu giao dịch mua',
+            detailVisible: this.state.detailVisible,
+            detailTitle: this.state.detailType === 'SELL' ? 'Chi tiết lần bán' : 'Chi tiết lần mua',
+            detailSubtitle: this.state.detailType === 'SELL' ? 'SJC · 12/08/2026' : 'PNJ · 24/08/2026',
+            detailWeight: this.state.detailType === 'SELL' ? '1 chỉ' : '2 chỉ',
+            detailTotal: this.state.detailType === 'SELL' ? '8.700.000 ₫' : '17.000.000 ₫',
+            detailExtraLabel: this.state.detailType === 'SELL' ? 'Lời đã thực hiện' : 'Lượng còn lại',
+            detailExtra: this.state.detailType === 'SELL' ? '+200.000 ₫' : '2 chỉ',
+            deleteMessage: this.state.detailType === 'SELL'
+              ? 'Xoá lần bán sẽ trả 1 chỉ về đúng lô mua PNJ.'
+              : 'Không thể xoá lô mua đang có giao dịch bán liên quan. Hãy xoá lần bán trước.',
+            deleteDisabled: this.state.detailType === 'BUY',
+            trashVisible: this.state.trashVisible,
+            purchaseCtaRef: this.purchaseCtaRef,
+            purchaseDialogRef: this.purchaseDialogRef,
+            noticeCloseRef: this.noticeCloseRef,
+          };
+        }
       }
-      this.dismissNotice();
-    }
-  }
-  buildCalendarCells() {
-    const { calendarYear: y, calendarMonth: m, selectedDate } = this.state;
-    const first = new Date(y, m, 1);
-    const startOffset = (first.getDay() + 6) % 7;
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const cells = [];
-    for (let i = 0; i < startOffset; i++) {
-      cells.push({ empty: true, label: '', bg: 'transparent', color: 'transparent', weight: 600, onSelect: () => {} });
-    }
-    for (let d = 1; d <= daysInMonth; d++) {
-      const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const isSelected = iso === selectedDate;
-      cells.push({
-        empty: false,
-        label: String(d),
-        bg: isSelected ? 'linear-gradient(135deg,#F4B942 0%,#C98213 100%)' : 'transparent',
-        color: isSelected ? '#fff' : '#101828',
-        weight: isSelected ? 800 : 600,
-        onSelect: () => this.selectDate(iso),
-      });
-    }
-    return cells;
-  }
-
-  renderVals() {
-    return {
-      goBack: () => this.goBack(),
-      openActionPicker: () => this.openActionPicker(),
-      openBuyForm: () => this.openBuyForm(),
-      openSellForm: () => this.openSellForm(),
-      openPurchaseDetail: () => this.openPurchaseDetail(),
-      openSaleDetail: () => this.openSaleDetail(),
-      openTrash: () => this.openTrash(),
-      dismissNotice: () => this.dismissNotice(),
-      saveForm: () => this.saveForm(),
-      moveToTrash: () => this.moveToTrash(),
-      restoreTrash: () => this.restoreTrash(),
-      purgeTrash: () => this.purgeTrash(),
-      closeBrandManage: () => this.closeBrandManage(),
-      handleNewBrandChange: (event) => this.handleNewBrandChange(event),
-      addBrand: () => this.addBrand(),
-      handleDialogKeyDown: (event) => this.handleDialogKeyDown(event),
-      brandManageVisible: this.state.brandManageVisible,
-      newBrandName: this.state.newBrandName,
-      addBrandDisabled: this.state.newBrandName.trim() === '',
-      brandRows: this.state.brands.map((name, i) => ({
-        name,
-        initials: name.slice(0, 2).toUpperCase(),
-        dividerStyle: i < this.state.brands.length - 1 ? 'border-bottom:1px solid rgba(16,24,40,.08)' : '',
-        onDelete: () => this.deleteBrand(i),
-      })),
-      actionPickerVisible: this.state.actionPickerVisible,
-      formVisible: this.state.formVisible,
-      isSellForm: this.state.formType === 'SELL',
-      isBuyForm: this.state.formType === 'BUY',
-      formTitle: this.state.formType === 'SELL' ? 'Thêm giao dịch bán' : 'Thêm giao dịch mua',
-      placeLabel: this.state.formType === 'SELL' ? 'Nơi bán' : 'Thương hiệu / nơi mua',
-      placeValue: this.state.selectedBrand || (this.state.formType === 'SELL' ? 'SJC' : 'PNJ'),
-      toggleDatePicker: () => this.toggleDatePicker(),
-      closeDatePicker: () => this.closeDatePicker(),
-      prevMonth: () => this.prevMonth(),
-      nextMonth: () => this.nextMonth(),
-      datePickerOpen: this.state.datePickerOpen,
-      dateDisplay: (() => {
-        const [y, m, d] = this.state.selectedDate.split('-');
-        return `${d}/${m}/${y}`;
-      })(),
-      calendarMonthLabel: `Tháng ${this.state.calendarMonth + 1} ${this.state.calendarYear}`,
-      weekdayLabels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
-      calendarCells: this.buildCalendarCells(),
-      toggleBrandDropdown: () => this.toggleBrandDropdown(),
-      selectAddNewBrand: () => this.selectAddNewBrand(),
-      brandDropdownOpen: this.state.brandDropdownOpen,
-      brandFieldBorder: this.state.brandDropdownOpen ? '#2F6FED' : '#D0D5DD',
-      brandFieldShadow: this.state.brandDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
-      brandChevronRotate: this.state.brandDropdownOpen ? 'rotate(180deg)' : 'none',
-      brandOptions: this.state.brands.map((name) => {
-        const active = name === (this.state.selectedBrand || (this.state.formType === 'SELL' ? 'SJC' : 'PNJ'));
-        return {
-          label: name,
-          active,
-          bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
-          color: active ? '#2F6FED' : '#101828',
-          weight: active ? 800 : 600,
-          onSelect: () => this.selectBrand(name),
-        };
-      }),
-      toggleUnitDropdown: () => this.toggleUnitDropdown(),
-      unitDropdownOpen: this.state.unitDropdownOpen,
-      unitFieldBorder: this.state.unitDropdownOpen ? '#2F6FED' : '#D0D5DD',
-      unitFieldShadow: this.state.unitDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
-      unitChevronRotate: this.state.unitDropdownOpen ? 'rotate(180deg)' : 'none',
-      unitValue: this.state.selectedUnit,
-      unitOptions: this.state.units.map((u) => {
-        const active = u === this.state.selectedUnit;
-        return {
-          label: u,
-          active,
-          bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
-          color: active ? '#2F6FED' : '#101828',
-          weight: active ? 800 : 600,
-          onSelect: () => this.selectUnit(u),
-        };
-      }),
-      toggleLotDropdown: () => this.toggleLotDropdown(),
-      lotDropdownOpen: this.state.lotDropdownOpen,
-      lotFieldBorder: this.state.lotDropdownOpen ? '#2F6FED' : '#D0D5DD',
-      lotFieldShadow: this.state.lotDropdownOpen ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
-      lotChevronRotate: this.state.lotDropdownOpen ? 'rotate(180deg)' : 'none',
-      lotValue: this.state.selectedLot,
-      lotOptions: this.state.lots.map((lot) => {
-        const active = lot === this.state.selectedLot;
-        return {
-          label: lot,
-          active,
-          bg: active ? 'rgba(47,111,237,.08)' : 'transparent',
-          color: active ? '#2F6FED' : '#101828',
-          weight: active ? 800 : 600,
-          onSelect: () => this.selectLot(lot),
-        };
-      }),
-      totalLabel: this.state.formType === 'SELL' ? 'Tổng tiền thực nhận' : 'Tổng tiền thực trả',
-      totalValue: this.state.formType === 'SELL' ? '8.700.000' : '8.500.000',
-      saveLabel: this.state.formType === 'SELL' ? 'Lưu giao dịch bán' : 'Lưu giao dịch mua',
-      detailVisible: this.state.detailVisible,
-      detailTitle: this.state.detailType === 'SELL' ? 'Chi tiết lần bán' : 'Chi tiết lần mua',
-      detailSubtitle: this.state.detailType === 'SELL' ? 'SJC · 12/08/2026' : 'PNJ · 24/08/2026',
-      detailWeight: this.state.detailType === 'SELL' ? '1 chỉ' : '2 chỉ',
-      detailTotal: this.state.detailType === 'SELL' ? '8.700.000 ₫' : '17.000.000 ₫',
-      detailExtraLabel: this.state.detailType === 'SELL' ? 'Lời đã thực hiện' : 'Lượng còn lại',
-      detailExtra: this.state.detailType === 'SELL' ? '+200.000 ₫' : '2 chỉ',
-      deleteMessage: this.state.detailType === 'SELL'
-        ? 'Xoá lần bán sẽ trả 1 chỉ về đúng lô mua PNJ.'
-        : 'Không thể xoá lô mua đang có giao dịch bán liên quan. Hãy xoá lần bán trước.',
-      deleteDisabled: this.state.detailType === 'BUY',
-      trashVisible: this.state.trashVisible,
-      purchaseCtaRef: this.purchaseCtaRef,
-      purchaseDialogRef: this.purchaseDialogRef,
-      noticeCloseRef: this.noticeCloseRef,
-    };
-  }
-}
-</script>
-</body>
+    </script>
+  </body>
 </html>

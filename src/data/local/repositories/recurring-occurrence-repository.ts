@@ -13,7 +13,10 @@ import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, recurringOccurrences } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
-import { toRecurringOccurrenceEntity, toRecurringOccurrenceRowValues } from './recurring-record-mappers';
+import {
+  toRecurringOccurrenceEntity,
+  toRecurringOccurrenceRowValues,
+} from './recurring-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
 import {
   canonicalizeSyncableRecordIdentifiers,
@@ -37,7 +40,10 @@ export class RecurringOccurrenceRepository implements RecurringOccurrenceReposit
       .select()
       .from(recurringOccurrences)
       .where(
-        and(eq(recurringOccurrences.scheduleId, scheduleId), eq(recurringOccurrences.status, 'pending')),
+        and(
+          eq(recurringOccurrences.scheduleId, scheduleId),
+          eq(recurringOccurrences.status, 'pending'),
+        ),
       )
       .get();
     return row ? toRecurringOccurrenceEntity(row) : null;
@@ -47,7 +53,9 @@ export class RecurringOccurrenceRepository implements RecurringOccurrenceReposit
     const rows = this.database.db
       .select()
       .from(recurringOccurrences)
-      .where(and(isNull(recurringOccurrences.deletedAt), inArray(recurringOccurrences.status, statuses)))
+      .where(
+        and(isNull(recurringOccurrences.deletedAt), inArray(recurringOccurrences.status, statuses)),
+      )
       .all();
     return rows.map(toRecurringOccurrenceEntity);
   }

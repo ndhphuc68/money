@@ -1,7 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-const MONTHS = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+const MONTHS = [
+  'Tháng 1',
+  'Tháng 2',
+  'Tháng 3',
+  'Tháng 4',
+  'Tháng 5',
+  'Tháng 6',
+  'Tháng 7',
+  'Tháng 8',
+  'Tháng 9',
+  'Tháng 10',
+  'Tháng 11',
+  'Tháng 12',
+];
 
 function formatDisplay(date) {
   const d = String(date.getDate()).padStart(2, '0');
@@ -10,7 +23,13 @@ function formatDisplay(date) {
 }
 
 function isSameDay(a, b) {
-  return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a &&
+    b &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 function buildGrid(viewYear, viewMonth) {
@@ -51,8 +70,14 @@ export function DatePicker({ label, value, onChange }) {
   function shiftMonth(delta) {
     let m = viewMonth + delta;
     let y = viewYear;
-    if (m < 0) { m = 11; y -= 1; }
-    if (m > 11) { m = 0; y += 1; }
+    if (m < 0) {
+      m = 11;
+      y -= 1;
+    }
+    if (m > 11) {
+      m = 0;
+      y += 1;
+    }
     setViewMonth(m);
     setViewYear(y);
   }
@@ -65,7 +90,15 @@ export function DatePicker({ label, value, onChange }) {
   return (
     <label style={{ display: 'block', fontFamily: 'var(--font-sans)' }} ref={rootRef}>
       {label && (
-        <span style={{ display: 'block', fontSize: 12, lineHeight: '18px', fontWeight: 800, color: '#344054', marginBottom: 6 }}>
+        <span
+          style={{
+            display: 'block',
+            fontSize: 12,
+            lineHeight: '18px',
+            fontWeight: 800,
+            color: '#344054',
+            marginBottom: 6,
+          }}>
           {label}
         </span>
       )}
@@ -87,14 +120,26 @@ export function DatePicker({ label, value, onChange }) {
             cursor: 'pointer',
             boxShadow: open ? '0 0 0 3px rgba(47,111,237,.14)' : 'none',
             fontFamily: 'inherit',
-          }}
-        >
+          }}>
           <span style={{ fontSize: 14, fontWeight: 600, color: selected ? '#101828' : '#9AA1B4' }}>
             {selected ? formatDisplay(selected) : 'Chọn ngày'}
           </span>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
-            <rect x="2.5" y="3.5" width="13" height="12" rx="2.5" stroke="#667085" strokeWidth="1.5" />
-            <path d="M2.5 7h13M6 2v3M12 2v3" stroke="#667085" strokeWidth="1.5" strokeLinecap="round" />
+            <rect
+              x="2.5"
+              y="3.5"
+              width="13"
+              height="12"
+              rx="2.5"
+              stroke="#667085"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M2.5 7h13M6 2v3M12 2v3"
+              stroke="#667085"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
 
@@ -111,21 +156,88 @@ export function DatePicker({ label, value, onChange }) {
               padding: 14,
               boxShadow: '0 12px 28px rgba(16,24,40,.16)',
               border: '1px solid rgba(16,24,40,.06)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <button type="button" onClick={() => shiftMonth(-1)} aria-label="Tháng trước" style={{ width: 30, height: 30, borderRadius: 15, border: 0, background: '#F2F4F7', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M6 1 1 6l5 5" stroke="#344054" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 10,
+              }}>
+              <button
+                type="button"
+                onClick={() => shiftMonth(-1)}
+                aria-label="Tháng trước"
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  border: 0,
+                  background: '#F2F4F7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}>
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+                  <path
+                    d="M6 1 1 6l5 5"
+                    stroke="#344054"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#101828' }}>{MONTHS[viewMonth]} {viewYear}</div>
-              <button type="button" onClick={() => shiftMonth(1)} aria-label="Tháng sau" style={{ width: 30, height: 30, borderRadius: 15, border: 0, background: '#F2F4F7', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1 6 6l-5 5" stroke="#344054" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#101828' }}>
+                {MONTHS[viewMonth]} {viewYear}
+              </div>
+              <button
+                type="button"
+                onClick={() => shiftMonth(1)}
+                aria-label="Tháng sau"
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  border: 0,
+                  background: '#F2F4F7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}>
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+                  <path
+                    d="M1 1 6 6l-5 5"
+                    stroke="#344054"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(7, 1fr)',
+                gap: 2,
+                marginBottom: 4,
+              }}>
               {WEEKDAYS.map((w) => (
-                <div key={w} style={{ textAlign: 'center', fontSize: 10, fontWeight: 800, color: '#9AA1B4', padding: '4px 0' }}>{w}</div>
+                <div
+                  key={w}
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: '#9AA1B4',
+                    padding: '4px 0',
+                  }}>
+                  {w}
+                </div>
               ))}
             </div>
 
@@ -143,17 +255,29 @@ export function DatePicker({ label, value, onChange }) {
                       aspectRatio: '1',
                       border: 0,
                       borderRadius: 10,
-                      background: isSelected ? 'linear-gradient(135deg,#F4B942 0%,#C98213 100%)' : 'transparent',
+                      background: isSelected
+                        ? 'linear-gradient(135deg,#F4B942 0%,#C98213 100%)'
+                        : 'transparent',
                       color: isSelected ? '#fff' : '#101828',
                       fontSize: 12,
                       fontWeight: isSelected || isToday ? 800 : 600,
                       cursor: 'pointer',
                       position: 'relative',
-                    }}
-                  >
+                    }}>
                     {date.getDate()}
                     {isToday && !isSelected && (
-                      <span style={{ position: 'absolute', bottom: 3, left: '50%', transform: 'translateX(-50%)', width: 4, height: 4, borderRadius: 2, background: 'var(--color-primary)' }} />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          bottom: 3,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 4,
+                          height: 4,
+                          borderRadius: 2,
+                          background: 'var(--color-primary)',
+                        }}
+                      />
                     )}
                   </button>
                 );

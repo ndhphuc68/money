@@ -3,23 +3,14 @@ import { GoldLot } from '@/core/domain/gold/gold-lot';
 import { GoldSellTransaction } from '@/core/domain/gold/gold-sell-transaction';
 import { GoldWeightUnit } from '@/core/domain/gold/gold-weight';
 import { formatVnd } from '@/core/domain/finance/money';
-import { Translate } from '@/i18n/translations';
+import type { Translate, TranslationKey } from '@/i18n/translations';
 
-const UNIT_LABEL_KEY: Record<GoldWeightUnit, keyof ReturnType<typeof unitLabelKeys>> = {
+const UNIT_LABEL_KEY: Record<GoldWeightUnit, TranslationKey> = {
   luong: 'goldUnitLuong',
   chi: 'goldUnitChi',
   phan: 'goldUnitPhan',
   gram: 'goldUnitGram',
 };
-
-function unitLabelKeys() {
-  return {
-    goldUnitLuong: 'luong',
-    goldUnitChi: 'chi',
-    goldUnitPhan: 'phan',
-    goldUnitGram: 'gram',
-  } as const;
-}
 
 export function formatGoldWeight(quantity: number, unit: GoldWeightUnit, t: Translate): string {
   const label = t(UNIT_LABEL_KEY[unit]);

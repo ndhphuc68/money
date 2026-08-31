@@ -29,6 +29,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 1: Lock domain entities and pure business rules
 
 **Files:**
+
 - Create: `src/core/domain/finance/finance-record.ts`
 - Create: `src/core/domain/finance/account.ts`
 - Create: `src/core/domain/finance/category.ts`
@@ -39,6 +40,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Test: `tests/core/finance/finance-domain.test.ts`
 
 **Interfaces:**
+
 - `Account`, `Category`, and `Transaction` extend `SyncableRecord` and use integer VND amounts.
 - `Transaction.type` is `'income' | 'expense' | 'transfer'`; income/expense require `categoryId`, transfer requires `destinationAccountId` and forbids `categoryId`.
 - `validateTransactionInput(input): void` rejects missing names, non-positive amounts, invalid dates, missing account/category fields, and same-account transfers.
@@ -55,6 +57,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 2: Add local schema, migration, and profile/onboarding persistence
 
 **Files:**
+
 - Create: `src/data/local/schema/accounts.ts`
 - Create: `src/data/local/schema/categories.ts`
 - Create: `src/data/local/schema/transactions.ts`
@@ -65,6 +68,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Test: `tests/data/local/finance-schema.test.ts`
 
 **Interfaces:**
+
 - Tables are `accounts`, `categories`, `transactions`, and `profile_settings`.
 - `accounts` stores name, account type, opening balance, active/hidden state, and sync metadata.
 - `categories` stores name, `type` (`income | expense`), icon/color metadata, default/custom marker, active/hidden state, and sync metadata.
@@ -81,6 +85,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 3: Implement repositories and atomic change-log writes
 
 **Files:**
+
 - Create: `src/core/application/ports/finance-repositories.ts`
 - Create: `src/data/local/repositories/account-repository.ts`
 - Create: `src/data/local/repositories/category-repository.ts`
@@ -91,6 +96,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Test: `tests/data/local/finance-repositories.test.ts`
 
 **Interfaces:**
+
 - `AccountRepository`: `create`, `update`, `softDeleteOrHide`, `findById`, `listActive`, `saveWithOperation`.
 - `CategoryRepository`: `create`, `update`, `hide`, `findById`, `listActiveByType`, `isUsedByTransaction`, `saveWithOperation`; physical delete is forbidden when used.
 - `TransactionRepository`: `create`, `update`, `softDelete`, `restore`, `findById`, `list(filter)`, `saveWithOperation`; filter supports month/range, type, category, account, and name query.
@@ -106,6 +112,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 4: Add finance use cases and default data/onboarding state machine
 
 **Files:**
+
 - Create: `src/core/application/finance/create-account.ts`
 - Create: `src/core/application/finance/manage-categories.ts`
 - Create: `src/core/application/finance/create-transaction.ts`
@@ -119,6 +126,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Test: `tests/core/finance/finance-use-cases.test.ts`
 
 **Interfaces:**
+
 - Use cases accept repository ports plus `now`, `deviceId`, and UUID factories; they return domain records or view-ready aggregates and do not import Drizzle/React Native.
 - `CreateTransaction.execute(input)` validates type-specific fields, writes the transaction and matching create operation atomically, and returns the created transaction.
 - `UpdateTransaction.execute(id, patch)` validates the merged record, writes one revised operation, and supports amount/account/category/date/name/note changes.
@@ -136,12 +144,14 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 5: Generalize sync for finance entities
 
 **Files:**
+
 - Modify: `src/data/sync/sync-engine/sync-engine.ts`
 - Modify: `src/infrastructure/expo/sync/create-mobile-sync-dependencies.ts`
 - Modify: `src/core/domain/sync/syncable-record.ts` only if a shared finance record type requires it
 - Create/modify: `tests/data/sync/finance-sync.test.ts`
 
 **Interfaces:**
+
 - `SyncEngine` resolves `entityType` to account/category/transaction repositories and validates each payload against the matching domain parser.
 - Supported sync entity types are `account`, `category`, and `transaction`; profile settings remain local-only.
 - Import preserves current checksum, schema-version, idempotency, conflict-resolution, and all-or-nothing transaction behavior.
@@ -156,6 +166,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 6: Build reusable entry/filter/form UI primitives from the design handoff
 
 **Files:**
+
 - Create: `src/components/finance/AmountInput.tsx`
 - Create: `src/components/finance/AccountPicker.tsx`
 - Create: `src/components/finance/CategoryPicker.tsx`
@@ -168,6 +179,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Test: `tests/components/finance/entry-controls.test.tsx`
 
 **Interfaces:**
+
 - `TransactionForm` switches income/expense/transfer modes; category is rendered only for income/expense, destination account only for transfer.
 - `AmountInput` emits positive integer VND or validation state; it never returns a float.
 - Picker components expose selected ID and accessible labels; form fields show explicit validation messages.
@@ -182,6 +194,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 7: Implement onboarding and app dependency composition
 
 **Files:**
+
 - Create: `src/features/finance/screens/onboarding-screen.tsx`
 - Create: `src/features/finance/view-models/use-onboarding.ts`
 - Create: `src/features/finance/finance-dependencies.ts`
@@ -193,6 +206,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Modify: `tests/smoke/navigation.test.tsx`
 
 **Interfaces:**
+
 - `createFinanceDependencies(database)` constructs repositories and use cases once per database instance and supplies device identity/UUID/time dependencies.
 - `useOnboarding` exposes current step, values, validation errors, next/back/skip/finish actions, and resume state.
 - Root route chooses onboarding when profile state is incomplete and dashboard when onboarding is complete; existing sync functionality remains reachable from settings/data tools.
@@ -206,6 +220,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 8: Implement dashboard and transaction flows
 
 **Files:**
+
 - Create: `src/features/finance/screens/dashboard-screen.tsx`
 - Create: `src/features/finance/screens/transactions-screen.tsx`
 - Create: `src/features/finance/screens/transaction-form-screen.tsx`
@@ -217,6 +232,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Modify: `src/app/index.tsx` or add Expo Router routes under `src/app/` according to the chosen navigation composition
 
 **Interfaces:**
+
 - Dashboard renders total balance, current-month income/expense/net, monthly income/expense chart, category spending, recent transactions, and hide/show-money action.
 - Transactions renders date-grouped active records with filters/search and opens detail/edit.
 - Form defaults date to today, supports income/expense/transfer, and returns to dashboard/list after save with all aggregates refreshed.
@@ -231,6 +247,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 9: Implement reports and settings/account/category management
 
 **Files:**
+
 - Create: `src/features/finance/screens/reports-screen.tsx`
 - Create: `src/features/finance/screens/settings-screen.tsx`
 - Create: `src/features/finance/screens/accounts-screen.tsx`
@@ -241,6 +258,7 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 - Create: `tests/features/finance/settings.test.tsx`
 
 **Interfaces:**
+
 - Reports default to the current month and can move previous/next month; display total income, expense, net cash flow, category spending, and account spending.
 - Settings manages accounts, hides/deactivates accounts, manages categories, edits display name, toggles hide/show money, and exposes local data/sync entry points.
 - Categories currently used by a transaction can be hidden/edited but not physically deleted.
@@ -254,12 +272,14 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 ### Task 10: End-to-end acceptance, migration verification, and UX input-speed checkpoint
 
 **Files:**
+
 - Create: `tests/acceptance/income-expense-mvp.test.ts`
 - Modify: `tests/smoke/app-starts.test.ts`
 - Modify: `README.md` with finance validation commands and MVP exclusions if needed
 - Optional prototype evidence: `design/prototypes/income-expense-entry.md` or an existing design artifact; do not add production behavior from an unapproved experiment
 
 **Interfaces:**
+
 - Acceptance test uses a real test SQLite database and composed use cases/repositories, then verifies UI-facing aggregates.
 - The test covers onboarding → first account → income → expense → outgoing/incoming transfer → edit → soft delete → undo → report/dashboard refresh.
 
@@ -271,19 +291,19 @@ Create domain/application units under `src/core/domain/finance` and `src/core/ap
 
 ## Verification Matrix
 
-| Requirement | Primary coverage |
-|---|---|
-| Correct balance formula | `tests/core/finance/finance-domain.test.ts`, acceptance test |
-| Income/expense/transfer validation | domain and entry-control tests |
-| Atomic business write + change log | `tests/data/local/finance-repositories.test.ts` |
-| Soft delete and undo | use-case, repository, and transaction-flow tests |
-| Transfer excluded from totals | domain, reports, acceptance tests |
-| Current/previous/next month reports | `tests/features/finance/reports.test.ts` |
-| Category in-use cannot be physically deleted | repository/settings tests |
-| Onboarding resume and first-account requirement | onboarding tests |
-| Hide/show money does not alter data | settings/dashboard tests |
-| Migration fresh/existing database | schema and acceptance tests |
-| Finance entity sync compatibility | `tests/data/sync/finance-sync.test.ts` |
+| Requirement                                     | Primary coverage                                             |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| Correct balance formula                         | `tests/core/finance/finance-domain.test.ts`, acceptance test |
+| Income/expense/transfer validation              | domain and entry-control tests                               |
+| Atomic business write + change log              | `tests/data/local/finance-repositories.test.ts`              |
+| Soft delete and undo                            | use-case, repository, and transaction-flow tests             |
+| Transfer excluded from totals                   | domain, reports, acceptance tests                            |
+| Current/previous/next month reports             | `tests/features/finance/reports.test.ts`                     |
+| Category in-use cannot be physically deleted    | repository/settings tests                                    |
+| Onboarding resume and first-account requirement | onboarding tests                                             |
+| Hide/show money does not alter data             | settings/dashboard tests                                     |
+| Migration fresh/existing database               | schema and acceptance tests                                  |
+| Finance entity sync compatibility               | `tests/data/sync/finance-sync.test.ts`                       |
 
 ## Self-review
 

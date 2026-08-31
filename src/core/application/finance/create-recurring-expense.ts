@@ -2,7 +2,10 @@
 import { RecurringOccurrenceProcessing } from '@/core/application/ports/recurring-repositories';
 import { deriveAnchorDay } from '@/core/domain/finance/recurring-date';
 import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence';
-import { RecurringSchedule, RecurringScheduleInput } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleInput,
+} from '@/core/domain/finance/recurring-schedule';
 import { TransactionInput } from '@/core/domain/finance/transaction';
 
 export type CreateRecurringExpenseDeps = {

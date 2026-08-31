@@ -21,8 +21,15 @@ import { RestoreTransaction } from '@/core/application/finance/restore-transacti
 import { UpdateTransaction } from '@/core/application/finance/update-transaction';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
-import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
-import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  createDefaultProfileSettings,
+  ProfileSettings,
+} from '@/core/domain/finance/profile-settings';
+import {
+  Transaction,
+  TransactionInput,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 import { TransactionFormSheet } from '@/components/finance';
 import { TransactionsScreen } from '@/features/finance/screens/transactions-screen';
 import { useTransactionForm } from '@/features/finance/view-models/use-transaction-form';
@@ -61,7 +68,11 @@ class FakeAccountRepository implements AccountRepository {
     return account;
   }
 
-  async update(_id: string, _changes: UpdateAccountInput, _context: WriteContext): Promise<Account> {
+  async update(
+    _id: string,
+    _changes: UpdateAccountInput,
+    _context: WriteContext,
+  ): Promise<Account> {
     throw new Error('not implemented');
   }
 
@@ -101,7 +112,11 @@ class FakeCategoryRepository implements CategoryRepository {
     return category;
   }
 
-  async update(_id: string, _changes: UpdateCategoryInput, _context: WriteContext): Promise<Category> {
+  async update(
+    _id: string,
+    _changes: UpdateCategoryInput,
+    _context: WriteContext,
+  ): Promise<Category> {
     throw new Error('not implemented');
   }
 
@@ -114,7 +129,9 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 
   async listActiveByType(type: Category['type']): Promise<Category[]> {
-    return Array.from(this.store.values()).filter((category) => category.type === type && category.deletedAt === null);
+    return Array.from(this.store.values()).filter(
+      (category) => category.type === type && category.deletedAt === null,
+    );
   }
 
   async isUsedByTransaction(): Promise<boolean> {
@@ -138,9 +155,13 @@ class FakeProfileSettingsRepository implements ProfileSettingsRepository {
   }
 }
 
-function mergeTransactionInput(existing: Transaction, changes: UpdateTransactionInput): TransactionInput {
+function mergeTransactionInput(
+  existing: Transaction,
+  changes: UpdateTransactionInput,
+): TransactionInput {
   const type = changes.type ?? existing.type;
-  const existingDestinationAccountId = existing.type === 'transfer' ? existing.destinationAccountId : null;
+  const existingDestinationAccountId =
+    existing.type === 'transfer' ? existing.destinationAccountId : null;
   const existingCategoryId = existing.type === 'transfer' ? null : existing.categoryId;
   const destinationAccountId =
     changes.destinationAccountId !== undefined
@@ -148,7 +169,12 @@ function mergeTransactionInput(existing: Transaction, changes: UpdateTransaction
       : type === 'transfer'
         ? existingDestinationAccountId
         : null;
-  const categoryId = changes.categoryId !== undefined ? changes.categoryId : type === 'transfer' ? null : existingCategoryId;
+  const categoryId =
+    changes.categoryId !== undefined
+      ? changes.categoryId
+      : type === 'transfer'
+        ? null
+        : existingCategoryId;
 
   return {
     type,
@@ -162,14 +188,38 @@ function mergeTransactionInput(existing: Transaction, changes: UpdateTransaction
   };
 }
 
-type TransactionMeta = { createdAt: string; updatedAt: string; deletedAt: string | null; revision: number; originDeviceId: string };
+type TransactionMeta = {
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  revision: number;
+  originDeviceId: string;
+};
 
 function buildTransaction(id: string, input: TransactionInput, meta: TransactionMeta): Transaction {
-  const base = { id, amount: input.amount, accountId: input.accountId, date: input.date, name: input.name, note: input.note ?? null, ...meta };
+  const base = {
+    id,
+    amount: input.amount,
+    accountId: input.accountId,
+    date: input.date,
+    name: input.name,
+    note: input.note ?? null,
+    ...meta,
+  };
   if (input.type === 'transfer') {
-    return { ...base, type: 'transfer', destinationAccountId: input.destinationAccountId as string, categoryId: null };
+    return {
+      ...base,
+      type: 'transfer',
+      destinationAccountId: input.destinationAccountId as string,
+      categoryId: null,
+    };
   }
-  return { ...base, type: input.type, categoryId: input.categoryId as string, destinationAccountId: null };
+  return {
+    ...base,
+    type: input.type,
+    categoryId: input.categoryId as string,
+    destinationAccountId: null,
+  };
 }
 
 function monthRange(month: string): { from: string; to: string } {
@@ -186,12 +236,22 @@ class FakeTransactionRepository implements TransactionRepository {
   async create(input: CreateTransactionInput): Promise<Transaction> {
     const { id, originDeviceId, operationId: _operationId, now, ...rest } = input;
     validateTransactionInput(rest);
-    const transaction = buildTransaction(id, rest, { createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId });
+    const transaction = buildTransaction(id, rest, {
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId,
+    });
     this.store.set(id, transaction);
     return transaction;
   }
 
-  async update(id: string, changes: UpdateTransactionInput, context: WriteContext): Promise<Transaction> {
+  async update(
+    id: string,
+    changes: UpdateTransactionInput,
+    context: WriteContext,
+  ): Promise<Transaction> {
     const existing = this.requireById(id);
     const merged = mergeTransactionInput(existing, changes);
     validateTransactionInput(merged);
@@ -208,14 +268,24 @@ class FakeTransactionRepository implements TransactionRepository {
 
   async softDelete(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
 
   async restore(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: null, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: null,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
@@ -237,7 +307,9 @@ class FakeTransactionRepository implements TransactionRepository {
       items = items.filter((t) => t.categoryId === filter.categoryId);
     }
     if (filter.accountId) {
-      items = items.filter((t) => t.accountId === filter.accountId || t.destinationAccountId === filter.accountId);
+      items = items.filter(
+        (t) => t.accountId === filter.accountId || t.destinationAccountId === filter.accountId,
+      );
     }
     if (filter.query) {
       items = items.filter((t) => t.name.toLowerCase().includes(filter.query!.toLowerCase()));
@@ -254,7 +326,9 @@ class FakeTransactionRepository implements TransactionRepository {
       }
     }
 
-    return items.sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)));
+    return items.sort((a, b) =>
+      a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date),
+    );
   }
 
   async saveWithOperation(record: Transaction): Promise<void> {
@@ -298,7 +372,9 @@ function makeRepos() {
     updateTransaction: new UpdateTransaction({ transactionRepository, ...shared }),
     deleteTransaction: new DeleteTransaction({ transactionRepository, ...shared }),
     restoreTransaction: new RestoreTransaction({ transactionRepository, ...shared }),
-    createRecurringExpense: { execute: jest.fn().mockResolvedValue({ schedule: {}, occurrence: {} }) } as any,
+    createRecurringExpense: {
+      execute: jest.fn().mockResolvedValue({ schedule: {}, occurrence: {} }),
+    } as any,
     generateId,
   };
 }
@@ -343,7 +419,13 @@ async function seedAccountAndCategories(repos: Repos) {
   return { account, secondAccount, expenseCategory, incomeCategory };
 }
 
-function ListHarness({ dependencies, onSelectTransaction }: { dependencies: Repos; onSelectTransaction?: (id: string) => void }) {
+function ListHarness({
+  dependencies,
+  onSelectTransaction,
+}: {
+  dependencies: Repos;
+  onSelectTransaction?: (id: string) => void;
+}) {
   const viewModel = useTransactions({ dependencies, now: () => new Date(NOW), t });
   return (
     <TransactionsScreen
@@ -356,8 +438,22 @@ function ListHarness({ dependencies, onSelectTransaction }: { dependencies: Repo
   );
 }
 
-function FormHarness({ dependencies, transactionId, onSaved }: { dependencies: Repos; transactionId?: string | null; onSaved: () => void }) {
-  const viewModel = useTransactionForm({ dependencies, now: () => new Date(NOW), onSaved, t, transactionId });
+function FormHarness({
+  dependencies,
+  transactionId,
+  onSaved,
+}: {
+  dependencies: Repos;
+  transactionId?: string | null;
+  onSaved: () => void;
+}) {
+  const viewModel = useTransactionForm({
+    dependencies,
+    now: () => new Date(NOW),
+    onSaved,
+    t,
+    transactionId,
+  });
   return <TransactionFormSheet {...viewModel} onClose={() => {}} t={t} visible />;
 }
 
@@ -433,12 +529,19 @@ describe('transactions list + view model', () => {
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     const stored = await repos.transactionRepository.list({});
     expect(stored).toHaveLength(1);
-    expect(stored[0]).toMatchObject({ accountId: account.id, name: 'An trua', amount: 150_000, note: 'An trua', type: 'expense' });
+    expect(stored[0]).toMatchObject({
+      accountId: account.id,
+      name: 'An trua',
+      amount: 150_000,
+      note: 'An trua',
+      type: 'expense',
+    });
   });
 
   it('filters by type, category, account and free-text search', async () => {
     const repos = makeRepos();
-    const { account, secondAccount, expenseCategory, incomeCategory } = await seedAccountAndCategories(repos);
+    const { account, secondAccount, expenseCategory, incomeCategory } =
+      await seedAccountAndCategories(repos);
 
     await repos.createTransaction.execute({
       type: 'expense',
@@ -526,7 +629,9 @@ describe('transactions list + view model', () => {
     });
 
     const onSaved = jest.fn();
-    const form = render(<FormHarness dependencies={repos} onSaved={onSaved} transactionId={created.id} />);
+    const form = render(
+      <FormHarness dependencies={repos} onSaved={onSaved} transactionId={created.id} />,
+    );
 
     await waitFor(() => expect(form.getByLabelText(t('transactionFormNoteLabel'))).toBeTruthy());
     fireEvent.changeText(form.getByLabelText(t('transactionFormNoteLabel')), 'An sang o quan moi');
@@ -548,18 +653,23 @@ describe('transactions list + view model', () => {
     await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
     fireEvent.changeText(form.getByLabelText('Số tiền'), '50000');
     fireEvent.press(form.getByRole('button', { name: expenseCategory.name }));
-    fireEvent.changeText(form.getByLabelText('Ghi chú (không bắt buộc)'), 'Ăn trưa với đồng nghiệp');
+    fireEvent.changeText(
+      form.getByLabelText('Ghi chú (không bắt buộc)'),
+      'Ăn trưa với đồng nghiệp',
+    );
     fireEvent.press(form.getByRole('button', { name: 'Lưu giao dịch' }));
 
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     const [created] = await repos.transactionRepository.list({});
-    expect(created).toEqual(expect.objectContaining({
-      accountId: account.id,
-      categoryId: expenseCategory.id,
-      date: '2026-08-25',
-      name: 'Ăn trưa với đồng nghiệp',
-      note: 'Ăn trưa với đồng nghiệp',
-    }));
+    expect(created).toEqual(
+      expect.objectContaining({
+        accountId: account.id,
+        categoryId: expenseCategory.id,
+        date: '2026-08-25',
+        name: 'Ăn trưa với đồng nghiệp',
+        note: 'Ăn trưa với đồng nghiệp',
+      }),
+    );
   });
 
   it('keeps the note input above the keyboard with keyboard-aware insets', async () => {
@@ -568,7 +678,9 @@ describe('transactions list + view model', () => {
     const form = render(<FormHarness dependencies={repos} onSaved={() => {}} />);
 
     await waitFor(() => expect(form.getByText('Danh mục')).toBeTruthy());
-    expect(form.getByTestId('transaction-form-scroll').props.automaticallyAdjustKeyboardInsets).toBe(true);
+    expect(
+      form.getByTestId('transaction-form-scroll').props.automaticallyAdjustKeyboardInsets,
+    ).toBe(true);
   });
 
   it('deletes a transaction after confirmation, then restores it via Undo', async () => {
@@ -616,7 +728,12 @@ describe('transactions list + view model', () => {
       let hookResult!: ReturnType<typeof useTransactionForm>;
 
       function TestComponent() {
-        hookResult = useTransactionForm({ dependencies: repos, now: () => new Date(NOW), onSaved: () => {}, t });
+        hookResult = useTransactionForm({
+          dependencies: repos,
+          now: () => new Date(NOW),
+          onSaved: () => {},
+          t,
+        });
         return null;
       }
 
@@ -641,7 +758,12 @@ describe('transactions list + view model', () => {
       let hookResult!: ReturnType<typeof useTransactionForm>;
 
       function TestComponent() {
-        hookResult = useTransactionForm({ dependencies: repos, now: () => new Date(NOW), onSaved: () => {}, t });
+        hookResult = useTransactionForm({
+          dependencies: repos,
+          now: () => new Date(NOW),
+          onSaved: () => {},
+          t,
+        });
         return null;
       }
 
@@ -664,11 +786,14 @@ describe('transactions list + view model', () => {
       expect(executeMock).toHaveBeenCalledWith(
         expect.objectContaining({
           transaction: expect.objectContaining({ amount: 179000, name: 'YouTube Premium' }),
-          recurring: expect.objectContaining({ frequency: 'monthly', remindDaysBefore: 1, endDate: null, occurrenceLimit: null }),
+          recurring: expect.objectContaining({
+            frequency: 'monthly',
+            remindDaysBefore: 1,
+            endDate: null,
+            occurrenceLimit: null,
+          }),
         }),
       );
     });
   });
-
 });
-

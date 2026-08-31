@@ -77,17 +77,23 @@ describe('SyncPackageFile', () => {
     const uri = await files.write(authenticated);
 
     expect(uri).toBe('memory://documents/export.app-sync.json');
-    expect(JSON.parse(mockFiles.get(uri) ?? '')).toMatchObject({ checksum: authenticated.checksum, formatVersion: 2 });
+    expect(JSON.parse(mockFiles.get(uri) ?? '')).toMatchObject({
+      checksum: authenticated.checksum,
+      formatVersion: 2,
+    });
     await expect(files.read(uri)).resolves.toEqual(authenticated);
   });
 
-  it.each(['not json', JSON.stringify({ format: 'not-sync' })])('rejects malformed package content: %s', async (content) => {
-    const files = new SyncPackageFile(serializer);
-    const uri = 'memory://documents/malformed.app-sync.json';
-    mockFiles.set(uri, content);
+  it.each(['not json', JSON.stringify({ format: 'not-sync' })])(
+    'rejects malformed package content: %s',
+    async (content) => {
+      const files = new SyncPackageFile(serializer);
+      const uri = 'memory://documents/malformed.app-sync.json';
+      mockFiles.set(uri, content);
 
-    await expect(files.read(uri)).rejects.toThrow();
-  });
+      await expect(files.read(uri)).rejects.toThrow();
+    },
+  );
 });
 
 describe('FileSyncTransport', () => {
@@ -97,11 +103,18 @@ describe('FileSyncTransport', () => {
       importChanges: async () => emptySummary(),
     };
     const files = new SyncPackageFile(serializer, () => 'authenticated.app-sync.json');
-    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+    const transport = new FileSyncTransport(
+      engine,
+      files,
+      serializer,
+      new HmacSha256AuthenticationProvider('correct horse battery staple'),
+    );
 
     const uri = await transport.exportToFile();
 
-    await expect(files.read(uri)).resolves.toMatchObject({ authTag: expect.stringMatching(/^hmac-sha256:/) });
+    await expect(files.read(uri)).resolves.toMatchObject({
+      authTag: expect.stringMatching(/^hmac-sha256:/),
+    });
   });
 
   it('does not call the sync engine when an imported package was tampered with', async () => {
@@ -113,7 +126,12 @@ describe('FileSyncTransport', () => {
       exportChanges: async () => packageFixture,
       importChanges: jest.fn(async () => emptySummary()),
     };
-    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+    const transport = new FileSyncTransport(
+      engine,
+      files,
+      serializer,
+      new HmacSha256AuthenticationProvider('correct horse battery staple'),
+    );
 
     await expect(transport.importFromFile(uri)).rejects.toThrow('authentication failed');
     expect(engine.importChanges).not.toHaveBeenCalled();
@@ -127,7 +145,12 @@ describe('FileSyncTransport', () => {
       exportChanges: async () => packageFixture,
       importChanges: jest.fn(async () => emptySummary()),
     };
-    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('incorrect passphrase'));
+    const transport = new FileSyncTransport(
+      engine,
+      files,
+      serializer,
+      new HmacSha256AuthenticationProvider('incorrect passphrase'),
+    );
 
     await expect(transport.importFromFile(uri)).rejects.toThrow('authentication failed');
     expect(engine.importChanges).not.toHaveBeenCalled();
@@ -141,7 +164,12 @@ describe('FileSyncTransport', () => {
       exportChanges: async () => packageFixture,
       importChanges: jest.fn(async () => emptySummary()),
     };
-    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+    const transport = new FileSyncTransport(
+      engine,
+      files,
+      serializer,
+      new HmacSha256AuthenticationProvider('correct horse battery staple'),
+    );
 
     await expect(transport.importFromFile(uri)).rejects.toThrow('auth tag');
     expect(engine.importChanges).not.toHaveBeenCalled();
@@ -153,11 +181,19 @@ describe('FileSyncTransport', () => {
       importChanges: async () => emptySummary(),
     };
     const files = new SyncPackageFile(serializer, () => 'transport.app-sync.json');
-    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+    const transport = new FileSyncTransport(
+      engine,
+      files,
+      serializer,
+      new HmacSha256AuthenticationProvider('correct horse battery staple'),
+    );
 
     const uri = await transport.exportToFile();
 
-    await expect(files.read(uri)).resolves.toMatchObject({ checksum: packageFixture.checksum, authTag: expect.stringMatching(/^hmac-sha256:/) });
+    await expect(files.read(uri)).resolves.toMatchObject({
+      checksum: packageFixture.checksum,
+      authTag: expect.stringMatching(/^hmac-sha256:/),
+    });
   });
 
   it('passes an imported package directly to the sync engine for validation and merging', async () => {
@@ -170,7 +206,12 @@ describe('FileSyncTransport', () => {
       exportChanges: async () => packageFixture,
       importChanges: jest.fn(async () => summary),
     };
-    const transport = new FileSyncTransport(engine, files, serializer, new HmacSha256AuthenticationProvider('correct horse battery staple'));
+    const transport = new FileSyncTransport(
+      engine,
+      files,
+      serializer,
+      new HmacSha256AuthenticationProvider('correct horse battery staple'),
+    );
 
     await expect(transport.importFromFile(uri)).resolves.toEqual(summary);
     expect(engine.importChanges).toHaveBeenCalledWith(packageFixture);
@@ -193,14 +234,19 @@ describe('system Expo adapters', () => {
   it('rejects sharing when the system sharing sheet is unavailable', async () => {
     jest.mocked(Sharing.isAvailableAsync).mockResolvedValue(false);
 
-    await expect(new SystemShare().shareFile('file:///sync.app-sync.json')).rejects.toThrow('System sharing is unavailable');
+    await expect(new SystemShare().shareFile('file:///sync.app-sync.json')).rejects.toThrow(
+      'System sharing is unavailable',
+    );
   });
 
   it('returns the selected sync package URI and null after picker cancellation', async () => {
-    jest.mocked(DocumentPicker.getDocumentAsync)
+    jest
+      .mocked(DocumentPicker.getDocumentAsync)
       .mockResolvedValueOnce({
         canceled: false,
-        assets: [{ name: 'sync.app-sync.json', uri: 'file:///picked.app-sync.json', lastModified: 0 }],
+        assets: [
+          { name: 'sync.app-sync.json', uri: 'file:///picked.app-sync.json', lastModified: 0 },
+        ],
       })
       .mockResolvedValueOnce({ canceled: true, assets: null });
     const picker = new SystemFilePicker();
@@ -228,5 +274,8 @@ function emptySummary(): ImportSummary {
 
 async function authenticatedPackage(): Promise<SyncPackage> {
   const provider = new HmacSha256AuthenticationProvider('correct horse battery staple');
-  return { ...packageFixture, authTag: provider.authenticate(serializer.authenticationInput(packageFixture)) };
+  return {
+    ...packageFixture,
+    authTag: provider.authenticate(serializer.authenticationInput(packageFixture)),
+  };
 }

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vimo — Tất cả màn hình tĩnh (Static Screens)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        padding: 40px 20px;
+        background: #eaebf1;
+        font-family: 'Manrope', system-ui, sans-serif;
+        color: #101828;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+      p.subtitle {
+        font-size: 14px;
+        color: #667085;
+        font-weight: 600;
+        margin-bottom: 32px;
+      }
+      .section {
+        margin-bottom: 32px;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #2f6fed;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 4px 12px rgba(16, 24, 40, 0.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-decoration: none;
+        color: inherit;
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 24, 40, 0.12);
+      }
+      .card-num {
+        font-size: 12px;
+        font-weight: 800;
+        color: #8b93a7;
+        margin-bottom: 4px;
+      }
+      .card-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #101828;
+        margin-bottom: 12px;
+      }
+      .card-link {
+        font-size: 13px;
+        font-weight: 700;
+        color: #2f6fed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Tất cả màn hình tĩnh — Vimo UI/UX Design</h1>
+      <p class="subtitle">
+        Bộ màn hình HTML tĩnh chuẩn hóa cho AI đọc hiểu, phân tích & lập trình giao diện dễ dàng.
+      </p>
+
+      <div class="section">
+        <div class="section-title">1. Splash & Onboarding</div>
+        <div class="grid">
+          <a href="00-splash.html" class="card">
+            <div>
+              <div class="card-num">00</div>
+              <div class="card-title">Splash Screen</div>
+            </div>
+            <div class="card-link">Mở màn hình 00-splash.html →</div>
+          </a>
+          <a href="01-onboarding-name.html" class="card">
+            <div>
+              <div class="card-num">01</div>
+              <div class="card-title">Onboarding Step 1 — Tên người dùng</div>
+            </div>
+            <div class="card-link">Mở màn hình 01-onboarding-name.html →</div>
+          </a>
+          <a href="02-onboarding-wallet.html" class="card">
+            <div>
+              <div class="card-num">02</div>
+              <div class="card-title">Onboarding Step 2 — Tạo ví đầu tiên</div>
+            </div>
+            <div class="card-link">Mở màn hình 02-onboarding-wallet.html →</div>
+          </a>
+          <a href="03-onboarding-balance.html" class="card">
+            <div>
+              <div class="card-num">03</div>
+              <div class="card-title">Onboarding Step 3 — Số dư ban đầu</div>
+            </div>
+            <div class="card-link">Mở màn hình 03-onboarding-balance.html →</div>
+          </a>
+          <a href="04-onboarding-categories.html" class="card">
+            <div>
+              <div class="card-num">04</div>
+              <div class="card-title">Onboarding Step 4 — Danh mục mặc định</div>
+            </div>
+            <div class="card-link">Mở màn hình 04-onboarding-categories.html →</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">2. Màn hình chính</div>
+        <div class="grid">
+          <a href="05-overview.html" class="card">
+            <div>
+              <div class="card-num">05</div>
+              <div class="card-title">Tổng quan (Overview)</div>
+            </div>
+            <div class="card-link">Mở màn hình 05-overview.html →</div>
+          </a>
+          <a href="06-transactions.html" class="card">
+            <div>
+              <div class="card-num">06</div>
+              <div class="card-title">Giao dịch (Transactions)</div>
+            </div>
+            <div class="card-link">Mở màn hình 06-transactions.html →</div>
+          </a>
+          <a href="07-goals.html" class="card">
+            <div>
+              <div class="card-num">07</div>
+              <div class="card-title">Mục tiêu (Goals)</div>
+            </div>
+            <div class="card-link">Mở màn hình 07-goals.html →</div>
+          </a>
+          <a href="08-settings.html" class="card">
+            <div>
+              <div class="card-num">08</div>
+              <div class="card-title">Cá nhân & Cài đặt (Settings)</div>
+            </div>
+            <div class="card-link">Mở màn hình 08-settings.html →</div>
+          </a>
+          <a href="09-gold-management.html" class="card">
+            <div>
+              <div class="card-num">09</div>
+              <div class="card-title">Quản lý vàng (Gold Management)</div>
+            </div>
+            <div class="card-link">Mở màn hình 09-gold-management.html →</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">3. Chi tiêu định kỳ & Giao dịch mới</div>
+        <div class="grid">
+          <a href="10-recurring-list.html" class="card">
+            <div>
+              <div class="card-num">10</div>
+              <div class="card-title">Chi tiêu định kỳ — Danh sách kỳ</div>
+            </div>
+            <div class="card-link">Mở màn hình 10-recurring-list.html →</div>
+          </a>
+          <a href="11-recurring-detail.html" class="card">
+            <div>
+              <div class="card-num">11</div>
+              <div class="card-title">Chi tiêu định kỳ — Chi tiết kỳ</div>
+            </div>
+            <div class="card-link">Mở màn hình 11-recurring-detail.html →</div>
+          </a>
+          <a href="12-recurring-scope.html" class="card">
+            <div>
+              <div class="card-num">12</div>
+              <div class="card-title">Chi tiêu định kỳ — Phạm vi cập nhật</div>
+            </div>
+            <div class="card-link">Mở màn hình 12-recurring-scope.html →</div>
+          </a>
+          <a href="13-recurring-success.html" class="card">
+            <div>
+              <div class="card-num">13</div>
+              <div class="card-title">Chi tiêu định kỳ — Xác nhận thành công</div>
+            </div>
+            <div class="card-link">Mở màn hình 13-recurring-success.html →</div>
+          </a>
+          <a href="14-add-transaction.html" class="card">
+            <div>
+              <div class="card-num">14</div>
+              <div class="card-title">Thêm giao dịch mới (Add Transaction)</div>
+            </div>
+            <div class="card-link">Mở màn hình 14-add-transaction.html →</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

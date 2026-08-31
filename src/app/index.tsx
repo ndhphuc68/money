@@ -227,12 +227,16 @@ function ConfiguredFinanceScreen({
   }
   if (view.name === 'recurring') {
     return (
-      <ConfiguredRecurringOccurrencesScreen
-        dependencies={dependencies}
-        onBack={() => setView({ name: 'settings' })}
-        onOpenManagement={() => setView({ name: 'recurringManagement' })}
-        t={t}
-      />
+      <>
+        <ConfiguredRecurringOccurrencesScreen
+          dependencies={dependencies}
+          onAddRecurring={() => openForm(null)}
+          onBack={() => setView({ name: 'settings' })}
+          onOpenManagement={() => setView({ name: 'recurringManagement' })}
+          t={t}
+        />
+        {formSheet}
+      </>
     );
   }
   if (view.name === 'recurringManagement') {
@@ -406,17 +410,20 @@ function ConfiguredRecurringOccurrencesScreen({
   dependencies,
   onBack,
   onOpenManagement,
+  onAddRecurring,
   t,
 }: {
   dependencies: FinanceDependencies;
   onBack(): void;
   onOpenManagement(): void;
+  onAddRecurring?(): void;
   t: Translate;
 }) {
   const viewModel = useRecurringOccurrences({ dependencies, t });
   return (
     <RecurringOccurrencesScreen
       {...viewModel}
+      onAddRecurring={onAddRecurring}
       onBack={onBack}
       onOpenManagement={onOpenManagement}
       t={t}

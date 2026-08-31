@@ -35,7 +35,12 @@ describe('RecurringNotificationScheduler', () => {
     const scheduler = new RecurringNotificationScheduler();
     const fireDate = new Date('2026-09-26T09:00:00.000Z');
 
-    await scheduler.scheduleAt({ id: 'occurrence-1', title: 'Sắp đến hạn', body: 'YouTube Premium', fireDate });
+    await scheduler.scheduleAt({
+      id: 'occurrence-1',
+      title: 'Sắp đến hạn',
+      body: 'YouTube Premium',
+      fireDate,
+    });
 
     expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith({
       identifier: 'occurrence-1',

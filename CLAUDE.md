@@ -41,6 +41,15 @@ Component chia làm 2 lớp:
 
 Backlog (chưa tách trong đợt refactor hiện tại, cân nhắc tách khi đụng tới): hợp nhất SegmentedControl/FilterBar chip, Badge tròn màu (đang hardcode `#FFF4D6`/`#A96308` ở 3 chỗ), ProgressBar (GoalCard/BudgetRow), error text dưới field.
 
+## Theme System & Styling Tokens
+
+Tất cả component và screen UI **bắt buộc dùng token thiết kế từ `@/theme`** (`colors`, `radius`, `spacing`, `shadows`, `typography`, `textStyles`).
+
+- **Màu sắc**: Import `colors` từ `@/theme`, không hardcode mã màu hex ngẫu nhiên trong file (ví dụ: dùng `colors.content.primary`, `colors.surface.canvas`, `colors.brand.primary`...).
+- **Kích thước & Khoảng cách**: Dùng `spacing` (`spacing[1]` đến `spacing[7]`), `radius` (`radius.sm`, `radius.md`, `radius.lg`, `radius.xl`, `radius.pill`), `shadows` (`shadows.card`, `shadows.elevated`, `shadows.fab`).
+- **Typography**: Dùng `typography.sizes`, `typography.weights`, `typography.lineHeights` hoặc `textStyles`.
+- Tuyệt đối không tự định nghĩa mã hex tự do hoặc tự hardcode style rải rác mà không thông qua `@/theme`.
+
 ## Theo dõi trạng thái Spec/Plan/Code
 
 File [docs/superpowers/STATUS.md](docs/superpowers/STATUS.md) tổng hợp: mỗi spec (`docs/superpowers/specs/`) đã có plan coding (`docs/superpowers/plans/`) chưa, và plan đó đã thực sự được code trong `src/` chưa.

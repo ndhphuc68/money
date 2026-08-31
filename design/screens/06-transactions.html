@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vimo — Giao dịch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #eaebf1;
+        font-family:
+          'Manrope',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        color: #101828;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      .phone-frame {
+        width: 402px;
+        height: 874px;
+        background: #f4f5fa;
+        border-radius: 44px;
+        box-shadow: 0 24px 60px rgba(16, 24, 40, 0.18);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        border: 8px solid #1e232a;
+      }
+      .status-bar {
+        height: 48px;
+        padding: 14px 24px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 800;
+        color: #101828;
+        z-index: 10;
+        flex: none;
+      }
+      .screen-content {
+        flex: 1;
+        overflow: auto;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .asset-shortcut {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+        border: 0;
+        margin: 0;
+        font: inherit;
+        text-align: left;
+        transition:
+          background-color 120ms ease,
+          box-shadow 120ms ease;
+      }
+      .asset-shortcut:hover {
+        background: #fafbfc !important;
+      }
+      .asset-shortcut:active {
+        background: #f2f4f7 !important;
+        box-shadow: 0 1px 4px rgba(16, 24, 40, 0.08) !important;
+      }
+      .gold-control {
+        appearance: none;
+        -webkit-appearance: none;
+        border: 0;
+        margin: 0;
+        font: inherit;
+        text-align: inherit;
+        color: inherit;
+        transition: opacity 120ms ease;
+      }
+      .gold-control:active {
+        opacity: 0.72;
+      }
+      @keyframes vela-pulse {
+        0%,
+        80%,
+        100% {
+          opacity: 0.25;
+          transform: scale(0.8);
+        }
+        40% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes vimo-rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px) scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      @keyframes vimo-fade-up {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes vimo-loading {
+        0% {
+          transform: translateX(-52px);
+        }
+        50% {
+          transform: translateX(42px);
+        }
+        100% {
+          transform: translateX(122px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone-frame">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div style="display: flex; gap: 6px; align-items: center">
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+            <rect width="3" height="4" rx="0.5" y="7" fill="#101828" />
+            <rect width="3" height="6" rx="0.5" x="4" y="5" fill="#101828" />
+            <rect width="3" height="8" rx="0.5" x="8" y="3" fill="#101828" />
+            <rect width="3" height="11" rx="0.5" x="12" fill="#101828" />
+          </svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
+            <path d="M7.5 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" fill="#101828" />
+            <path
+              d="M4.3 6.8a4.5 4.5 0 0 1 6.4 0"
+              stroke="#101828"
+              stroke-width="1.2"
+              stroke-linecap="round" />
+            <path
+              d="M2.1 4.6a7.5 7.5 0 0 1 10.8 0"
+              stroke="#101828"
+              stroke-width="1.2"
+              stroke-linecap="round" />
+          </svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
+            <rect x="0.5" y="0.5" width="18" height="10" rx="2.5" stroke="#101828" />
+            <rect x="2" y="2" width="13" height="7" rx="1.5" fill="#101828" />
+            <path d="M20 4v3" stroke="#101828" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
+      <div class="screen-content">
+        <div style="height: 100%; display: flex; flex-direction: column; background: #f4f5fa">
+          <div style="flex: 1; overflow: auto; padding: 10px 20px 24px">
+            <div style="font-size: 24px; font-weight: 800; color: #101828; margin-bottom: 16px">
+              Giao dịch
+            </div>
+
+            <div
+              style="
+                display: flex;
+                gap: 6px;
+                background: #edeef3;
+                border-radius: 12px;
+                padding: 4px;
+                margin-bottom: 18px;
+              ">
+              <div
+                style="
+                  flex: 1;
+                  text-align: center;
+                  padding: 9px 0;
+                  border-radius: 10px;
+                  background: #101828;
+                  color: #fff;
+                  font-weight: 700;
+                  font-size: 13px;
+                ">
+                Tất cả
+              </div>
+              <div
+                style="
+                  flex: 1;
+                  text-align: center;
+                  padding: 9px 0;
+                  border-radius: 10px;
+                  background: transparent;
+                  color: #8b93a7;
+                  font-weight: 600;
+                  font-size: 13px;
+                ">
+                Thu nhập
+              </div>
+              <div
+                style="
+                  flex: 1;
+                  text-align: center;
+                  padding: 9px 0;
+                  border-radius: 10px;
+                  background: transparent;
+                  color: #8b93a7;
+                  font-weight: 600;
+                  font-size: 13px;
+                ">
+                Chi tiêu
+              </div>
+            </div>
+
+            <div
+              style="
+                font-size: 12px;
+                font-weight: 700;
+                color: #8b93a7;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin: 14px 0 8px;
+              ">
+              HÔM NAY
+            </div>
+            <div
+              style="
+                background: #fff;
+                border-radius: 18px;
+                padding: 6px 16px;
+                box-shadow: 0 2px 10px rgba(16, 24, 40, 0.05);
+              ">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  padding: 12px 0;
+                  border-bottom: 1px solid rgba(16, 24, 40, 0.06);
+                ">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #1faa59;
+                  ">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M10 15V5M10 5l-4 4M10 5l4 4"
+                      stroke="#fff"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 700; color: #101828">Lương tháng 8</div>
+                  <div style="font-size: 12px; color: #8b93a7; font-weight: 600">
+                    Thu nhập · 07:00
+                  </div>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: #1faa59">+18.000.000 ₫</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f2734a;
+                  ">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M6 2v6M8 2v6M6 5h2M7 8v10"
+                      stroke="#fff"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                    <path
+                      d="M13 2c-1.2 0-2 1.5-2 4s.8 3 2 3v9"
+                      stroke="#fff"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 700; color: #101828">Circle K</div>
+                  <div style="font-size: 12px; color: #8b93a7; font-weight: 600">
+                    Ăn uống · 08:30
+                  </div>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: #e25050">-45.000 ₫</div>
+              </div>
+            </div>
+
+            <div
+              style="
+                font-size: 12px;
+                font-weight: 700;
+                color: #8b93a7;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin: 14px 0 8px;
+              ">
+              HÔM QUA
+            </div>
+            <div
+              style="
+                background: #fff;
+                border-radius: 18px;
+                padding: 6px 16px;
+                box-shadow: 0 2px 10px rgba(16, 24, 40, 0.05);
+              ">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  padding: 12px 0;
+                  border-bottom: 1px solid rgba(16, 24, 40, 0.06);
+                ">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f2734a;
+                  ">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M6 2v6M8 2v6M6 5h2M7 8v10"
+                      stroke="#fff"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                    <path
+                      d="M13 2c-1.2 0-2 1.5-2 4s.8 3 2 3v9"
+                      stroke="#fff"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 700; color: #101828">
+                    Highlands Coffee
+                  </div>
+                  <div style="font-size: 12px; color: #8b93a7; font-weight: 600">
+                    Ăn uống · 15:40
+                  </div>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: #e25050">-89.000 ₫</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #7c5cfc;
+                  ">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M5 7h10l-1 10.5H6L5 7Z"
+                      stroke="#fff"
+                      stroke-width="1.5"
+                      stroke-linejoin="round" />
+                    <path
+                      d="M8 7a2 2 0 0 1 4 0"
+                      stroke="#fff"
+                      stroke-width="1.5"
+                      stroke-linecap="round" />
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 700; color: #101828">Shopee</div>
+                  <div style="font-size: 12px; color: #8b93a7; font-weight: 600">
+                    Mua sắm · 21:15
+                  </div>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: #e25050">-650.000 ₫</div>
+              </div>
+            </div>
+
+            <div
+              style="
+                font-size: 12px;
+                font-weight: 700;
+                color: #8b93a7;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin: 14px 0 8px;
+              ">
+              20 THG 8
+            </div>
+            <div
+              style="
+                background: #fff;
+                border-radius: 18px;
+                padding: 6px 16px;
+                box-shadow: 0 2px 10px rgba(16, 24, 40, 0.05);
+              ">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  padding: 12px 0;
+                  border-bottom: 1px solid rgba(16, 24, 40, 0.06);
+                ">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #1faa59;
+                  ">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M10 15V5M10 5l-4 4M10 5l4 4"
+                      stroke="#fff"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 700; color: #101828">
+                    Chuyển khoản từ Lan
+                  </div>
+                  <div style="font-size: 12px; color: #8b93a7; font-weight: 600">
+                    Thu nhập · 09:20
+                  </div>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: #1faa59">+2.000.000 ₫</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #14b8a6;
+                  ">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M4 12.5l1.2-4.3A2 2 0 0 1 7.1 6.8h5.8a2 2 0 0 1 1.9 1.4l1.2 4.3"
+                      stroke="#fff"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                    <rect
+                      x="3"
+                      y="12.5"
+                      width="14"
+                      height="3"
+                      rx="1"
+                      stroke="#fff"
+                      stroke-width="1.5" />
+                    <circle cx="6.5" cy="16" r="1.1" fill="#fff" />
+                    <circle cx="13.5" cy="16" r="1.1" fill="#fff" />
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 700; color: #101828">Grab</div>
+                  <div style="font-size: 12px; color: #8b93a7; font-weight: 600">
+                    Di chuyển · 18:05
+                  </div>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: #e25050">-125.000 ₫</div>
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              flex: none;
+              display: flex;
+              align-items: center;
+              justify-content: space-around;
+              padding: 10px 8px 26px;
+              background: #ffffff;
+              border-top: 1px solid rgba(16, 24, 40, 0.06);
+              position: sticky;
+              bottom: 0;
+              z-index: 20;
+            ">
+            <a
+              href="05-overview.html"
+              style="
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                width: 56px;
+                text-decoration: none;
+              ">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="7.5" stroke="#8B93A7" stroke-width="1.8" />
+                <circle cx="11" cy="11" r="2.5" fill="#8B93A7" />
+              </svg>
+              <span style="font-size: 10px; font-weight: 700; color: #8b93a7">Tổng quan</span>
+            </a>
+            <a
+              href="06-transactions.html"
+              style="
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                width: 56px;
+                text-decoration: none;
+              ">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <rect x="3" y="5" width="16" height="2.4" rx="1.2" fill="#2F6FED" />
+                <rect x="3" y="10" width="16" height="2.4" rx="1.2" fill="#2F6FED" />
+                <rect x="3" y="15" width="10" height="2.4" rx="1.2" fill="#2F6FED" />
+              </svg>
+              <span style="font-size: 10px; font-weight: 700; color: #2f6fed">Giao dịch</span>
+            </a>
+            <a
+              href="14-add-transaction.html"
+              style="
+                cursor: pointer;
+                width: 52px;
+                height: 52px;
+                border-radius: 26px;
+                background: #101828;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: -30px;
+                box-shadow: 0 8px 16px rgba(16, 24, 40, 0.25);
+              "
+              ><svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M10 3v14M3 10h14"
+                  stroke="#fff"
+                  stroke-width="2.2"
+                  stroke-linecap="round" /></svg
+            ></a>
+            <a
+              href="07-goals.html"
+              style="
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                width: 56px;
+                text-decoration: none;
+              ">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="8" stroke="#8B93A7" stroke-width="1.8" />
+                <circle cx="11" cy="11" r="3.5" stroke="#8B93A7" stroke-width="1.8" />
+              </svg>
+              <span style="font-size: 10px; font-weight: 700; color: #8b93a7">Mục tiêu</span>
+            </a>
+            <a
+              href="08-settings.html"
+              style="
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                width: 56px;
+                text-decoration: none;
+              ">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="7.5" r="3.5" stroke="#8B93A7" stroke-width="1.8" />
+                <path
+                  d="M3.5 19c1.3-4 4.3-6 7.5-6s6.2 2 7.5 6"
+                  stroke="#8B93A7"
+                  stroke-width="1.8"
+                  stroke-linecap="round" />
+              </svg>
+              <span style="font-size: 10px; font-weight: 700; color: #8b93a7">Cá nhân</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

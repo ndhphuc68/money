@@ -25,4 +25,3 @@ Việc phân tích theo category là giá trị chính của sổ thu–chi: ng�
 2. MVP nhập thủ công hoàn toàn hay phải hỗ trợ import giao dịch ngay?
 3. Đơn vị tiền tệ chính, timezone và quy tắc số thập phân là gì?
 4. Có cần ngân sách, mục tiêu, giao dịch định kỳ trong phạm vi đầu tiên hay để giai đoạn sau?
-

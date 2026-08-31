@@ -22,7 +22,7 @@
 - `paused` schedules generate no new occurrences but their current unresolved occurrence can still be confirmed/skipped; `ended` schedules never generate again; neither ever deletes past confirmed transactions (spec §Quản lý định kỳ).
 - Reaching `endDate` or `occurrenceLimit` ends the schedule and stops generation (spec §Sinh kỳ tiếp theo).
 - Editing a schedule's defaults (Quản lý định kỳ) applies to the schedule and to its current unresolved occurrence's copied fields, never to already-confirmed past transactions (spec §Quản lý định kỳ).
-- Deleting the first transaction of a schedule never auto-deletes the schedule; the schedule keeps its (soft-deleted) `firstTransactionId` link (spec §Xóa giao dịch kỳ đầu tiên) — this plan only needs to *not break* on that case, no special UI is required for it here.
+- Deleting the first transaction of a schedule never auto-deletes the schedule; the schedule keeps its (soft-deleted) `firstTransactionId` link (spec §Xóa giao dịch kỳ đầu tiên) — this plan only needs to _not break_ on that case, no special UI is required for it here.
 - Local notifications use `remindDaysBefore` (default 1) per schedule, never send twice for the same occurrence (`notifiedAt`), and never auto-confirm (spec §Thông báo).
 - Screens must not access SQLite or repositories directly — only through use cases/view-models (established codebase convention, `src/features/finance/finance-dependencies.ts`).
 - Preserve sync metadata (`id`, `createdAt`, `updatedAt`, `deletedAt`, `revision`, `originDeviceId`) on every syncable business entity (established codebase convention, `src/core/domain/sync/syncable-record.ts`); registering the new entity types in the sync engine (`src/data/sync/sync-engine/entity-adapters.ts`) is **out of scope** for this plan (spec §Kiến trúc triển khai explicitly defers sync expansion — "giữ metadata sync hiện tại... để mở rộng sync sau này").
@@ -56,10 +56,12 @@
 ### Task 1: Recurrence date math (`recurring-date.ts`)
 
 **Files:**
+
 - Create: `src/core/domain/finance/recurring-date.ts`
 - Test: `tests/core/finance/recurring-domain.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing (pure module, no imports from other new files).
 - Produces:
   - `RecurringFrequency = 'weekly' | 'monthly' | 'quarterly' | 'yearly'`
@@ -276,11 +278,13 @@ git commit -m "feat: add recurring occurrence date math"
 ### Task 2: Domain entities — `RecurringSchedule` and `RecurringOccurrence`
 
 **Files:**
+
 - Create: `src/core/domain/finance/recurring-schedule.ts`
 - Create: `src/core/domain/finance/recurring-occurrence.ts`
 - Test: `tests/core/finance/recurring-domain.test.ts` (append)
 
 **Interfaces:**
+
 - Consumes: `FinanceRecord` from `@/core/domain/finance/finance-record` (existing); `RecurringFrequency` from `./recurring-date` (Task 1).
 - Produces:
   - `RecurringScheduleStatus = 'active' | 'paused' | 'ended'`
@@ -333,9 +337,9 @@ describe('validateRecurringScheduleInput', () => {
   });
 
   it('rejects an empty displayName, accountId or categoryId', () => {
-    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, displayName: '' })).toThrow(
-      'Recurring schedule displayName must not be empty',
-    );
+    expect(() =>
+      validateRecurringScheduleInput({ ...validScheduleInput, displayName: '' }),
+    ).toThrow('Recurring schedule displayName must not be empty');
     expect(() => validateRecurringScheduleInput({ ...validScheduleInput, accountId: '' })).toThrow(
       'Recurring schedule accountId must not be empty',
     );
@@ -404,19 +408,28 @@ describe('validateRecurringOccurrenceEdits', () => {
 describe('deriveOccurrenceDisplayStatus', () => {
   it('returns overdue when pending and past the scheduled date', () => {
     expect(
-      deriveOccurrenceDisplayStatus({ status: 'pending', scheduledDate: '2026-08-26' }, '2026-08-27'),
+      deriveOccurrenceDisplayStatus(
+        { status: 'pending', scheduledDate: '2026-08-26' },
+        '2026-08-27',
+      ),
     ).toBe('overdue');
   });
 
   it('returns pending when not yet due', () => {
     expect(
-      deriveOccurrenceDisplayStatus({ status: 'pending', scheduledDate: '2026-08-27' }, '2026-08-27'),
+      deriveOccurrenceDisplayStatus(
+        { status: 'pending', scheduledDate: '2026-08-27' },
+        '2026-08-27',
+      ),
     ).toBe('pending');
   });
 
   it('returns the stored status for confirmed/skipped regardless of date', () => {
     expect(
-      deriveOccurrenceDisplayStatus({ status: 'confirmed', scheduledDate: '2020-01-01' }, '2026-08-27'),
+      deriveOccurrenceDisplayStatus(
+        { status: 'confirmed', scheduledDate: '2020-01-01' },
+        '2026-08-27',
+      ),
     ).toBe('confirmed');
   });
 });
@@ -618,12 +631,14 @@ git commit -m "feat: add RecurringSchedule and RecurringOccurrence domain types"
 ### Task 3: Drizzle schema and migration
 
 **Files:**
+
 - Create: `src/data/local/schema/recurring-schedules.ts`
 - Create: `src/data/local/schema/recurring-occurrences.ts`
 - Modify: `src/data/local/schema/index.ts`
 - Test: `tests/data/local/recurring-schema.test.ts`
 
 **Interfaces:**
+
 - Consumes: `accounts`, `categories`, `transactions` tables from `./accounts`, `./categories`, `./transactions` (existing).
 - Produces: `recurringSchedules` and `recurringOccurrences` Drizzle table objects, exported from `src/data/local/schema/index.ts` alongside the existing tables.
 
@@ -632,7 +647,13 @@ git commit -m "feat: add RecurringSchedule and RecurringOccurrence domain types"
 ```typescript
 // tests/data/local/recurring-schema.test.ts
 import { openTestLocalDatabase, LocalDatabaseClient } from '@/data/local/db/client';
-import { accounts, categories, recurringOccurrences, recurringSchedules, transactions } from '@/data/local/schema';
+import {
+  accounts,
+  categories,
+  recurringOccurrences,
+  recurringSchedules,
+  transactions,
+} from '@/data/local/schema';
 
 const deviceId = '550e8400-e29b-41d4-a716-446655440020';
 const now = '2026-08-27T09:00:00.000Z';
@@ -779,7 +800,11 @@ describe('recurring schema', () => {
       .run();
 
     const row = database.db.select().from(recurringOccurrences).get();
-    expect(row).toMatchObject({ id: 'occurrence-1', scheduleId: 'schedule-youtube', status: 'pending' });
+    expect(row).toMatchObject({
+      id: 'occurrence-1',
+      scheduleId: 'schedule-youtube',
+      status: 'pending',
+    });
   });
 });
 ```
@@ -835,10 +860,7 @@ export const recurringSchedules = sqliteTable(
   (table) => [
     index('recurring_schedules_account_id_idx').on(table.accountId),
     index('recurring_schedules_status_idx').on(table.status),
-    check(
-      'recurring_schedules_type_check',
-      sql`${table.type} in ('expense')`,
-    ),
+    check('recurring_schedules_type_check', sql`${table.type} in ('expense')`),
     check(
       'recurring_schedules_frequency_check',
       sql`${table.frequency} in ('weekly', 'monthly', 'quarterly', 'yearly')`,
@@ -936,9 +958,11 @@ git commit -m "feat: add recurring_schedules and recurring_occurrences tables"
 ### Task 4: Repository ports
 
 **Files:**
+
 - Create: `src/core/application/ports/recurring-repositories.ts`
 
 **Interfaces:**
+
 - Consumes: `WriteContext` from `@/core/application/ports/finance-repositories` (existing); `RecurringSchedule`, `RecurringScheduleInput`, `RecurringScheduleStatus` from `@/core/domain/finance/recurring-schedule`; `RecurringOccurrence`, `RecurringOccurrenceEdits`, `RecurringOccurrenceStatus` from `@/core/domain/finance/recurring-occurrence`; `TransactionInput` from `@/core/domain/finance/transaction`.
 - Produces (this task has no test — it is a type-only file; its correctness is proven by every later task that implements/consumes it type-checking and by `npm run lint` catching unused/mismatched types):
   - `RecurringScheduleRepository` — simple single-table CRUD/read port, mirrors `AccountRepository`.
@@ -987,7 +1011,11 @@ export interface RecurringOccurrenceRepository {
   listByScheduleId(scheduleId: string): Promise<RecurringOccurrence[]>;
   markNotified(id: string, notifiedAt: string, context: WriteContext): Promise<RecurringOccurrence>;
   /** Refreshes an unresolved occurrence's copied default fields, e.g. after editing its schedule (spec §Quản lý định kỳ). */
-  update(id: string, changes: RecurringOccurrenceEdits, context: WriteContext): Promise<RecurringOccurrence>;
+  update(
+    id: string,
+    changes: RecurringOccurrenceEdits,
+    context: WriteContext,
+  ): Promise<RecurringOccurrence>;
   saveWithOperation(record: RecurringOccurrence, operation: SyncOperation): Promise<void>;
 }
 
@@ -1072,12 +1100,14 @@ git commit -m "feat: add recurring repository ports"
 ### Task 5: Row mappers and simple CRUD repositories
 
 **Files:**
+
 - Create: `src/data/local/repositories/recurring-record-mappers.ts`
 - Create: `src/data/local/repositories/recurring-schedule-repository.ts`
 - Create: `src/data/local/repositories/recurring-occurrence-repository.ts`
 - Test: `tests/data/local/recurring-repositories.test.ts`
 
 **Interfaces:**
+
 - Consumes: `recurringSchedules`, `recurringOccurrences`, `changeLog` from `@/data/local/schema` (Task 3); `RecurringScheduleRepository`, `RecurringOccurrenceRepository`, `UpdateRecurringScheduleInput` ports from `@/core/application/ports/recurring-repositories` (Task 4); `buildSyncOperation`, `toChangeLogValues`, `canonicalizeSyncableRecordIdentifiers`, `canonicalizeSyncOperationIdentifiers` (existing, reused verbatim from `transaction-repository.ts`).
 - Produces:
   - `toRecurringScheduleEntity(row): RecurringSchedule`, `toRecurringScheduleRowValues(schedule): RecurringScheduleRow`
@@ -1092,7 +1122,10 @@ git commit -m "feat: add recurring repository ports"
 import { openTestLocalDatabase, LocalDatabaseClient } from '@/data/local/db/client';
 import { RecurringScheduleRepository } from '@/data/local/repositories/recurring-schedule-repository';
 import { RecurringOccurrenceRepository } from '@/data/local/repositories/recurring-occurrence-repository';
-import { toRecurringOccurrenceRowValues, toRecurringScheduleRowValues } from '@/data/local/repositories/recurring-record-mappers';
+import {
+  toRecurringOccurrenceRowValues,
+  toRecurringScheduleRowValues,
+} from '@/data/local/repositories/recurring-record-mappers';
 import { accounts, categories, changeLog, transactions } from '@/data/local/schema';
 import { RecurringSchedule } from '@/core/domain/finance/recurring-schedule';
 import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence';
@@ -1103,15 +1136,51 @@ const now = '2026-08-27T09:00:00.000Z';
 function seedAccountCategoryAndTransaction(database: LocalDatabaseClient) {
   database.db
     .insert(accounts)
-    .values({ id: 'account-main', name: 'Ví chính', type: 'cash', openingBalance: 0, isArchived: false, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+    .values({
+      id: 'account-main',
+      name: 'Ví chính',
+      type: 'cash',
+      openingBalance: 0,
+      isArchived: false,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: deviceId,
+    })
     .run();
   database.db
     .insert(categories)
-    .values({ id: 'category-bills', name: 'Hóa đơn', type: 'expense', isArchived: false, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+    .values({
+      id: 'category-bills',
+      name: 'Hóa đơn',
+      type: 'expense',
+      isArchived: false,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: deviceId,
+    })
     .run();
   database.db
     .insert(transactions)
-    .values({ id: 'transaction-first', type: 'expense', amount: 179000, accountId: 'account-main', destinationAccountId: null, categoryId: 'category-bills', transactionDate: '2026-08-27', name: 'YouTube Premium', note: null, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+    .values({
+      id: 'transaction-first',
+      type: 'expense',
+      amount: 179000,
+      accountId: 'account-main',
+      destinationAccountId: null,
+      categoryId: 'category-bills',
+      transactionDate: '2026-08-27',
+      name: 'YouTube Premium',
+      note: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: deviceId,
+    })
     .run();
 }
 
@@ -1166,7 +1235,10 @@ describe('RecurringScheduleRepository', () => {
     database = await openTestLocalDatabase();
     seedAccountCategoryAndTransaction(database);
     repository = new RecurringScheduleRepository(database);
-    database.db.insert((await import('@/data/local/schema')).recurringSchedules).values(toRecurringScheduleRowValues(baseSchedule)).run();
+    database.db
+      .insert((await import('@/data/local/schema')).recurringSchedules)
+      .values(toRecurringScheduleRowValues(baseSchedule))
+      .run();
   });
 
   afterEach(async () => {
@@ -1174,7 +1246,10 @@ describe('RecurringScheduleRepository', () => {
   });
 
   it('finds a schedule by id', async () => {
-    await expect(repository.findById('schedule-youtube')).resolves.toMatchObject({ displayName: 'YouTube Premium', status: 'active' });
+    await expect(repository.findById('schedule-youtube')).resolves.toMatchObject({
+      displayName: 'YouTube Premium',
+      status: 'active',
+    });
   });
 
   it('returns null for a missing schedule', async () => {
@@ -1197,7 +1272,11 @@ describe('RecurringScheduleRepository', () => {
     expect(updated).toMatchObject({ status: 'paused', revision: 2 });
     const logRows = database.db.select().from(changeLog).all();
     expect(logRows).toHaveLength(1);
-    expect(logRows[0]).toMatchObject({ entityType: 'recurring_schedule', entityId: 'schedule-youtube', operation: 'update' });
+    expect(logRows[0]).toMatchObject({
+      entityType: 'recurring_schedule',
+      entityId: 'schedule-youtube',
+      operation: 'update',
+    });
   });
 });
 
@@ -1208,8 +1287,14 @@ describe('RecurringOccurrenceRepository', () => {
   beforeEach(async () => {
     database = await openTestLocalDatabase();
     seedAccountCategoryAndTransaction(database);
-    database.db.insert((await import('@/data/local/schema')).recurringSchedules).values(toRecurringScheduleRowValues(baseSchedule)).run();
-    database.db.insert((await import('@/data/local/schema')).recurringOccurrences).values(toRecurringOccurrenceRowValues(baseOccurrence)).run();
+    database.db
+      .insert((await import('@/data/local/schema')).recurringSchedules)
+      .values(toRecurringScheduleRowValues(baseSchedule))
+      .run();
+    database.db
+      .insert((await import('@/data/local/schema')).recurringOccurrences)
+      .values(toRecurringOccurrenceRowValues(baseOccurrence))
+      .run();
     repository = new RecurringOccurrenceRepository(database);
   });
 
@@ -1218,7 +1303,10 @@ describe('RecurringOccurrenceRepository', () => {
   });
 
   it('finds the single active (pending) occurrence for a schedule', async () => {
-    await expect(repository.findActiveByScheduleId('schedule-youtube')).resolves.toMatchObject({ id: 'occurrence-1', status: 'pending' });
+    await expect(repository.findActiveByScheduleId('schedule-youtube')).resolves.toMatchObject({
+      id: 'occurrence-1',
+      status: 'pending',
+    });
   });
 
   it('returns null when a schedule has no unresolved occurrence', async () => {
@@ -1250,7 +1338,11 @@ describe('RecurringOccurrenceRepository', () => {
       { originDeviceId: deviceId, operationId: 'op-edit-1', now: '2026-09-01T00:00:00.000Z' },
     );
 
-    expect(updated).toMatchObject({ amount: 189000, displayName: 'YouTube Premium (mới)', revision: 2 });
+    expect(updated).toMatchObject({
+      amount: 189000,
+      displayName: 'YouTube Premium (mới)',
+      revision: 2,
+    });
     const logRows = database.db.select().from(changeLog).all();
     expect(logRows).toHaveLength(1);
     expect(logRows[0]).toMatchObject({ entityType: 'recurring_occurrence', operation: 'update' });
@@ -1347,7 +1439,9 @@ export function toRecurringOccurrenceEntity(row: RecurringOccurrenceRow): Recurr
   };
 }
 
-export function toRecurringOccurrenceRowValues(occurrence: RecurringOccurrence): RecurringOccurrenceRow {
+export function toRecurringOccurrenceRowValues(
+  occurrence: RecurringOccurrence,
+): RecurringOccurrenceRow {
   return {
     id: occurrence.id,
     scheduleId: occurrence.scheduleId,
@@ -1380,13 +1474,19 @@ import {
   UpdateRecurringScheduleInput,
 } from '@/core/application/ports/recurring-repositories';
 import { WriteContext } from '@/core/application/ports/finance-repositories';
-import { RecurringSchedule, RecurringScheduleStatus } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleStatus,
+} from '@/core/domain/finance/recurring-schedule';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, recurringSchedules } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
-import { toRecurringScheduleEntity, toRecurringScheduleRowValues } from './recurring-record-mappers';
+import {
+  toRecurringScheduleEntity,
+  toRecurringScheduleRowValues,
+} from './recurring-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
 import {
   canonicalizeSyncableRecordIdentifiers,
@@ -1497,7 +1597,10 @@ import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, recurringOccurrences } from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
-import { toRecurringOccurrenceEntity, toRecurringOccurrenceRowValues } from './recurring-record-mappers';
+import {
+  toRecurringOccurrenceEntity,
+  toRecurringOccurrenceRowValues,
+} from './recurring-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
 import {
   canonicalizeSyncableRecordIdentifiers,
@@ -1521,7 +1624,10 @@ export class RecurringOccurrenceRepository implements RecurringOccurrenceReposit
       .select()
       .from(recurringOccurrences)
       .where(
-        and(eq(recurringOccurrences.scheduleId, scheduleId), eq(recurringOccurrences.status, 'pending')),
+        and(
+          eq(recurringOccurrences.scheduleId, scheduleId),
+          eq(recurringOccurrences.status, 'pending'),
+        ),
       )
       .get();
     return row ? toRecurringOccurrenceEntity(row) : null;
@@ -1531,7 +1637,9 @@ export class RecurringOccurrenceRepository implements RecurringOccurrenceReposit
     const rows = this.database.db
       .select()
       .from(recurringOccurrences)
-      .where(and(isNull(recurringOccurrences.deletedAt), inArray(recurringOccurrences.status, statuses)))
+      .where(
+        and(isNull(recurringOccurrences.deletedAt), inArray(recurringOccurrences.status, statuses)),
+      )
       .all();
     return rows.map(toRecurringOccurrenceEntity);
   }
@@ -1649,10 +1757,12 @@ git commit -m "feat: add recurring schedule/occurrence repositories"
 This is the business-critical piece: creating the schedule from the form, confirming an occurrence, and skipping an occurrence each write to more than one table and must commit or fail together (spec §Kiến trúc triển khai). It does **not** call the Task 5 repositories' methods (each of those opens its own transaction, and SQLite/better-sqlite3 transactions cannot nest) — it does raw Drizzle inserts against the same tables inside one outer `database.db.transaction(...)`.
 
 **Files:**
+
 - Create: `src/data/local/repositories/recurring-occurrence-processing-repository.ts`
 - Test: `tests/data/local/recurring-repositories.test.ts` (append)
 
 **Interfaces:**
+
 - Consumes: `RecurringOccurrenceProcessing` port and its input/result types from `@/core/application/ports/recurring-repositories` (Task 4); `computeNextOccurrenceDate`, `isBeyondScheduleLimit` from `@/core/domain/finance/recurring-date` (Task 1); `validateTransactionInput` from `@/core/domain/finance/transaction`; `validateRecurringScheduleInput` from `@/core/domain/finance/recurring-schedule`; `validateRecurringOccurrenceEdits` from `@/core/domain/finance/recurring-occurrence`; row mappers from Task 5 plus `toTransactionRowValues` from `finance-record-mappers.ts` (existing); `buildSyncOperation`, `toChangeLogValues` (existing).
 - Produces: `class RecurringOccurrenceProcessingRepository implements RecurringOccurrenceProcessing`.
 
@@ -1707,12 +1817,25 @@ describe('RecurringOccurrenceProcessingRepository', () => {
       occurrenceOperationId: 'op-occurrence-1',
     });
 
-    expect(result.schedule).toMatchObject({ id: 'schedule-youtube', status: 'active', generatedCount: 1 });
-    expect(result.occurrence).toMatchObject({ id: 'occurrence-1', scheduleId: 'schedule-youtube', status: 'pending', scheduledDate: '2026-09-27' });
+    expect(result.schedule).toMatchObject({
+      id: 'schedule-youtube',
+      status: 'active',
+      generatedCount: 1,
+    });
+    expect(result.occurrence).toMatchObject({
+      id: 'occurrence-1',
+      scheduleId: 'schedule-youtube',
+      status: 'pending',
+      scheduledDate: '2026-09-27',
+    });
 
     const logRows = database.db.select().from(changeLog).all();
     expect(logRows).toHaveLength(3);
-    expect(logRows.map((row) => row.entityType).sort()).toEqual(['recurring_occurrence', 'recurring_schedule', 'transaction']);
+    expect(logRows.map((row) => row.entityType).sort()).toEqual([
+      'recurring_occurrence',
+      'recurring_schedule',
+      'transaction',
+    ]);
   });
 
   async function createFirstPeriod() {
@@ -1721,10 +1844,26 @@ describe('RecurringOccurrenceProcessingRepository', () => {
       now: '2026-08-27T09:00:00.000Z',
       transactionId: 'transaction-first',
       transactionOperationId: 'op-tx-1',
-      transaction: { type: 'expense', amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
+      transaction: {
+        type: 'expense',
+        amount: 179000,
+        accountId: 'account-main',
+        categoryId: 'category-bills',
+        date: '2026-08-27',
+        name: 'YouTube Premium',
+        note: null,
+      },
       scheduleId: 'schedule-youtube',
       scheduleOperationId: 'op-schedule-1',
-      schedule: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', anchorDay: 27, startDate: '2026-08-27' },
+      schedule: {
+        displayName: 'YouTube Premium',
+        accountId: 'account-main',
+        categoryId: 'category-bills',
+        amount: 179000,
+        frequency: 'monthly',
+        anchorDay: 27,
+        startDate: '2026-08-27',
+      },
       occurrenceId: 'occurrence-1',
       occurrenceOperationId: 'op-occurrence-1',
     });
@@ -1748,11 +1887,24 @@ describe('RecurringOccurrenceProcessingRepository', () => {
     });
 
     expect(result.transactionId).toBe('transaction-period-2');
-    expect(result.occurrence).toMatchObject({ status: 'confirmed', amount: 189000, transactionId: 'transaction-period-2' });
+    expect(result.occurrence).toMatchObject({
+      status: 'confirmed',
+      amount: 189000,
+      transactionId: 'transaction-period-2',
+    });
     expect(result.schedule).toMatchObject({ amount: 179000, generatedCount: 2 });
-    expect(result.nextOccurrence).toMatchObject({ id: 'occurrence-2', amount: 179000, scheduledDate: '2026-10-27', status: 'pending' });
+    expect(result.nextOccurrence).toMatchObject({
+      id: 'occurrence-2',
+      amount: 179000,
+      scheduledDate: '2026-10-27',
+      status: 'pending',
+    });
 
-    const insertedTransaction = database.db.select().from(transactions).where(eq(transactions.id, 'transaction-period-2')).get();
+    const insertedTransaction = database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, 'transaction-period-2'))
+      .get();
     expect(insertedTransaction).toMatchObject({ amount: 189000, transactionDate: '2026-09-27' });
   });
 
@@ -1809,10 +1961,27 @@ describe('RecurringOccurrenceProcessingRepository', () => {
       now: '2026-08-27T09:00:00.000Z',
       transactionId: 'transaction-first',
       transactionOperationId: 'op-tx-1',
-      transaction: { type: 'expense', amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
+      transaction: {
+        type: 'expense',
+        amount: 179000,
+        accountId: 'account-main',
+        categoryId: 'category-bills',
+        date: '2026-08-27',
+        name: 'YouTube Premium',
+        note: null,
+      },
       scheduleId: 'schedule-youtube',
       scheduleOperationId: 'op-schedule-1',
-      schedule: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', anchorDay: 27, startDate: '2026-08-27', occurrenceLimit: 2 },
+      schedule: {
+        displayName: 'YouTube Premium',
+        accountId: 'account-main',
+        categoryId: 'category-bills',
+        amount: 179000,
+        frequency: 'monthly',
+        anchorDay: 27,
+        startDate: '2026-08-27',
+        occurrenceLimit: 2,
+      },
       occurrenceId: 'occurrence-1',
       occurrenceOperationId: 'op-occurrence-1',
     });
@@ -1849,7 +2018,11 @@ describe('RecurringOccurrenceProcessingRepository', () => {
     });
 
     expect(result.occurrence).toMatchObject({ status: 'skipped', transactionId: null });
-    expect(result.nextOccurrence).toMatchObject({ id: 'occurrence-2', scheduledDate: '2026-10-27', status: 'pending' });
+    expect(result.nextOccurrence).toMatchObject({
+      id: 'occurrence-2',
+      scheduledDate: '2026-10-27',
+      status: 'pending',
+    });
     expect(result.schedule).toMatchObject({ generatedCount: 2 });
 
     const transactionRows = database.db.select().from(transactions).all();
@@ -1876,20 +2049,34 @@ import {
   RecurringOccurrenceProcessingResult,
   SkipRecurringOccurrenceInput,
 } from '@/core/application/ports/recurring-repositories';
-import { computeNextOccurrenceDate, isBeyondScheduleLimit } from '@/core/domain/finance/recurring-date';
+import {
+  computeNextOccurrenceDate,
+  isBeyondScheduleLimit,
+} from '@/core/domain/finance/recurring-date';
 import {
   RecurringOccurrence,
   RecurringOccurrenceEdits,
   validateRecurringOccurrenceEdits,
 } from '@/core/domain/finance/recurring-occurrence';
-import { RecurringSchedule, validateRecurringScheduleInput } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  validateRecurringScheduleInput,
+} from '@/core/domain/finance/recurring-schedule';
 import { Transaction, validateTransactionInput } from '@/core/domain/finance/transaction';
 import { LocalDatabaseClient } from '@/data/local/db/client';
-import { changeLog, recurringOccurrences, recurringSchedules, transactions } from '@/data/local/schema';
+import {
+  changeLog,
+  recurringOccurrences,
+  recurringSchedules,
+  transactions,
+} from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
 import { toTransactionRowValues } from './finance-record-mappers';
-import { toRecurringOccurrenceRowValues, toRecurringScheduleRowValues } from './recurring-record-mappers';
+import {
+  toRecurringOccurrenceRowValues,
+  toRecurringScheduleRowValues,
+} from './recurring-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
 
 type MergedOccurrenceFields = {
@@ -1901,7 +2088,10 @@ type MergedOccurrenceFields = {
 };
 
 function mergeEdits(
-  occurrence: Pick<RecurringOccurrence, 'amount' | 'accountId' | 'categoryId' | 'displayName' | 'note'>,
+  occurrence: Pick<
+    RecurringOccurrence,
+    'amount' | 'accountId' | 'categoryId' | 'displayName' | 'note'
+  >,
   edits: RecurringOccurrenceEdits,
 ): MergedOccurrenceFields {
   return {
@@ -1966,7 +2156,11 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     const occurrence: RecurringOccurrence = {
       id: input.occurrenceId,
       scheduleId: schedule.id,
-      scheduledDate: computeNextOccurrenceDate(schedule.startDate, schedule.frequency, schedule.anchorDay),
+      scheduledDate: computeNextOccurrenceDate(
+        schedule.startDate,
+        schedule.frequency,
+        schedule.anchorDay,
+      ),
       amount: schedule.amount,
       accountId: schedule.accountId,
       categoryId: schedule.categoryId,
@@ -1983,9 +2177,21 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     };
 
     this.database.db.transaction((tx) => {
-      insertTransaction(tx, transaction, input.transactionOperationId, input.originDeviceId, input.now);
+      insertTransaction(
+        tx,
+        transaction,
+        input.transactionOperationId,
+        input.originDeviceId,
+        input.now,
+      );
       insertSchedule(tx, schedule, input.scheduleOperationId, input.originDeviceId, input.now);
-      insertOccurrence(tx, occurrence, input.occurrenceOperationId, input.originDeviceId, input.now);
+      insertOccurrence(
+        tx,
+        occurrence,
+        input.occurrenceOperationId,
+        input.originDeviceId,
+        input.now,
+      );
     });
 
     return { schedule, occurrence };
@@ -1995,9 +2201,8 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     input: ConfirmRecurringOccurrenceInput,
   ): Promise<RecurringOccurrenceProcessingResult & { transactionId: string }> {
     validateRecurringOccurrenceEdits(input.edits);
-    const { occurrence: existingOccurrence, schedule: existingSchedule } = this.requireOccurrenceAndSchedule(
-      input.occurrenceId,
-    );
+    const { occurrence: existingOccurrence, schedule: existingSchedule } =
+      this.requireOccurrenceAndSchedule(input.occurrenceId);
     if (existingOccurrence.status !== 'pending') {
       throw new Error(`Recurring occurrence ${input.occurrenceId} is not pending`);
     }
@@ -2054,11 +2259,35 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     });
 
     this.database.db.transaction((tx) => {
-      insertTransaction(tx, confirmedTransaction, input.transactionOperationId, input.originDeviceId, input.now);
-      updateOccurrence(tx, confirmedOccurrence, input.occurrenceOperationId, input.originDeviceId, input.now);
-      updateSchedule(tx, updatedSchedule, input.scheduleOperationId, input.originDeviceId, input.now);
+      insertTransaction(
+        tx,
+        confirmedTransaction,
+        input.transactionOperationId,
+        input.originDeviceId,
+        input.now,
+      );
+      updateOccurrence(
+        tx,
+        confirmedOccurrence,
+        input.occurrenceOperationId,
+        input.originDeviceId,
+        input.now,
+      );
+      updateSchedule(
+        tx,
+        updatedSchedule,
+        input.scheduleOperationId,
+        input.originDeviceId,
+        input.now,
+      );
       if (nextOccurrence && input.nextOccurrenceOperationId) {
-        insertOccurrence(tx, nextOccurrence, input.nextOccurrenceOperationId, input.originDeviceId, input.now);
+        insertOccurrence(
+          tx,
+          nextOccurrence,
+          input.nextOccurrenceOperationId,
+          input.originDeviceId,
+          input.now,
+        );
       }
     });
 
@@ -2073,9 +2302,8 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
   async skipOccurrence(
     input: SkipRecurringOccurrenceInput,
   ): Promise<RecurringOccurrenceProcessingResult> {
-    const { occurrence: existingOccurrence, schedule: existingSchedule } = this.requireOccurrenceAndSchedule(
-      input.occurrenceId,
-    );
+    const { occurrence: existingOccurrence, schedule: existingSchedule } =
+      this.requireOccurrenceAndSchedule(input.occurrenceId);
     if (existingOccurrence.status !== 'pending') {
       throw new Error(`Recurring occurrence ${input.occurrenceId} is not pending`);
     }
@@ -2098,19 +2326,38 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     });
 
     this.database.db.transaction((tx) => {
-      updateOccurrence(tx, skippedOccurrence, input.occurrenceOperationId, input.originDeviceId, input.now);
-      updateSchedule(tx, updatedSchedule, input.scheduleOperationId, input.originDeviceId, input.now);
+      updateOccurrence(
+        tx,
+        skippedOccurrence,
+        input.occurrenceOperationId,
+        input.originDeviceId,
+        input.now,
+      );
+      updateSchedule(
+        tx,
+        updatedSchedule,
+        input.scheduleOperationId,
+        input.originDeviceId,
+        input.now,
+      );
       if (nextOccurrence && input.nextOccurrenceOperationId) {
-        insertOccurrence(tx, nextOccurrence, input.nextOccurrenceOperationId, input.originDeviceId, input.now);
+        insertOccurrence(
+          tx,
+          nextOccurrence,
+          input.nextOccurrenceOperationId,
+          input.originDeviceId,
+          input.now,
+        );
       }
     });
 
     return { occurrence: skippedOccurrence, schedule: updatedSchedule, nextOccurrence };
   }
 
-  private requireOccurrenceAndSchedule(
-    occurrenceId: string,
-  ): { occurrence: RecurringOccurrence; schedule: RecurringSchedule } {
+  private requireOccurrenceAndSchedule(occurrenceId: string): {
+    occurrence: RecurringOccurrence;
+    schedule: RecurringSchedule;
+  } {
     const occurrenceRow = this.database.db
       .select()
       .from(recurringOccurrences)
@@ -2149,7 +2396,11 @@ function buildNextPeriod(params: {
   nextOccurrenceId: string | null;
 }): { schedule: RecurringSchedule; nextOccurrence: RecurringOccurrence | null } {
   const { schedule, previousScheduledDate, now, originDeviceId, nextOccurrenceId } = params;
-  const candidateDate = computeNextOccurrenceDate(previousScheduledDate, schedule.frequency, schedule.anchorDay);
+  const candidateDate = computeNextOccurrenceDate(
+    previousScheduledDate,
+    schedule.frequency,
+    schedule.anchorDay,
+  );
   const beyondLimit = isBeyondScheduleLimit({
     endDate: schedule.endDate,
     occurrenceLimit: schedule.occurrenceLimit,
@@ -2259,7 +2510,10 @@ function insertTransaction(
   now: string,
 ): void {
   const values = toTransactionRowValues(transaction);
-  tx.insert(transactions).values(values).onConflictDoUpdate({ target: transactions.id, set: values }).run();
+  tx.insert(transactions)
+    .values(values)
+    .onConflictDoUpdate({ target: transactions.id, set: values })
+    .run();
   const operation = buildSyncOperation({
     entityType: 'transaction',
     entityId: transaction.id,
@@ -2391,12 +2645,14 @@ git commit -m "feat: add atomic create/confirm/skip repository for recurring occ
 ### Task 7: Use cases — create, confirm, skip
 
 **Files:**
+
 - Create: `src/core/application/finance/create-recurring-expense.ts`
 - Create: `src/core/application/finance/confirm-recurring-occurrence.ts`
 - Create: `src/core/application/finance/skip-recurring-occurrence.ts`
 - Test: `tests/core/finance/recurring-use-cases.test.ts`
 
 **Interfaces:**
+
 - Consumes: `RecurringOccurrenceProcessing`, `RecurringOccurrenceRepository`, `RecurringScheduleRepository` ports (Task 4); `RecurringOccurrenceProcessingRepository`, `RecurringOccurrenceRepository`, `RecurringScheduleRepository` concrete classes (Tasks 5–6) for the test; `TransactionInput` (existing); `RecurringScheduleInput` (Task 2); `RecurringOccurrenceEdits` (Task 2).
 - Produces:
   - `class CreateRecurringExpense { constructor(deps: { processing: RecurringOccurrenceProcessing; now(): string; deviceId: string; generateId(): string }); execute(input: { transaction: Omit<TransactionInput, 'type'>; recurring: Omit<RecurringScheduleInput, 'anchorDay'> }): Promise<{ schedule: RecurringSchedule; occurrence: RecurringOccurrence }> }` — `anchorDay` is derived internally via `deriveAnchorDay(recurring.startDate, recurring.frequency)`, so callers never have to compute it.
@@ -2443,11 +2699,32 @@ describe('recurring expense use cases', () => {
     const seedNow = '2026-08-27T09:00:00.000Z';
     database.db
       .insert(accounts)
-      .values({ id: 'account-main', name: 'Ví chính', type: 'cash', openingBalance: 0, isArchived: false, createdAt: seedNow, updatedAt: seedNow, deletedAt: null, revision: 1, originDeviceId: deviceId })
+      .values({
+        id: 'account-main',
+        name: 'Ví chính',
+        type: 'cash',
+        openingBalance: 0,
+        isArchived: false,
+        createdAt: seedNow,
+        updatedAt: seedNow,
+        deletedAt: null,
+        revision: 1,
+        originDeviceId: deviceId,
+      })
       .run();
     database.db
       .insert(categories)
-      .values({ id: 'category-bills', name: 'Hóa đơn', type: 'expense', isArchived: false, createdAt: seedNow, updatedAt: seedNow, deletedAt: null, revision: 1, originDeviceId: deviceId })
+      .values({
+        id: 'category-bills',
+        name: 'Hóa đơn',
+        type: 'expense',
+        isArchived: false,
+        createdAt: seedNow,
+        updatedAt: seedNow,
+        deletedAt: null,
+        revision: 1,
+        originDeviceId: deviceId,
+      })
       .run();
 
     processing = new RecurringOccurrenceProcessingRepository(database);
@@ -2463,25 +2740,70 @@ describe('recurring expense use cases', () => {
 
   describe('CreateRecurringExpense', () => {
     it('creates the first transaction, the schedule and one pending occurrence', async () => {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
-
-      const result = await createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27' },
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
       });
 
-      expect(result.schedule).toMatchObject({ status: 'active', frequency: 'monthly', anchorDay: 27, generatedCount: 1 });
+      const result = await createRecurringExpense.execute({
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+        },
+      });
+
+      expect(result.schedule).toMatchObject({
+        status: 'active',
+        frequency: 'monthly',
+        anchorDay: 27,
+        generatedCount: 1,
+      });
       expect(result.occurrence).toMatchObject({ status: 'pending', scheduledDate: '2026-09-27' });
-      await expect(occurrenceRepository.findActiveByScheduleId(result.schedule.id)).resolves.toMatchObject({ id: result.occurrence.id });
+      await expect(
+        occurrenceRepository.findActiveByScheduleId(result.schedule.id),
+      ).resolves.toMatchObject({ id: result.occurrence.id });
     });
   });
 
   describe('ConfirmRecurringOccurrence and SkipRecurringOccurrence', () => {
     async function seedSchedule() {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
+      });
       return createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27' },
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+        },
       });
     }
 
@@ -2499,7 +2821,10 @@ describe('recurring expense use cases', () => {
       const result = await confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only');
 
       expect(result.occurrence).toMatchObject({ status: 'confirmed' });
-      expect(result.nextOccurrence).toMatchObject({ status: 'pending', scheduledDate: '2026-10-27' });
+      expect(result.nextOccurrence).toMatchObject({
+        status: 'pending',
+        scheduledDate: '2026-10-27',
+      });
       await expect(occurrenceRepository.listByStatus(['pending'])).resolves.toHaveLength(1);
     });
 
@@ -2515,9 +2840,9 @@ describe('recurring expense use cases', () => {
       });
       await confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only');
 
-      await expect(confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only')).rejects.toThrow(
-        `Recurring occurrence ${occurrence.id} is not pending`,
-      );
+      await expect(
+        confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only'),
+      ).rejects.toThrow(`Recurring occurrence ${occurrence.id} is not pending`);
     });
 
     it('skips the pending occurrence and generates exactly one next occurrence', async () => {
@@ -2533,7 +2858,10 @@ describe('recurring expense use cases', () => {
       const result = await skipRecurringOccurrence.execute(occurrence.id);
 
       expect(result.occurrence).toMatchObject({ status: 'skipped', transactionId: null });
-      expect(result.nextOccurrence).toMatchObject({ status: 'pending', scheduledDate: '2026-10-27' });
+      expect(result.nextOccurrence).toMatchObject({
+        status: 'pending',
+        scheduledDate: '2026-10-27',
+      });
     });
   });
 });
@@ -2551,7 +2879,10 @@ Expected: FAIL with "Cannot find module '@/core/application/finance/create-recur
 import { RecurringOccurrenceProcessing } from '@/core/application/ports/recurring-repositories';
 import { deriveAnchorDay } from '@/core/domain/finance/recurring-date';
 import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence';
-import { RecurringSchedule, RecurringScheduleInput } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleInput,
+} from '@/core/domain/finance/recurring-schedule';
 import { TransactionInput } from '@/core/domain/finance/transaction';
 
 export type CreateRecurringExpenseDeps = {
@@ -2716,11 +3047,13 @@ git commit -m "feat: add create/confirm/skip recurring expense use cases"
 ### Task 8: Use cases — pause/resume/end/update schedule, and overview reads
 
 **Files:**
+
 - Create: `src/core/application/finance/manage-recurring-schedule.ts`
 - Create: `src/core/application/finance/get-recurring-overview.ts`
 - Test: `tests/core/finance/recurring-use-cases.test.ts` (append)
 
 **Interfaces:**
+
 - Consumes: `RecurringScheduleRepository`, `RecurringOccurrenceRepository` ports (Task 4, extended); `UpdateRecurringScheduleInput` (Task 4).
 - Produces:
   - `class PauseRecurringSchedule { constructor(deps: { scheduleRepository: RecurringScheduleRepository; now(): string; deviceId: string; generateId(): string }); execute(id: string): Promise<RecurringSchedule> }`
@@ -2745,10 +3078,29 @@ describe('manage recurring schedule use cases', () => {
   // Reuses the outer `beforeEach`/`afterEach` (database, processing, occurrenceRepository, scheduleRepository, now, generateId).
 
   async function seedSchedule() {
-    const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+    const createRecurringExpense = new CreateRecurringExpense({
+      processing,
+      now,
+      deviceId,
+      generateId,
+    });
     return createRecurringExpense.execute({
-      transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-      recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27' },
+      transaction: {
+        amount: 179000,
+        accountId: 'account-main',
+        categoryId: 'category-bills',
+        date: '2026-08-27',
+        name: 'YouTube Premium',
+        note: null,
+      },
+      recurring: {
+        displayName: 'YouTube Premium',
+        accountId: 'account-main',
+        categoryId: 'category-bills',
+        amount: 179000,
+        frequency: 'monthly',
+        startDate: '2026-08-27',
+      },
     });
   }
 
@@ -2770,17 +3122,28 @@ describe('manage recurring schedule use cases', () => {
 
   it('updates a schedule default and refreshes its current unresolved occurrence', async () => {
     const { schedule, occurrence } = await seedSchedule();
-    const update = new UpdateRecurringSchedule({ scheduleRepository, occurrenceRepository, now, deviceId, generateId });
+    const update = new UpdateRecurringSchedule({
+      scheduleRepository,
+      occurrenceRepository,
+      now,
+      deviceId,
+      generateId,
+    });
 
     const updated = await update.execute(schedule.id, { amount: 199000 });
 
     expect(updated).toMatchObject({ amount: 199000 });
-    await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({ amount: 199000 });
+    await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({
+      amount: 199000,
+    });
   });
 
   it('GetRecurringOverview lists pending occurrences and all schedules', async () => {
     const { schedule, occurrence } = await seedSchedule();
-    const getRecurringOverview = new GetRecurringOverview({ scheduleRepository, occurrenceRepository });
+    const getRecurringOverview = new GetRecurringOverview({
+      scheduleRepository,
+      occurrenceRepository,
+    });
 
     const overview = await getRecurringOverview.execute();
 
@@ -2803,7 +3166,10 @@ import {
   RecurringOccurrenceRepository,
   RecurringScheduleRepository,
 } from '@/core/application/ports/recurring-repositories';
-import { RecurringSchedule, RecurringScheduleInput } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleInput,
+} from '@/core/domain/finance/recurring-schedule';
 
 export type ManageRecurringScheduleDeps = {
   scheduleRepository: RecurringScheduleRepository;
@@ -2930,6 +3296,7 @@ git commit -m "feat: add recurring schedule management and overview use cases"
 ### Task 9: Local reminder notifications
 
 **Files:**
+
 - Create: `src/core/application/ports/notification-scheduler.ts`
 - Create: `src/infrastructure/expo/notifications/recurring-notification-scheduler.ts`
 - Create: `src/core/application/finance/sync-recurring-notifications.ts`
@@ -2937,6 +3304,7 @@ git commit -m "feat: add recurring schedule management and overview use cases"
 - Test: `tests/core/finance/recurring-use-cases.test.ts` (append)
 
 **Interfaces:**
+
 - Consumes: `RecurringOccurrenceRepository`, `RecurringScheduleRepository` ports (Task 4).
 - Produces:
   - `NotificationScheduler` port: `{ requestPermissions(): Promise<boolean>; scheduleAt(params: { id: string; title: string; body: string; fireDate: Date }): Promise<void> }`
@@ -2985,7 +3353,12 @@ describe('RecurringNotificationScheduler', () => {
     const scheduler = new RecurringNotificationScheduler();
     const fireDate = new Date('2026-09-26T09:00:00.000Z');
 
-    await scheduler.scheduleAt({ id: 'occurrence-1', title: 'Sắp đến hạn', body: 'YouTube Premium', fireDate });
+    await scheduler.scheduleAt({
+      id: 'occurrence-1',
+      title: 'Sắp đến hạn',
+      body: 'YouTube Premium',
+      fireDate,
+    });
 
     expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith({
       identifier: 'occurrence-1',
@@ -3025,7 +3398,12 @@ export class RecurringNotificationScheduler implements NotificationScheduler {
     return result.granted === true;
   }
 
-  async scheduleAt(params: { id: string; title: string; body: string; fireDate: Date }): Promise<void> {
+  async scheduleAt(params: {
+    id: string;
+    title: string;
+    body: string;
+    fireDate: Date;
+  }): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: params.id,
       content: { title: params.title, body: params.body },
@@ -3052,7 +3430,12 @@ class FakeNotificationScheduler implements NotificationScheduler {
   async requestPermissions(): Promise<boolean> {
     return true;
   }
-  async scheduleAt(params: { id: string; title: string; body: string; fireDate: Date }): Promise<void> {
+  async scheduleAt(params: {
+    id: string;
+    title: string;
+    body: string;
+    fireDate: Date;
+  }): Promise<void> {
     this.scheduled.push(params);
   }
 }
@@ -3060,10 +3443,30 @@ class FakeNotificationScheduler implements NotificationScheduler {
 describe('ScanAndScheduleRecurringNotifications', () => {
   it('schedules a future reminder for a not-yet-due occurrence and marks it notified', async () => {
     const { occurrence } = await (async () => {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
+      });
       return createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+          remindDaysBefore: 1,
+        },
       });
     })(); // occurrence.scheduledDate === '2026-09-27', remindDaysBefore 1 → reminder on 2026-09-26
 
@@ -3080,17 +3483,44 @@ describe('ScanAndScheduleRecurringNotifications', () => {
     await scan.execute();
 
     expect(notificationScheduler.scheduled).toHaveLength(1);
-    expect(notificationScheduler.scheduled[0]).toMatchObject({ id: occurrence.id, body: 'YouTube Premium' });
-    expect(notificationScheduler.scheduled[0].fireDate.toISOString().slice(0, 10)).toBe('2026-09-26');
-    await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({ notifiedAt: '2026-08-28T08:00:00.000Z' });
+    expect(notificationScheduler.scheduled[0]).toMatchObject({
+      id: occurrence.id,
+      body: 'YouTube Premium',
+    });
+    expect(notificationScheduler.scheduled[0].fireDate.toISOString().slice(0, 10)).toBe(
+      '2026-09-26',
+    );
+    await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({
+      notifiedAt: '2026-08-28T08:00:00.000Z',
+    });
   });
 
   it('sends a catch-up reminder immediately when opening the app after the reminder date has passed', async () => {
     const { occurrence } = await (async () => {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
+      });
       return createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+          remindDaysBefore: 1,
+        },
       });
     })();
 
@@ -3112,10 +3542,30 @@ describe('ScanAndScheduleRecurringNotifications', () => {
 
   it('never notifies the same occurrence twice', async () => {
     const { occurrence } = await (async () => {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
+      });
       return createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+          remindDaysBefore: 1,
+        },
       });
     })();
 
@@ -3248,9 +3698,11 @@ git commit -m "feat: add local reminder notifications for recurring occurrences"
 ### Task 10: Composition root
 
 **Files:**
+
 - Modify: `src/features/finance/finance-dependencies.ts`
 
 **Interfaces:**
+
 - Consumes: every repository class (Tasks 5–6) and use case class (Tasks 7–9).
 - Produces: `FinanceDependencies` gains `recurringScheduleRepository`, `recurringOccurrenceRepository`, `recurringOccurrenceProcessing`, `createRecurringExpense`, `confirmRecurringOccurrence`, `skipRecurringOccurrence`, `pauseRecurringSchedule`, `resumeRecurringSchedule`, `endRecurringSchedule`, `updateRecurringSchedule`, `getRecurringOverview`, `notificationScheduler`, `scanAndScheduleRecurringNotifications`.
 
@@ -3309,7 +3761,10 @@ export async function createFinanceDependencies(
     recurringScheduleRepository,
     recurringOccurrenceRepository,
     recurringOccurrenceProcessing,
-    createRecurringExpense: new CreateRecurringExpense({ processing: recurringOccurrenceProcessing, ...shared }),
+    createRecurringExpense: new CreateRecurringExpense({
+      processing: recurringOccurrenceProcessing,
+      ...shared,
+    }),
     confirmRecurringOccurrence: new ConfirmRecurringOccurrence({
       processing: recurringOccurrenceProcessing,
       occurrenceRepository: recurringOccurrenceRepository,
@@ -3321,9 +3776,18 @@ export async function createFinanceDependencies(
       occurrenceRepository: recurringOccurrenceRepository,
       ...shared,
     }),
-    pauseRecurringSchedule: new PauseRecurringSchedule({ scheduleRepository: recurringScheduleRepository, ...shared }),
-    resumeRecurringSchedule: new ResumeRecurringSchedule({ scheduleRepository: recurringScheduleRepository, ...shared }),
-    endRecurringSchedule: new EndRecurringSchedule({ scheduleRepository: recurringScheduleRepository, ...shared }),
+    pauseRecurringSchedule: new PauseRecurringSchedule({
+      scheduleRepository: recurringScheduleRepository,
+      ...shared,
+    }),
+    resumeRecurringSchedule: new ResumeRecurringSchedule({
+      scheduleRepository: recurringScheduleRepository,
+      ...shared,
+    }),
+    endRecurringSchedule: new EndRecurringSchedule({
+      scheduleRepository: recurringScheduleRepository,
+      ...shared,
+    }),
     updateRecurringSchedule: new UpdateRecurringSchedule({
       scheduleRepository: recurringScheduleRepository,
       occurrenceRepository: recurringOccurrenceRepository,
@@ -3371,11 +3835,13 @@ git commit -m "feat: wire recurring expense dependencies into FinanceDependencie
 Matches `design/Finance App.dc.html` lines ~210-227 (`isExpenseType` → `recurringEnabled` block) — recurring setup is only available for new **expense** transactions, never when editing an existing transaction (spec §Tạo lịch từ form thêm chi tiêu).
 
 **Files:**
+
 - Modify: `src/features/finance/view-models/use-transaction-form.ts`
 - Modify: `src/components/finance/TransactionFormSheet.tsx`
 - Test: `tests/features/finance/use-transaction-form.test.ts` (extend the existing suite — read it first to match its setup/fake-dependency style before adding cases)
 
 **Interfaces:**
+
 - Consumes: `CreateRecurringExpense` from `@/core/application/finance/create-recurring-expense` (Task 7); `RecurringFrequency` from `@/core/domain/finance/recurring-date` (Task 1); `Dropdown` from `@/components/base` (existing).
 - Produces:
   - `TransactionFormDependencies` gains `createRecurringExpense: CreateRecurringExpense`.
@@ -3404,7 +3870,9 @@ describe('useTransactionForm recurring toggle', () => {
   });
 
   it('creates a recurring schedule instead of a plain transaction when recurringEnabled is true on save', async () => {
-    const createRecurringExpense = { execute: jest.fn().mockResolvedValue({ schedule: {}, occurrence: {} }) } as unknown as CreateRecurringExpense;
+    const createRecurringExpense = {
+      execute: jest.fn().mockResolvedValue({ schedule: {}, occurrence: {} }),
+    } as unknown as CreateRecurringExpense;
     const { result } = renderHookWithDependencies({ createRecurringExpense });
     await waitForLoadingToFinish(result);
 
@@ -3423,7 +3891,12 @@ describe('useTransactionForm recurring toggle', () => {
     expect(createRecurringExpense.execute).toHaveBeenCalledWith(
       expect.objectContaining({
         transaction: expect.objectContaining({ amount: 179000, name: 'YouTube Premium' }),
-        recurring: expect.objectContaining({ frequency: 'monthly', remindDaysBefore: 1, endDate: null, occurrenceLimit: null }),
+        recurring: expect.objectContaining({
+          frequency: 'monthly',
+          remindDaysBefore: 1,
+          endDate: null,
+          occurrenceLimit: null,
+        }),
       }),
     );
   });
@@ -3482,15 +3955,18 @@ const setRecurringEnabled = useCallback(
   [],
 );
 const setRecurringFrequency = useCallback(
-  (recurringFrequency: RecurringFrequency) => setValues((current) => ({ ...current, recurringFrequency })),
+  (recurringFrequency: RecurringFrequency) =>
+    setValues((current) => ({ ...current, recurringFrequency })),
   [],
 );
 const setRecurringRemindDaysBefore = useCallback(
-  (recurringRemindDaysBefore: number) => setValues((current) => ({ ...current, recurringRemindDaysBefore })),
+  (recurringRemindDaysBefore: number) =>
+    setValues((current) => ({ ...current, recurringRemindDaysBefore })),
   [],
 );
 const setRecurringEndMode = useCallback(
-  (recurringEndMode: RecurringEndMode) => setValues((current) => ({ ...current, recurringEndMode })),
+  (recurringEndMode: RecurringEndMode) =>
+    setValues((current) => ({ ...current, recurringEndMode })),
   [],
 );
 const setRecurringEndDate = useCallback(
@@ -3498,7 +3974,8 @@ const setRecurringEndDate = useCallback(
   [],
 );
 const setRecurringOccurrenceLimit = useCallback(
-  (recurringOccurrenceLimit: number | null) => setValues((current) => ({ ...current, recurringOccurrenceLimit })),
+  (recurringOccurrenceLimit: number | null) =>
+    setValues((current) => ({ ...current, recurringOccurrenceLimit })),
   [],
 );
 
@@ -3506,7 +3983,11 @@ const setRecurringOccurrenceLimit = useCallback(
 // existing `setNewTxPositive` behavior in the design prototype):
 const setType = useCallback(
   (type: TransactionType) =>
-    setValues((current) => ({ ...current, type, recurringEnabled: type === 'expense' ? current.recurringEnabled : false })),
+    setValues((current) => ({
+      ...current,
+      type,
+      recurringEnabled: type === 'expense' ? current.recurringEnabled : false,
+    })),
   [],
 );
 
@@ -3532,7 +4013,8 @@ try {
         startDate: values.date,
         remindDaysBefore: values.recurringRemindDaysBefore,
         endDate: values.recurringEndMode === 'date' ? values.recurringEndDate : null,
-        occurrenceLimit: values.recurringEndMode === 'count' ? values.recurringOccurrenceLimit : null,
+        occurrenceLimit:
+          values.recurringEndMode === 'count' ? values.recurringOccurrenceLimit : null,
         note: values.note.trim() === '' ? null : values.note.trim(),
       },
     });
@@ -3693,6 +4175,7 @@ git commit -m "feat: add recurring toggle to the expense form"
 Matches `design/Finance App.dc.html`'s `isRecurringList` / `isRecurringDetail` / `isRecurringScope` / `isRecurringSuccess` blocks and `design/All Screens.dc.html`'s "Chi tiêu định kỳ" screen group.
 
 **Files:**
+
 - Create: `src/features/finance/view-models/recurring-presentation.ts`
 - Create: `src/features/finance/view-models/use-recurring-occurrences.ts`
 - Create: `src/features/finance/screens/recurring-occurrences-screen.tsx`
@@ -3700,6 +4183,7 @@ Matches `design/Finance App.dc.html`'s `isRecurringList` / `isRecurringDetail` /
 - Test: `tests/features/finance/use-recurring-occurrences.test.ts`
 
 **Interfaces:**
+
 - Consumes: `GetRecurringOverview`, `ConfirmRecurringOccurrence`, `SkipRecurringOccurrence` (Tasks 7–8); `deriveOccurrenceDisplayStatus` (Task 2); `formatVnd` from `@/core/domain/finance/money`, `formatDateLabel`, `todayIsoDate` from `./transaction-presentation` (existing, reused — no duplicate formatters per `CLAUDE.md` §Component); `Card`, `ListRow`, `PillChip`, `PrimaryButton` from `@/components/base`.
 - Produces:
   - `formatFrequencyLabel(frequency: RecurringFrequency, t: Translate): string`
@@ -3711,7 +4195,10 @@ Matches `design/Finance App.dc.html`'s `isRecurringList` / `isRecurringDetail` /
 
 ```typescript
 // tests/features/finance/recurring-presentation.test.ts
-import { buildOccurrenceListItem, formatFrequencyLabel } from '@/features/finance/view-models/recurring-presentation';
+import {
+  buildOccurrenceListItem,
+  formatFrequencyLabel,
+} from '@/features/finance/view-models/recurring-presentation';
 import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence';
 import { en } from '@/i18n/locales/en';
 import { createTranslate } from '@/i18n/translations'; // read this file first to confirm the exact factory name/signature; adjust the import if it differs
@@ -3749,7 +4236,11 @@ describe('formatFrequencyLabel', () => {
 describe('buildOccurrenceListItem', () => {
   it('labels a not-yet-due occurrence as pending', () => {
     const item = buildOccurrenceListItem(baseOccurrence, '2026-09-01', t);
-    expect(item).toMatchObject({ id: 'occurrence-1', displayName: 'YouTube Premium', displayStatus: 'pending' });
+    expect(item).toMatchObject({
+      id: 'occurrence-1',
+      displayName: 'YouTube Premium',
+      displayStatus: 'pending',
+    });
     expect(item.amountLabel).toContain('179');
   });
 
@@ -3885,7 +4376,9 @@ const occurrence: RecurringOccurrence = {
 
 function buildDependencies(overrides?: { confirmResult?: unknown }) {
   return {
-    getRecurringOverview: { execute: jest.fn().mockResolvedValue({ dueOccurrences: [occurrence], schedules: [schedule] }) },
+    getRecurringOverview: {
+      execute: jest.fn().mockResolvedValue({ dueOccurrences: [occurrence], schedules: [schedule] }),
+    },
     confirmRecurringOccurrence: {
       execute: jest.fn().mockResolvedValue(
         overrides?.confirmResult ?? {
@@ -3909,7 +4402,9 @@ function buildDependencies(overrides?: { confirmResult?: unknown }) {
 describe('useRecurringOccurrences', () => {
   it('loads due occurrences into the list view', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.items).toHaveLength(1);
@@ -3918,18 +4413,25 @@ describe('useRecurringOccurrences', () => {
 
   it('opens detail for a selected occurrence', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     act(() => result.current.openDetail('occurrence-1'));
 
     expect(result.current.view).toBe('detail');
-    expect(result.current.selected).toMatchObject({ id: 'occurrence-1', displayName: 'YouTube Premium' });
+    expect(result.current.selected).toMatchObject({
+      id: 'occurrence-1',
+      displayName: 'YouTube Premium',
+    });
   });
 
   it('confirms directly to success when the amount was not edited', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     act(() => result.current.openDetail('occurrence-1'));
 
@@ -3937,13 +4439,19 @@ describe('useRecurringOccurrences', () => {
       await result.current.confirm();
     });
 
-    expect(dependencies.confirmRecurringOccurrence.execute).toHaveBeenCalledWith('occurrence-1', {}, 'this_only');
+    expect(dependencies.confirmRecurringOccurrence.execute).toHaveBeenCalledWith(
+      'occurrence-1',
+      {},
+      'this_only',
+    );
     expect(result.current.view).toBe('success');
   });
 
   it('routes to the scope screen when the edited amount differs from the schedule default', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     act(() => result.current.openDetail('occurrence-1'));
     act(() => result.current.setEditedAmount(189000));
@@ -3969,7 +4477,9 @@ describe('useRecurringOccurrences', () => {
 
   it('skips an occurrence and returns to the list', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     act(() => result.current.openDetail('occurrence-1'));
 
@@ -4002,7 +4512,11 @@ import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence'
 import { RecurringSchedule } from '@/core/domain/finance/recurring-schedule';
 import type { Translate } from '@/i18n/translations';
 
-import { buildOccurrenceListItem, formatFrequencyLabel, RecurringOccurrenceListItem } from './recurring-presentation';
+import {
+  buildOccurrenceListItem,
+  formatFrequencyLabel,
+  RecurringOccurrenceListItem,
+} from './recurring-presentation';
 import { formatDateLabel, todayIsoDate } from './transaction-presentation';
 
 export type RecurringOccurrencesDependencies = {
@@ -4058,9 +4572,10 @@ export function useRecurringOccurrences({
   const [view, setView] = useState<'list' | 'detail' | 'scope' | 'success'>('list');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editedAmount, setEditedAmountState] = useState<number | null>(null);
-  const [successSummary, setSuccessSummary] = useState<{ amountLabel: string; nextDateLabel: string | null } | null>(
-    null,
-  );
+  const [successSummary, setSuccessSummary] = useState<{
+    amountLabel: string;
+    nextDateLabel: string | null;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -4082,7 +4597,9 @@ export function useRecurringOccurrences({
   );
 
   const selectedOccurrence = occurrences.find((occurrence) => occurrence.id === selectedId) ?? null;
-  const selectedSchedule = selectedOccurrence ? (schedulesById.get(selectedOccurrence.scheduleId) ?? null) : null;
+  const selectedSchedule = selectedOccurrence
+    ? (schedulesById.get(selectedOccurrence.scheduleId) ?? null)
+    : null;
   const selected: RecurringOccurrenceDetail | null =
     selectedOccurrence && selectedSchedule
       ? {
@@ -4096,8 +4613,13 @@ export function useRecurringOccurrences({
       : null;
 
   const scopeDiffLabel =
-    selectedOccurrence && selectedSchedule && editedAmount !== null && editedAmount !== selectedSchedule.amount
-      ? t('recurringScopeDiff', { diff: formatVnd(Math.abs(editedAmount - selectedSchedule.amount)) })
+    selectedOccurrence &&
+    selectedSchedule &&
+    editedAmount !== null &&
+    editedAmount !== selectedSchedule.amount
+      ? t('recurringScopeDiff', {
+          diff: formatVnd(Math.abs(editedAmount - selectedSchedule.amount)),
+        })
       : null;
 
   const openDetail = useCallback((id: string) => {
@@ -4121,11 +4643,20 @@ export function useRecurringOccurrences({
       }
       setSubmitting(true);
       try {
-        const edits = editedAmount !== null && editedAmount !== selectedOccurrence.amount ? { amount: editedAmount } : {};
-        const result = await dependencies.confirmRecurringOccurrence.execute(selectedOccurrence.id, edits, scope);
+        const edits =
+          editedAmount !== null && editedAmount !== selectedOccurrence.amount
+            ? { amount: editedAmount }
+            : {};
+        const result = await dependencies.confirmRecurringOccurrence.execute(
+          selectedOccurrence.id,
+          edits,
+          scope,
+        );
         setSuccessSummary({
           amountLabel: formatVnd(result.occurrence.amount),
-          nextDateLabel: result.nextOccurrence ? formatDateLabel(result.nextOccurrence.scheduledDate) : null,
+          nextDateLabel: result.nextOccurrence
+            ? formatDateLabel(result.nextOccurrence.scheduledDate)
+            : null,
         });
         setView('success');
         await reload();
@@ -4412,11 +4943,13 @@ git commit -m "feat: add recurring occurrence list/detail/scope/success screens"
 Beyond what `design/Finance App.dc.html`'s prototype renders (which stops at confirm/skip) — required directly by spec §Quản lý định kỳ ("Sửa mẫu... Tạm dừng... Kết thúc... xem lịch sử kỳ đã xác nhận/bỏ qua"). Follows the same full-screen, back-button pattern as `gold-management-screen.tsx`.
 
 **Files:**
+
 - Create: `src/features/finance/view-models/use-recurring-management.ts`
 - Create: `src/features/finance/screens/recurring-management-screen.tsx`
 - Test: `tests/features/finance/use-recurring-management.test.ts`
 
 **Interfaces:**
+
 - Consumes: `GetRecurringOverview`, `PauseRecurringSchedule`, `ResumeRecurringSchedule`, `EndRecurringSchedule`, `UpdateRecurringSchedule` (Task 8); `RecurringOccurrenceRepository.listByScheduleId` (Task 4/5, for history); `formatFrequencyLabel` (Task 12); `formatVnd`, `formatDateLabel` (existing).
 - Produces:
   - `RecurringScheduleListItem = { id: string; displayName: string; amountLabel: string; frequencyLabel: string; statusLabel: string; status: RecurringScheduleStatus }`
@@ -4483,19 +5016,31 @@ const confirmedOccurrence: RecurringOccurrence = {
 
 function buildDependencies() {
   return {
-    getRecurringOverview: { execute: jest.fn().mockResolvedValue({ dueOccurrences: [], schedules: [schedule] }) },
+    getRecurringOverview: {
+      execute: jest.fn().mockResolvedValue({ dueOccurrences: [], schedules: [schedule] }),
+    },
     occurrenceRepository: { listByScheduleId: jest.fn().mockResolvedValue([confirmedOccurrence]) },
-    pauseRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'paused' }) },
-    resumeRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'active' }) },
-    endRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'ended' }) },
-    updateRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, amount: 199000 }) },
+    pauseRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, status: 'paused' }),
+    },
+    resumeRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, status: 'active' }),
+    },
+    endRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, status: 'ended' }),
+    },
+    updateRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, amount: 199000 }),
+    },
   } as const;
 }
 
 describe('useRecurringManagement', () => {
   it('lists every schedule', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.items).toHaveLength(1);
@@ -4504,20 +5049,27 @@ describe('useRecurringManagement', () => {
 
   it('opens a schedule detail with its confirmed/skipped history', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
       await result.current.openDetail('schedule-1');
     });
 
-    expect(result.current.selected).toMatchObject({ id: 'schedule-1', displayName: 'YouTube Premium' });
+    expect(result.current.selected).toMatchObject({
+      id: 'schedule-1',
+      displayName: 'YouTube Premium',
+    });
     expect(result.current.selected?.history).toHaveLength(1);
   });
 
   it('pauses, resumes and ends the selected schedule', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.openDetail('schedule-1');
@@ -4541,7 +5093,9 @@ describe('useRecurringManagement', () => {
 
   it('updates the selected schedule amount', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.openDetail('schedule-1');
@@ -4551,7 +5105,9 @@ describe('useRecurringManagement', () => {
       await result.current.updateAmount(199000);
     });
 
-    expect(dependencies.updateRecurringSchedule.execute).toHaveBeenCalledWith('schedule-1', { amount: 199000 });
+    expect(dependencies.updateRecurringSchedule.execute).toHaveBeenCalledWith('schedule-1', {
+      amount: 199000,
+    });
   });
 });
 ```
@@ -4567,11 +5123,19 @@ Expected: FAIL with "Cannot find module '@/features/finance/view-models/use-recu
 // src/features/finance/view-models/use-recurring-management.ts
 import { useCallback, useEffect, useState } from 'react';
 
-import type { EndRecurringSchedule, PauseRecurringSchedule, ResumeRecurringSchedule, UpdateRecurringSchedule } from '@/core/application/finance/manage-recurring-schedule';
+import type {
+  EndRecurringSchedule,
+  PauseRecurringSchedule,
+  ResumeRecurringSchedule,
+  UpdateRecurringSchedule,
+} from '@/core/application/finance/manage-recurring-schedule';
 import type { GetRecurringOverview } from '@/core/application/finance/get-recurring-overview';
 import type { RecurringOccurrenceRepository } from '@/core/application/ports/recurring-repositories';
 import { formatVnd } from '@/core/domain/finance/money';
-import { RecurringSchedule, RecurringScheduleStatus } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleStatus,
+} from '@/core/domain/finance/recurring-schedule';
 import type { Translate } from '@/i18n/translations';
 
 import { formatFrequencyLabel } from './recurring-presentation';
@@ -4680,12 +5244,18 @@ export function useRecurringManagement({
       const occurrences = await dependencies.occurrenceRepository.listByScheduleId(id);
       setHistory(
         occurrences
-          .filter((occurrence) => occurrence.status === 'confirmed' || occurrence.status === 'skipped')
+          .filter(
+            (occurrence) => occurrence.status === 'confirmed' || occurrence.status === 'skipped',
+          )
           .map((occurrence) => ({
             id: occurrence.id,
             scheduledDateLabel: formatDateLabel(occurrence.scheduledDate),
             amountLabel: formatVnd(occurrence.amount),
-            statusLabel: t(occurrence.status === 'confirmed' ? 'recurringStatusConfirmed' : 'recurringStatusSkipped'),
+            statusLabel: t(
+              occurrence.status === 'confirmed'
+                ? 'recurringStatusConfirmed'
+                : 'recurringStatusSkipped',
+            ),
           })),
       );
     },
@@ -4744,7 +5314,18 @@ export function useRecurringManagement({
     [dependencies, reload, selectedId],
   );
 
-  return { loading, submitting, items, selected, openDetail, closeDetail, pause, resume, end, updateAmount };
+  return {
+    loading,
+    submitting,
+    items,
+    selected,
+    openDetail,
+    closeDetail,
+    pause,
+    resume,
+    end,
+    updateAmount,
+  };
 }
 ```
 
@@ -4905,10 +5486,12 @@ git commit -m "feat: add recurring schedule management screen"
 ### Task 14: App wiring — navigation, Settings entry point, startup notification scan
 
 **Files:**
+
 - Modify: `src/app/index.tsx`
 - Modify: `src/features/finance/screens/settings-screen.tsx`
 
 **Interfaces:**
+
 - Consumes: `RecurringOccurrencesScreen` (Task 12), `useRecurringOccurrences` (Task 12), `RecurringManagementScreen` (Task 13), `useRecurringManagement` (Task 13), `FinanceDependencies` (Task 10, already threaded through `ConfiguredFinanceScreen`).
 - Produces: two new `FinanceView` variants (`'recurring'`, `'recurringManagement'`), a `settingsManageRecurring`-labelled row in Settings, and a call to `scanAndScheduleRecurringNotifications.execute()` on app start.
 
@@ -4925,9 +5508,7 @@ import { useRecurringManagement } from '@/features/finance/view-models/use-recur
 
 type FinanceView =
   // ...existing variants...
-  | { name: 'gold' }
-  | { name: 'recurring' }
-  | { name: 'recurringManagement' };
+  { name: 'gold' } | { name: 'recurring' } | { name: 'recurringManagement' };
 ```
 
 Inside `ConfiguredFinanceScreen`, alongside the existing `if (view.name === 'gold') { ... }` branch:
@@ -5051,6 +5632,7 @@ git commit -m "feat: wire recurring expense screens into navigation and settings
 ### Task 15: i18n keys and coverage test
 
 **Files:**
+
 - Modify: `src/i18n/locales/vi.ts`
 - Modify: `src/i18n/locales/en.ts`
 - Create: `tests/i18n/recurring-component-keys.test.ts`
@@ -5254,20 +5836,20 @@ git commit -m "feat: add i18n keys for the recurring expense feature"
 
 ## Verification Matrix
 
-| Spec acceptance criterion (§Kiểm thử chấp nhận) | Covered by |
-|---|---|
-| Tạo chi tiêu + bật định kỳ → giao dịch thật kỳ 1 + mẫu + một kỳ dự kiến `pending` kế tiếp | Task 6 `createFirstPeriod` tests; Task 7 `CreateRecurringExpense` test |
-| Xác nhận kỳ dự kiến → giao dịch thật, số dư/báo cáo cập nhật, sinh đúng một kỳ tiếp theo | Task 6 `confirmOccurrence` tests; Task 7 `ConfirmRecurringOccurrence` test |
-| Bỏ qua kỳ → không ảnh hưởng số dư, sinh kỳ tiếp theo | Task 6 `skipOccurrence` test; Task 7 `SkipRecurringOccurrence` test |
-| Kỳ quá hạn → trạng thái `overdue`, vẫn xác nhận/bỏ qua được | Task 2 `deriveOccurrenceDisplayStatus` tests; Task 6 confirm/skip tests never check stored status, only `pending`, matching that overdue is derived, not a blocking state |
-| Chỉnh kỳ rồi xác nhận khác mẫu → hỏi `Chỉ kỳ này` / `Kỳ này và các kỳ sau` đúng hành vi | Task 12 `useRecurringOccurrences` scope-routing tests |
-| `Kỳ này và các kỳ sau` cập nhật mẫu; kỳ tiếp theo sinh theo mẫu mới | Task 6 `confirmOccurrence` "this_and_future" test |
-| Tạm dừng / kết thúc → không sinh kỳ mới; lịch sử giao dịch thật giữ nguyên | Task 6 paused-schedule test; Task 8 pause/resume/end tests |
-| Ngày neo 31 hàng tháng → các tháng thiếu ngày dùng ngày cuối tháng đúng quy tắc | Task 1 `computeNextOccurrenceDate` tests (31/01→28/02→31/03→30/04, leap year 29/02) |
-| Giao dịch dự kiến không tính vào số dư và báo cáo | Structural: `RecurringOccurrence` never writes to the `transactions` table (Task 6); only `confirmOccurrence` does |
-| Thông báo theo `remindDaysBefore` từng lịch; không gửi trùng | Task 9 `ScanAndScheduleRecurringNotifications` tests |
-| Đạt `endDate` hoặc `occurrenceLimit` → mẫu `ended`, không sinh thêm kỳ | Task 1 `isBeyondScheduleLimit` tests; Task 6 occurrenceLimit test |
-| Tạo lịch, xác nhận, bỏ qua và change log cùng commit hoặc cùng rollback | Task 6: every write path is one `database.db.transaction(...)` call |
+| Spec acceptance criterion (§Kiểm thử chấp nhận)                                           | Covered by                                                                                                                                                                |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tạo chi tiêu + bật định kỳ → giao dịch thật kỳ 1 + mẫu + một kỳ dự kiến `pending` kế tiếp | Task 6 `createFirstPeriod` tests; Task 7 `CreateRecurringExpense` test                                                                                                    |
+| Xác nhận kỳ dự kiến → giao dịch thật, số dư/báo cáo cập nhật, sinh đúng một kỳ tiếp theo  | Task 6 `confirmOccurrence` tests; Task 7 `ConfirmRecurringOccurrence` test                                                                                                |
+| Bỏ qua kỳ → không ảnh hưởng số dư, sinh kỳ tiếp theo                                      | Task 6 `skipOccurrence` test; Task 7 `SkipRecurringOccurrence` test                                                                                                       |
+| Kỳ quá hạn → trạng thái `overdue`, vẫn xác nhận/bỏ qua được                               | Task 2 `deriveOccurrenceDisplayStatus` tests; Task 6 confirm/skip tests never check stored status, only `pending`, matching that overdue is derived, not a blocking state |
+| Chỉnh kỳ rồi xác nhận khác mẫu → hỏi `Chỉ kỳ này` / `Kỳ này và các kỳ sau` đúng hành vi   | Task 12 `useRecurringOccurrences` scope-routing tests                                                                                                                     |
+| `Kỳ này và các kỳ sau` cập nhật mẫu; kỳ tiếp theo sinh theo mẫu mới                       | Task 6 `confirmOccurrence` "this_and_future" test                                                                                                                         |
+| Tạm dừng / kết thúc → không sinh kỳ mới; lịch sử giao dịch thật giữ nguyên                | Task 6 paused-schedule test; Task 8 pause/resume/end tests                                                                                                                |
+| Ngày neo 31 hàng tháng → các tháng thiếu ngày dùng ngày cuối tháng đúng quy tắc           | Task 1 `computeNextOccurrenceDate` tests (31/01→28/02→31/03→30/04, leap year 29/02)                                                                                       |
+| Giao dịch dự kiến không tính vào số dư và báo cáo                                         | Structural: `RecurringOccurrence` never writes to the `transactions` table (Task 6); only `confirmOccurrence` does                                                        |
+| Thông báo theo `remindDaysBefore` từng lịch; không gửi trùng                              | Task 9 `ScanAndScheduleRecurringNotifications` tests                                                                                                                      |
+| Đạt `endDate` hoặc `occurrenceLimit` → mẫu `ended`, không sinh thêm kỳ                    | Task 1 `isBeyondScheduleLimit` tests; Task 6 occurrenceLimit test                                                                                                         |
+| Tạo lịch, xác nhận, bỏ qua và change log cùng commit hoặc cùng rollback                   | Task 6: every write path is one `database.db.transaction(...)` call                                                                                                       |
 
 ## Self-Review Notes
 

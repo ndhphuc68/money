@@ -10,4 +10,3 @@ export { recurringSchedules } from './recurring-schedules';
 export { recurringOccurrences } from './recurring-occurrences';
 export { syncMetadata } from './sync-metadata';
 export { transactions } from './transactions';
-

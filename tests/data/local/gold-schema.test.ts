@@ -13,7 +13,15 @@ describe('gold schema', () => {
 
       database.db
         .insert(goldBrands)
-        .values({ id: brandId, name: 'PNJ', createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+        .values({
+          id: brandId,
+          name: 'PNJ',
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+          revision: 1,
+          originDeviceId: deviceId,
+        })
         .run();
 
       database.db

@@ -41,10 +41,7 @@ export const recurringSchedules = sqliteTable(
   (table) => [
     index('recurring_schedules_account_id_idx').on(table.accountId),
     index('recurring_schedules_status_idx').on(table.status),
-    check(
-      'recurring_schedules_type_check',
-      sql`${table.type} in ('expense')`,
-    ),
+    check('recurring_schedules_type_check', sql`${table.type} in ('expense')`),
     check(
       'recurring_schedules_frequency_check',
       sql`${table.frequency} in ('weekly', 'monthly', 'quarterly', 'yearly')`,

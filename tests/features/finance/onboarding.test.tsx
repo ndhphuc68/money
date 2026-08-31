@@ -1,6 +1,16 @@
 import { ScrollView, StyleSheet } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { BriefcaseBusiness, CarFront, Gamepad2, Gift, HeartPulse, House, ReceiptText, ShoppingBag, Utensils } from 'lucide-react-native';
+import {
+  BriefcaseBusiness,
+  CarFront,
+  Gamepad2,
+  Gift,
+  HeartPulse,
+  House,
+  ReceiptText,
+  ShoppingBag,
+  Utensils,
+} from 'lucide-react-native';
 
 import {
   AccountRepository,
@@ -15,7 +25,10 @@ import {
 import { Onboarding } from '@/core/application/finance/onboarding';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
-import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
+import {
+  createDefaultProfileSettings,
+  ProfileSettings,
+} from '@/core/domain/finance/profile-settings';
 import { OnboardingScreen } from '@/features/finance/screens/onboarding-screen';
 import { getDefaultCategoryIcon } from '@/features/finance/screens/onboarding-screen';
 import { useOnboarding } from '@/features/finance/view-models/use-onboarding';
@@ -55,7 +68,11 @@ class FakeAccountRepository implements AccountRepository {
     return account;
   }
 
-  async update(_id: string, _changes: UpdateAccountInput, _context: WriteContext): Promise<Account> {
+  async update(
+    _id: string,
+    _changes: UpdateAccountInput,
+    _context: WriteContext,
+  ): Promise<Account> {
     throw new Error('not implemented');
   }
 
@@ -95,7 +112,11 @@ class FakeCategoryRepository implements CategoryRepository {
     return category;
   }
 
-  async update(_id: string, _changes: UpdateCategoryInput, _context: WriteContext): Promise<Category> {
+  async update(
+    _id: string,
+    _changes: UpdateCategoryInput,
+    _context: WriteContext,
+  ): Promise<Category> {
     throw new Error('not implemented');
   }
 
@@ -108,7 +129,9 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 
   async listActiveByType(type: Category['type']): Promise<Category[]> {
-    return Array.from(this.store.values()).filter((category) => category.type === type && category.deletedAt === null);
+    return Array.from(this.store.values()).filter(
+      (category) => category.type === type && category.deletedAt === null,
+    );
   }
 
   async isUsedByTransaction(): Promise<boolean> {
@@ -144,14 +167,17 @@ function makeIdFactory(prefix: string): () => string {
   };
 }
 
-function makeOnboarding(overrides: {
-  accountRepository?: FakeAccountRepository;
-  categoryRepository?: FakeCategoryRepository;
-  profileSettingsRepository?: FakeProfileSettingsRepository;
-} = {}) {
+function makeOnboarding(
+  overrides: {
+    accountRepository?: FakeAccountRepository;
+    categoryRepository?: FakeCategoryRepository;
+    profileSettingsRepository?: FakeProfileSettingsRepository;
+  } = {},
+) {
   const accountRepository = overrides.accountRepository ?? new FakeAccountRepository();
   const categoryRepository = overrides.categoryRepository ?? new FakeCategoryRepository();
-  const profileSettingsRepository = overrides.profileSettingsRepository ?? new FakeProfileSettingsRepository();
+  const profileSettingsRepository =
+    overrides.profileSettingsRepository ?? new FakeProfileSettingsRepository();
   const onboarding = new Onboarding({
     accountRepository,
     categoryRepository,
@@ -191,7 +217,9 @@ async function advanceToConfirmCategories(screen: ReturnType<typeof render>) {
   await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
   fireEvent.changeText(screen.getByLabelText(t('onboardingAccountNameLabel')), 'Cash');
   fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
-  await waitFor(() => expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy(),
+  );
   fireEvent.changeText(screen.getByLabelText(t('onboardingOpeningBalanceLabel')), '500.000');
   fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
   await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
@@ -202,7 +230,9 @@ describe('onboarding screen + view model', () => {
     const { onboarding } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy(),
+    );
 
     expect(screen.getByText(t('onboardingStepProgress', { current: 1, total: 4 }))).toBeTruthy();
     expect(screen.getByText(t('onboardingDisplayNameHint'))).toBeTruthy();
@@ -215,11 +245,15 @@ describe('onboarding screen + view model', () => {
     const { onboarding } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy(),
+    );
 
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy(),
+    );
     expect(screen.getByText(t('onboardingStepProgress', { current: 2, total: 4 }))).toBeTruthy();
     expect(screen.queryByTestId('onboarding-brand-logo')).toBeNull();
     expect(screen.queryByLabelText(t('onboardingBack'))).toBeNull();
@@ -229,11 +263,15 @@ describe('onboarding screen + view model', () => {
     const { onboarding, profileSettingsRepository } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy(),
+    );
     fireEvent.changeText(screen.getByLabelText(t('onboardingDisplayNameLabel')), '  Phuc  ');
     fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy(),
+    );
     expect((await profileSettingsRepository.get()).displayName).toBe('Phuc');
   });
 
@@ -241,9 +279,13 @@ describe('onboarding screen + view model', () => {
     const { onboarding, accountRepository } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy(),
+    );
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy(),
+    );
 
     fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
 
@@ -253,15 +295,21 @@ describe('onboarding screen + view model', () => {
     fireEvent.changeText(screen.getByLabelText(t('onboardingAccountNameLabel')), 'Vi tien mat');
     fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy(),
+    );
     expect(screen.getByText(t('onboardingStepProgress', { current: 3, total: 4 }))).toBeTruthy();
-    expect(screen.getByText(t('onboardingOpeningBalanceTitle', { walletName: 'Vi tien mat' }))).toBeTruthy();
+    expect(
+      screen.getByText(t('onboardingOpeningBalanceTitle', { walletName: 'Vi tien mat' })),
+    ).toBeTruthy();
     expect(await accountRepository.listActive()).toHaveLength(0);
 
     fireEvent.changeText(screen.getByLabelText(t('onboardingOpeningBalanceLabel')), '500.000');
     fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
 
-    await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy(),
+    );
     const created = await accountRepository.listActive();
     expect(created).toHaveLength(1);
     expect(created[0]).toMatchObject({ name: 'Vi tien mat', openingBalance: 500000 });
@@ -271,16 +319,24 @@ describe('onboarding screen + view model', () => {
     const { onboarding, accountRepository } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy(),
+    );
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingAccountNameLabel'))).toBeTruthy(),
+    );
     fireEvent.changeText(screen.getByLabelText(t('onboardingAccountNameLabel')), 'Cash');
     fireEvent.press(screen.getByRole('button', { name: t('onboardingContinue') }));
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingOpeningBalanceLabel'))).toBeTruthy(),
+    );
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
 
-    await waitFor(() => expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText(t('onboardingConfirmCategoriesTitle'))).toBeTruthy(),
+    );
     const created = await accountRepository.listActive();
     expect(created[0]).toMatchObject({ name: 'Cash', openingBalance: 0 });
   });
@@ -301,7 +357,9 @@ describe('onboarding screen + view model', () => {
     const expenseCategories = await categoryRepository.listActiveByType('expense');
     const incomeCategories = await categoryRepository.listActiveByType('income');
     expect(expenseCategories.length + incomeCategories.length).toBeGreaterThan(0);
-    expect(expenseCategories.some((category) => category.name === t('onboardingCategoryFood'))).toBe(false);
+    expect(
+      expenseCategories.some((category) => category.name === t('onboardingCategoryFood')),
+    ).toBe(false);
   });
 
   it('keeps Step 4 actions fixed while only the category list scrolls', async () => {
@@ -312,7 +370,9 @@ describe('onboarding screen + view model', () => {
 
     expect(screen.getByTestId('onboarding-root').type).not.toBe(ScrollView);
     expect(String(screen.getByTestId('onboarding-category-scroll').type)).toContain('ScrollView');
-    expect(screen.getByTestId('onboarding-category-scroll').props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screen.getByTestId('onboarding-category-scroll').props.keyboardShouldPersistTaps).toBe(
+      'handled',
+    );
     expect(screen.getByTestId('onboarding-primary-action')).toBeTruthy();
   });
 
@@ -333,7 +393,9 @@ describe('onboarding screen + view model', () => {
     const { onboarding } = makeOnboarding();
     const screen = render(<Harness onboarding={onboarding} />);
 
-    await waitFor(() => expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy(),
+    );
     expect(screen.queryByLabelText(t('onboardingExit'))).toBeNull();
     expect(screen.queryByText(t('onboardingExitConfirmTitle'))).toBeNull();
   });
@@ -347,7 +409,9 @@ describe('onboarding screen + view model', () => {
     expect(StyleSheet.flatten(screen.getByTestId('onboarding-root').props.style)).toMatchObject({
       backgroundColor: colors.surface.canvas,
     });
-    expect(StyleSheet.flatten(screen.getByTestId('onboarding-primary-action').props.style)).toMatchObject({
+    expect(
+      StyleSheet.flatten(screen.getByTestId('onboarding-primary-action').props.style),
+    ).toMatchObject({
       backgroundColor: colors.brand.primary,
       borderRadius: radius.sm,
     });
@@ -359,7 +423,9 @@ describe('onboarding screen + view model', () => {
 
     await waitFor(() => expect(screen.getByTestId('onboarding-root')).toBeTruthy());
 
-    expect(StyleSheet.flatten(screen.getByTestId('onboarding-root').props.contentContainerStyle)).toMatchObject({
+    expect(
+      StyleSheet.flatten(screen.getByTestId('onboarding-root').props.contentContainerStyle),
+    ).toMatchObject({
       paddingTop: 24 + 32,
       paddingBottom: 34 + 32,
     });
@@ -367,7 +433,9 @@ describe('onboarding screen + view model', () => {
     fireEvent.press(screen.getByRole('button', { name: t('onboardingSkip') }));
     await waitFor(() => expect(screen.getByText(t('onboardingAccountTypeLabel'))).toBeTruthy());
 
-    expect(StyleSheet.flatten(screen.getByText(t('onboardingAccountTypeLabel')).props.style)).toMatchObject({
+    expect(
+      StyleSheet.flatten(screen.getByText(t('onboardingAccountTypeLabel')).props.style),
+    ).toMatchObject({
       marginTop: spacing[2],
     });
   });
@@ -383,14 +451,20 @@ describe('onboarding screen + view model', () => {
       operationId: 'op-1',
       now: '2026-08-25T00:00:00.000Z',
     });
-    await profileSettingsRepository.save({ displayName: 'Phuc', amountsHidden: false, onboardingCompleted: false });
+    await profileSettingsRepository.save({
+      displayName: 'Phuc',
+      amountsHidden: false,
+      onboardingCompleted: false,
+    });
 
     const first = render(<Harness onboarding={onboarding} />);
     await waitFor(() => expect(first.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
     first.unmount();
 
     const second = render(<Harness onboarding={onboarding} />);
-    await waitFor(() => expect(second.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy());
+    await waitFor(() =>
+      expect(second.getByLabelText(t('onboardingDisplayNameLabel'))).toBeTruthy(),
+    );
   });
 
   it('calls onComplete immediately when resuming an already-completed onboarding', async () => {
@@ -404,7 +478,11 @@ describe('onboarding screen + view model', () => {
       operationId: 'op-1',
       now: '2026-08-25T00:00:00.000Z',
     });
-    await profileSettingsRepository.save({ displayName: 'Phuc', amountsHidden: false, onboardingCompleted: true });
+    await profileSettingsRepository.save({
+      displayName: 'Phuc',
+      amountsHidden: false,
+      onboardingCompleted: true,
+    });
 
     const onComplete = jest.fn();
     render(<Harness onboarding={onboarding} onComplete={onComplete} />);

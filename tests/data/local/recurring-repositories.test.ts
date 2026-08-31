@@ -3,8 +3,18 @@ import { openTestLocalDatabase, LocalDatabaseClient } from '@/data/local/db/clie
 import { RecurringScheduleRepository } from '@/data/local/repositories/recurring-schedule-repository';
 import { RecurringOccurrenceRepository } from '@/data/local/repositories/recurring-occurrence-repository';
 import { RecurringOccurrenceProcessingRepository } from '@/data/local/repositories/recurring-occurrence-processing-repository';
-import { toRecurringOccurrenceRowValues, toRecurringScheduleRowValues } from '@/data/local/repositories/recurring-record-mappers';
-import { accounts, categories, changeLog, recurringOccurrences, recurringSchedules, transactions } from '@/data/local/schema';
+import {
+  toRecurringOccurrenceRowValues,
+  toRecurringScheduleRowValues,
+} from '@/data/local/repositories/recurring-record-mappers';
+import {
+  accounts,
+  categories,
+  changeLog,
+  recurringOccurrences,
+  recurringSchedules,
+  transactions,
+} from '@/data/local/schema';
 import { RecurringSchedule } from '@/core/domain/finance/recurring-schedule';
 import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence';
 import { eq } from 'drizzle-orm';
@@ -30,15 +40,51 @@ const opId6 = '550e8400-e29b-41d4-a716-446655440015';
 function seedAccountCategoryAndTransaction(database: LocalDatabaseClient) {
   database.db
     .insert(accounts)
-    .values({ id: accountId, name: 'Ví chính', type: 'cash', openingBalance: 0, isArchived: false, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+    .values({
+      id: accountId,
+      name: 'Ví chính',
+      type: 'cash',
+      openingBalance: 0,
+      isArchived: false,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: deviceId,
+    })
     .run();
   database.db
     .insert(categories)
-    .values({ id: categoryId, name: 'Hóa đơn', type: 'expense', isArchived: false, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+    .values({
+      id: categoryId,
+      name: 'Hóa đơn',
+      type: 'expense',
+      isArchived: false,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: deviceId,
+    })
     .run();
   database.db
     .insert(transactions)
-    .values({ id: firstTransactionId, type: 'expense', amount: 179000, accountId, destinationAccountId: null, categoryId, transactionDate: '2026-08-27', name: 'YouTube Premium', note: null, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+    .values({
+      id: firstTransactionId,
+      type: 'expense',
+      amount: 179000,
+      accountId,
+      destinationAccountId: null,
+      categoryId,
+      transactionDate: '2026-08-27',
+      name: 'YouTube Premium',
+      note: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId: deviceId,
+    })
     .run();
 }
 
@@ -101,7 +147,10 @@ describe('RecurringScheduleRepository', () => {
   });
 
   it('finds a schedule by id', async () => {
-    await expect(repository.findById(scheduleId)).resolves.toMatchObject({ displayName: 'YouTube Premium', status: 'active' });
+    await expect(repository.findById(scheduleId)).resolves.toMatchObject({
+      displayName: 'YouTube Premium',
+      status: 'active',
+    });
   });
 
   it('returns null for a missing schedule', async () => {
@@ -124,7 +173,11 @@ describe('RecurringScheduleRepository', () => {
     expect(updated).toMatchObject({ status: 'paused', revision: 2 });
     const logRows = database.db.select().from(changeLog).all();
     expect(logRows).toHaveLength(1);
-    expect(logRows[0]).toMatchObject({ entityType: 'recurring_schedule', entityId: scheduleId, operation: 'update' });
+    expect(logRows[0]).toMatchObject({
+      entityType: 'recurring_schedule',
+      entityId: scheduleId,
+      operation: 'update',
+    });
   });
 });
 
@@ -136,7 +189,10 @@ describe('RecurringOccurrenceRepository', () => {
     database = await openTestLocalDatabase();
     seedAccountCategoryAndTransaction(database);
     database.db.insert(recurringSchedules).values(toRecurringScheduleRowValues(baseSchedule)).run();
-    database.db.insert(recurringOccurrences).values(toRecurringOccurrenceRowValues(baseOccurrence)).run();
+    database.db
+      .insert(recurringOccurrences)
+      .values(toRecurringOccurrenceRowValues(baseOccurrence))
+      .run();
     repository = new RecurringOccurrenceRepository(database);
   });
 
@@ -145,11 +201,16 @@ describe('RecurringOccurrenceRepository', () => {
   });
 
   it('finds the single active (pending) occurrence for a schedule', async () => {
-    await expect(repository.findActiveByScheduleId(scheduleId)).resolves.toMatchObject({ id: occurrenceId, status: 'pending' });
+    await expect(repository.findActiveByScheduleId(scheduleId)).resolves.toMatchObject({
+      id: occurrenceId,
+      status: 'pending',
+    });
   });
 
   it('returns null when a schedule has no unresolved occurrence', async () => {
-    await expect(repository.findActiveByScheduleId('550e8400-e29b-41d4-a716-446655440099')).resolves.toBeNull();
+    await expect(
+      repository.findActiveByScheduleId('550e8400-e29b-41d4-a716-446655440099'),
+    ).resolves.toBeNull();
   });
 
   it('lists occurrences by status', async () => {
@@ -177,7 +238,11 @@ describe('RecurringOccurrenceRepository', () => {
       { originDeviceId: deviceId, operationId: opId3, now: '2026-09-01T00:00:00.000Z' },
     );
 
-    expect(updated).toMatchObject({ amount: 189000, displayName: 'YouTube Premium (mới)', revision: 2 });
+    expect(updated).toMatchObject({
+      amount: 189000,
+      displayName: 'YouTube Premium (mới)',
+      revision: 2,
+    });
     const logRows = database.db.select().from(changeLog).all();
     expect(logRows).toHaveLength(1);
     expect(logRows[0]).toMatchObject({ entityType: 'recurring_occurrence', operation: 'update' });
@@ -192,11 +257,32 @@ describe('RecurringOccurrenceProcessingRepository', () => {
     database = await openTestLocalDatabase();
     database.db
       .insert(accounts)
-      .values({ id: accountId, name: 'Ví chính', type: 'cash', openingBalance: 0, isArchived: false, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+      .values({
+        id: accountId,
+        name: 'Ví chính',
+        type: 'cash',
+        openingBalance: 0,
+        isArchived: false,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null,
+        revision: 1,
+        originDeviceId: deviceId,
+      })
       .run();
     database.db
       .insert(categories)
-      .values({ id: categoryId, name: 'Hóa đơn', type: 'expense', isArchived: false, createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+      .values({
+        id: categoryId,
+        name: 'Hóa đơn',
+        type: 'expense',
+        isArchived: false,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null,
+        revision: 1,
+        originDeviceId: deviceId,
+      })
       .run();
     processing = new RecurringOccurrenceProcessingRepository(database);
   });
@@ -236,11 +322,20 @@ describe('RecurringOccurrenceProcessingRepository', () => {
     });
 
     expect(result.schedule).toMatchObject({ id: scheduleId, status: 'active', generatedCount: 1 });
-    expect(result.occurrence).toMatchObject({ id: occurrenceId, scheduleId, status: 'pending', scheduledDate: '2026-09-27' });
+    expect(result.occurrence).toMatchObject({
+      id: occurrenceId,
+      scheduleId,
+      status: 'pending',
+      scheduledDate: '2026-09-27',
+    });
 
     const logRows = database.db.select().from(changeLog).all();
     expect(logRows).toHaveLength(3);
-    expect(logRows.map((row) => row.entityType).sort()).toEqual(['recurring_occurrence', 'recurring_schedule', 'transaction']);
+    expect(logRows.map((row) => row.entityType).sort()).toEqual([
+      'recurring_occurrence',
+      'recurring_schedule',
+      'transaction',
+    ]);
   });
 
   async function createFirstPeriod() {
@@ -249,10 +344,26 @@ describe('RecurringOccurrenceProcessingRepository', () => {
       now: '2026-08-27T09:00:00.000Z',
       transactionId: firstTransactionId,
       transactionOperationId: opId1,
-      transaction: { type: 'expense', amount: 179000, accountId, categoryId, date: '2026-08-27', name: 'YouTube Premium', note: null },
+      transaction: {
+        type: 'expense',
+        amount: 179000,
+        accountId,
+        categoryId,
+        date: '2026-08-27',
+        name: 'YouTube Premium',
+        note: null,
+      },
       scheduleId,
       scheduleOperationId: opId2,
-      schedule: { displayName: 'YouTube Premium', accountId, categoryId, amount: 179000, frequency: 'monthly', anchorDay: 27, startDate: '2026-08-27' },
+      schedule: {
+        displayName: 'YouTube Premium',
+        accountId,
+        categoryId,
+        amount: 179000,
+        frequency: 'monthly',
+        anchorDay: 27,
+        startDate: '2026-08-27',
+      },
       occurrenceId,
       occurrenceOperationId: opId3,
     });
@@ -276,11 +387,24 @@ describe('RecurringOccurrenceProcessingRepository', () => {
     });
 
     expect(result.transactionId).toBe(secondTransactionId);
-    expect(result.occurrence).toMatchObject({ status: 'confirmed', amount: 189000, transactionId: secondTransactionId });
+    expect(result.occurrence).toMatchObject({
+      status: 'confirmed',
+      amount: 189000,
+      transactionId: secondTransactionId,
+    });
     expect(result.schedule).toMatchObject({ amount: 179000, generatedCount: 2 });
-    expect(result.nextOccurrence).toMatchObject({ id: nextOccurrenceId, amount: 179000, scheduledDate: '2026-10-27', status: 'pending' });
+    expect(result.nextOccurrence).toMatchObject({
+      id: nextOccurrenceId,
+      amount: 179000,
+      scheduledDate: '2026-10-27',
+      status: 'pending',
+    });
 
-    const insertedTransaction = database.db.select().from(transactions).where(eq(transactions.id, secondTransactionId)).get();
+    const insertedTransaction = database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, secondTransactionId))
+      .get();
     expect(insertedTransaction).toMatchObject({ amount: 189000, transactionDate: '2026-09-27' });
   });
 
@@ -337,10 +461,27 @@ describe('RecurringOccurrenceProcessingRepository', () => {
       now: '2026-08-27T09:00:00.000Z',
       transactionId: firstTransactionId,
       transactionOperationId: opId1,
-      transaction: { type: 'expense', amount: 179000, accountId, categoryId, date: '2026-08-27', name: 'YouTube Premium', note: null },
+      transaction: {
+        type: 'expense',
+        amount: 179000,
+        accountId,
+        categoryId,
+        date: '2026-08-27',
+        name: 'YouTube Premium',
+        note: null,
+      },
       scheduleId,
       scheduleOperationId: opId2,
-      schedule: { displayName: 'YouTube Premium', accountId, categoryId, amount: 179000, frequency: 'monthly', anchorDay: 27, startDate: '2026-08-27', occurrenceLimit: 2 },
+      schedule: {
+        displayName: 'YouTube Premium',
+        accountId,
+        categoryId,
+        amount: 179000,
+        frequency: 'monthly',
+        anchorDay: 27,
+        startDate: '2026-08-27',
+        occurrenceLimit: 2,
+      },
       occurrenceId,
       occurrenceOperationId: opId3,
     });
@@ -377,7 +518,11 @@ describe('RecurringOccurrenceProcessingRepository', () => {
     });
 
     expect(result.occurrence).toMatchObject({ status: 'skipped', transactionId: null });
-    expect(result.nextOccurrence).toMatchObject({ id: nextOccurrenceId, scheduledDate: '2026-10-27', status: 'pending' });
+    expect(result.nextOccurrence).toMatchObject({
+      id: nextOccurrenceId,
+      scheduledDate: '2026-10-27',
+      status: 'pending',
+    });
     expect(result.schedule).toMatchObject({ generatedCount: 2 });
 
     const transactionRows = database.db.select().from(transactions).all();

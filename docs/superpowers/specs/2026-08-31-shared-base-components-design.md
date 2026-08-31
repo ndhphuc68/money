@@ -56,18 +56,18 @@ Feature components (`src/components/finance/*`, `src/components/gold/*`) keep th
 type CardProps = {
   children: ReactNode;
   elevation?: 'none' | 'card' | 'elevated'; // maps to shadows.card / shadows.elevated; default 'card'
-  radius?: keyof typeof radius;              // default 'lg'
-  padding?: number;                           // default spacing[4]
-  backgroundColor?: string;                   // default colors.surface.primary
+  radius?: keyof typeof radius; // default 'lg'
+  padding?: number; // default spacing[4]
+  backgroundColor?: string; // default colors.surface.primary
   style?: StyleProp<ViewStyle>;
 };
 
 // base/IconButton.tsx — circular/square Pressable with a centered icon
 type IconButtonProps = {
-  icon: ReactNode;               // caller passes e.g. <X color={...} size={20} />
+  icon: ReactNode; // caller passes e.g. <X color={...} size={20} />
   onPress?: () => void;
-  size?: number;                  // default 44
-  radius?: keyof typeof radius;   // default 'circle'
+  size?: number; // default 44
+  radius?: keyof typeof radius; // default 'circle'
   backgroundColor?: string;
   pressedBackgroundColor?: string;
   accessibilityLabel: string;
@@ -80,7 +80,7 @@ type PrimaryButtonProps = {
   onPress: () => void;
   disabled?: boolean;
   backgroundColor?: string; // default colors.content.primary
-  textColor?: string;       // default colors.content.inverse
+  textColor?: string; // default colors.content.inverse
   style?: StyleProp<ViewStyle>;
 };
 
@@ -91,7 +91,7 @@ type ListRowProps = {
   subtitle?: string;
   trailing?: ReactNode;
   showDivider?: boolean; // caller computes index < length - 1
-  onPress?: () => void;   // when present, the whole row is a Pressable
+  onPress?: () => void; // when present, the whole row is a Pressable
 };
 
 // base/PillChip.tsx — single-select chip (dedupes AccountPicker/CategoryPicker's identical code)
@@ -109,7 +109,7 @@ type SheetProps = {
   subtitle?: string;
   closeLabel: string;
   variant?: 'bottomSheet' | 'dialog'; // bottomSheet: top-only radius, handle, maxHeight 86% (default); dialog: all-corner radius, no handle, padded backdrop (GoldActionPickerSheet's shape)
-  children: ReactNode;                 // feature component supplies body content and any action buttons
+  children: ReactNode; // feature component supplies body content and any action buttons
 };
 ```
 
@@ -120,6 +120,7 @@ type SheetProps = {
 New files: `src/components/base/{Card,IconButton,PrimaryButton,ListRow,PillChip,Sheet,Dropdown}.tsx`, `src/components/base/index.ts`.
 
 Refactored internals (public props/exports unchanged):
+
 - **Card** → `StatCard`, `BalanceCard`, `GoalCard`, `GoldOverviewCard`, `AmountInput`, `TransactionForm`, `FilterBar`
 - **Sheet** → `GoldActionPickerSheet`, `GoldBrandManageSheet`, `GoldFormSheet`, `GoldTrashSheet`, `GoldDetailSheet`, `DateField` (iOS sheet portion only)
 - **IconButton** → close buttons in the 5 Gold\*Sheet components, `BalanceCard`'s mask toggle, `GoldBrandManageSheet`'s delete button, `BottomNav`'s FAB

@@ -132,7 +132,8 @@ function operationFor(
   payload: SyncableRecord,
   overrides: Partial<SyncOperation> = {},
 ): SyncOperation {
-  const kind: SyncOperationKind = overrides.operation ?? (payload.deletedAt === null ? 'create' : 'delete');
+  const kind: SyncOperationKind =
+    overrides.operation ?? (payload.deletedAt === null ? 'create' : 'delete');
 
   return {
     operationId: overrides.operationId ?? payload.id,
@@ -147,7 +148,10 @@ function operationFor(
   };
 }
 
-function pkg(changes: SyncOperation[], overrides: Partial<SyncPackageWithoutAuth> = {}): SyncPackageWithoutAuth {
+function pkg(
+  changes: SyncOperation[],
+  overrides: Partial<SyncPackageWithoutAuth> = {},
+): SyncPackageWithoutAuth {
   return serializer.withChecksum({
     format: 'app-sync',
     formatVersion: 2,
@@ -244,9 +248,17 @@ describe('SyncEngine — finance entities', () => {
       deletedAt: '2026-08-24T10:02:00.000Z',
       revision: 2,
     });
-    const operation = operationFor('account', tombstone, { operation: 'delete', operationId: '660e8400-e29b-41d4-a716-446655440021' });
+    const operation = operationFor('account', tombstone, {
+      operation: 'delete',
+      operationId: '660e8400-e29b-41d4-a716-446655440021',
+    });
 
-    await expect(engine.import(pkg([operation]))).resolves.toEqual({ applied: 1, skipped: 0, conflicted: 0, rejected: 0 });
+    await expect(engine.import(pkg([operation]))).resolves.toEqual({
+      applied: 1,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 0,
+    });
     await expect(accountRepo.findById(accountId)).resolves.toEqual(tombstone);
     await expect(accountRepo.listActive()).resolves.toEqual([]);
   });
@@ -292,7 +304,12 @@ describe('SyncEngine — finance entities', () => {
       operationId: '660e8400-e29b-41d4-a716-446655440025',
     });
 
-    await expect(engine.import(pkg([operation]))).resolves.toEqual({ applied: 1, skipped: 0, conflicted: 0, rejected: 0 });
+    await expect(engine.import(pkg([operation]))).resolves.toEqual({
+      applied: 1,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 0,
+    });
     await expect(transactionRepo.findById(incomeTransactionId)).resolves.toEqual(tombstone);
     await expect(transactionRepo.list()).resolves.toEqual([]);
   });
@@ -302,8 +319,18 @@ describe('SyncEngine — finance entities', () => {
     const operation = operationFor('category', category);
     const incomingPackage = pkg([operation]);
 
-    await expect(engine.import(incomingPackage)).resolves.toEqual({ applied: 1, skipped: 0, conflicted: 0, rejected: 0 });
-    await expect(engine.import(incomingPackage)).resolves.toEqual({ applied: 0, skipped: 1, conflicted: 0, rejected: 0 });
+    await expect(engine.import(incomingPackage)).resolves.toEqual({
+      applied: 1,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 0,
+    });
+    await expect(engine.import(incomingPackage)).resolves.toEqual({
+      applied: 0,
+      skipped: 1,
+      conflicted: 0,
+      rejected: 0,
+    });
     await expect(categoryRepo.findById(incomeCategoryId)).resolves.toEqual(category);
   });
 
@@ -311,7 +338,12 @@ describe('SyncEngine — finance entities', () => {
     const invalidAccount = { ...accountRecord(), type: 'crypto-wallet' };
     const operation = operationFor('account', invalidAccount as unknown as Account);
 
-    await expect(engine.import(pkg([operation]))).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 1 });
+    await expect(engine.import(pkg([operation]))).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 1,
+    });
     await expect(accountRepo.findById(accountId)).resolves.toBeNull();
     await expect(changes.hasOperation(operation.operationId)).resolves.toBe(false);
   });
@@ -320,7 +352,12 @@ describe('SyncEngine — finance entities', () => {
     const invalidCategory = { ...categoryRecord(), type: 'savings' };
     const operation = operationFor('category', invalidCategory as unknown as Category);
 
-    await expect(engine.import(pkg([operation]))).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 1 });
+    await expect(engine.import(pkg([operation]))).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 1,
+    });
     await expect(categoryRepo.findById(incomeCategoryId)).resolves.toBeNull();
     await expect(changes.hasOperation(operation.operationId)).resolves.toBe(false);
   });
@@ -329,7 +366,12 @@ describe('SyncEngine — finance entities', () => {
     const invalidTransaction = { ...incomeTransactionRecord(), categoryId: null };
     const operation = operationFor('transaction', invalidTransaction as unknown as Transaction);
 
-    await expect(engine.import(pkg([operation]))).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 1 });
+    await expect(engine.import(pkg([operation]))).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 1,
+    });
     await expect(transactionRepo.findById(incomeTransactionId)).resolves.toBeNull();
     await expect(changes.hasOperation(operation.operationId)).resolves.toBe(false);
   });
@@ -338,7 +380,12 @@ describe('SyncEngine — finance entities', () => {
     const invalidTransfer = { ...transferTransactionRecord(), categoryId: incomeCategoryId };
     const operation = operationFor('transaction', invalidTransfer as unknown as Transaction);
 
-    await expect(engine.import(pkg([operation]))).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 1 });
+    await expect(engine.import(pkg([operation]))).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 1,
+    });
     await expect(transactionRepo.findById(transferTransactionId)).resolves.toBeNull();
     await expect(changes.hasOperation(operation.operationId)).resolves.toBe(false);
   });
@@ -347,7 +394,12 @@ describe('SyncEngine — finance entities', () => {
     const invalidTransaction = { ...incomeTransactionRecord(), type: 'reimbursement' };
     const operation = operationFor('transaction', invalidTransaction as unknown as Transaction);
 
-    await expect(engine.import(pkg([operation]))).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 1 });
+    await expect(engine.import(pkg([operation]))).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 1,
+    });
     await expect(transactionRepo.findById(incomeTransactionId)).resolves.toBeNull();
     await expect(changes.hasOperation(operation.operationId)).resolves.toBe(false);
   });
@@ -356,16 +408,22 @@ describe('SyncEngine — finance entities', () => {
     const account = accountRecord();
     const accountOperation = operationFor('account', account);
     const category = categoryRecord();
-    const categoryOperation = operationFor('category', category, { operationId: '660e8400-e29b-41d4-a716-446655440030' });
+    const categoryOperation = operationFor('category', category, {
+      operationId: '660e8400-e29b-41d4-a716-446655440030',
+    });
 
-    database.db.run(sql.raw(`
+    database.db.run(
+      sql.raw(`
       CREATE TRIGGER fail_imported_finance_operation
       BEFORE INSERT ON change_log
       WHEN NEW.operation_id = '${categoryOperation.operationId}'
       BEGIN SELECT RAISE(ABORT, 'forced import failure'); END;
-    `));
+    `),
+    );
 
-    await expect(engine.import(pkg([accountOperation, categoryOperation]))).rejects.toThrow('forced import failure');
+    await expect(engine.import(pkg([accountOperation, categoryOperation]))).rejects.toThrow(
+      'forced import failure',
+    );
     await expect(accountRepo.findById(accountId)).resolves.toBeNull();
     await expect(categoryRepo.findById(incomeCategoryId)).resolves.toBeNull();
   });

@@ -173,7 +173,9 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
                         setRecurringEndMode(key as RecurringEndMode);
                         setOpenDropdown(null);
                       }}
-                      onToggle={() => setOpenDropdown(openDropdown === 'endMode' ? null : 'endMode')}
+                      onToggle={() =>
+                        setOpenDropdown(openDropdown === 'endMode' ? null : 'endMode')
+                      }
                       open={openDropdown === 'endMode'}
                       options={(Object.keys(END_MODE_LABELS) as RecurringEndMode[]).map((key) => ({
                         key,
@@ -185,12 +187,16 @@ export function TransactionFormSheet({ visible, t, onClose, ...props }: Transact
 
                     {values.recurringEndMode === 'count' ? (
                       <View style={styles.field}>
-                        <Text style={styles.sectionLabel}>{t('recurringOccurrenceLimitLabel')}</Text>
+                        <Text style={styles.sectionLabel}>
+                          {t('recurringOccurrenceLimitLabel')}
+                        </Text>
                         <TextInput
                           accessibilityLabel={t('recurringOccurrenceLimitLabel')}
                           inputMode="numeric"
                           keyboardType="number-pad"
-                          onChangeText={(text) => setRecurringOccurrenceLimit(parseInt(text, 10) || null)}
+                          onChangeText={(text) =>
+                            setRecurringOccurrenceLimit(parseInt(text, 10) || null)
+                          }
                           style={styles.recurringNumberInput}
                           value={
                             values.recurringOccurrenceLimit

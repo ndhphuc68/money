@@ -35,14 +35,14 @@ Implemented the Task 4 sync engine without adding file/share transport or UI beh
 
 ## Validation
 
-| Command | Result |
-| --- | --- |
-| `npm test -- --runInBand tests/data/sync` | PASS: 3 suites, 11 tests |
-| `npm test -- --runInBand tests/data/sync tests/core/sync` | PASS: 6 suites, 25 tests |
-| `npx drizzle-kit generate` | PASS: no schema changes, no migration generated |
-| `npm test -- --runInBand` | PASS: 8 suites, 39 tests |
-| `npm run typecheck` | PASS: `tsc --noEmit` |
-| `git diff --check` | PASS: no whitespace errors |
+| Command                                                   | Result                                          |
+| --------------------------------------------------------- | ----------------------------------------------- |
+| `npm test -- --runInBand tests/data/sync`                 | PASS: 3 suites, 11 tests                        |
+| `npm test -- --runInBand tests/data/sync tests/core/sync` | PASS: 6 suites, 25 tests                        |
+| `npx drizzle-kit generate`                                | PASS: no schema changes, no migration generated |
+| `npm test -- --runInBand`                                 | PASS: 8 suites, 39 tests                        |
+| `npm run typecheck`                                       | PASS: `tsc --noEmit`                            |
+| `git diff --check`                                        | PASS: no whitespace errors                      |
 
 ## Concerns
 
@@ -76,9 +76,9 @@ Added the four focused regressions before changing production code and ran them 
 
 ### Validation
 
-| Command | Result |
-| --- | --- |
-| `npm test -- --runInBand tests/data/sync/last-write-wins.test.ts tests/core/sync/sync-operation.test.ts tests/data/local/repositories.test.ts tests/data/sync/sync-engine.test.ts` | PASS: 4 suites, 35 tests |
-| `npm test -- --runInBand` | PASS: 8 suites, 43 tests |
-| `npm run typecheck` | PASS: `tsc --noEmit` |
-| `npx drizzle-kit generate` | PASS: no schema changes, no migration generated |
+| Command                                                                                                                                                                            | Result                                          |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `npm test -- --runInBand tests/data/sync/last-write-wins.test.ts tests/core/sync/sync-operation.test.ts tests/data/local/repositories.test.ts tests/data/sync/sync-engine.test.ts` | PASS: 4 suites, 35 tests                        |
+| `npm test -- --runInBand`                                                                                                                                                          | PASS: 8 suites, 43 tests                        |
+| `npm run typecheck`                                                                                                                                                                | PASS: `tsc --noEmit`                            |
+| `npx drizzle-kit generate`                                                                                                                                                         | PASS: no schema changes, no migration generated |

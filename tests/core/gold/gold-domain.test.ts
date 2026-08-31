@@ -10,12 +10,18 @@ describe('normalizeGoldWeightToGrams', () => {
   });
 
   it('rejects a non-positive quantity', () => {
-    expect(() => normalizeGoldWeightToGrams(0, 'chi')).toThrow('Gold weight quantity must be a positive number');
-    expect(() => normalizeGoldWeightToGrams(-1, 'chi')).toThrow('Gold weight quantity must be a positive number');
+    expect(() => normalizeGoldWeightToGrams(0, 'chi')).toThrow(
+      'Gold weight quantity must be a positive number',
+    );
+    expect(() => normalizeGoldWeightToGrams(-1, 'chi')).toThrow(
+      'Gold weight quantity must be a positive number',
+    );
   });
 
   it('rejects an unknown unit', () => {
-    expect(() => normalizeGoldWeightToGrams(1, 'kg' as never)).toThrow('Unknown gold weight unit: kg');
+    expect(() => normalizeGoldWeightToGrams(1, 'kg' as never)).toThrow(
+      'Unknown gold weight unit: kg',
+    );
   });
 });
 
@@ -33,7 +39,9 @@ describe('validateGoldLotInput', () => {
   });
 
   it('rejects a missing brandId', () => {
-    expect(() => validateGoldLotInput({ ...validLotInput, brandId: '' })).toThrow('Gold lot brandId must not be empty');
+    expect(() => validateGoldLotInput({ ...validLotInput, brandId: '' })).toThrow(
+      'Gold lot brandId must not be empty',
+    );
   });
 
   it('rejects an invalid purchaseDate', () => {
@@ -43,7 +51,9 @@ describe('validateGoldLotInput', () => {
   });
 
   it('rejects a non-positive quantity', () => {
-    expect(() => validateGoldLotInput({ ...validLotInput, quantity: 0 })).toThrow('Gold lot quantity must be a positive number');
+    expect(() => validateGoldLotInput({ ...validLotInput, quantity: 0 })).toThrow(
+      'Gold lot quantity must be a positive number',
+    );
   });
 
   it('rejects a non-positive totalAmount', () => {
@@ -59,7 +69,10 @@ describe('validateGoldLotInput', () => {
   });
 });
 
-import { validateGoldSellTransactionInput, GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  validateGoldSellTransactionInput,
+  GoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 import { validateGoldBrandInput, GoldBrandInput } from '@/core/domain/gold/gold-brand';
 
 const validSellInput: GoldSellTransactionInput = {
@@ -74,13 +87,15 @@ describe('validateGoldSellTransactionInput', () => {
   });
 
   it('rejects a missing lotId', () => {
-    expect(() => validateGoldSellTransactionInput({ ...validSellInput, lotId: '' })).toThrow('Gold sell lotId must not be empty');
+    expect(() => validateGoldSellTransactionInput({ ...validSellInput, lotId: '' })).toThrow(
+      'Gold sell lotId must not be empty',
+    );
   });
 
   it('rejects an invalid saleDate', () => {
-    expect(() => validateGoldSellTransactionInput({ ...validSellInput, saleDate: 'not-a-date' })).toThrow(
-      'Gold sell saleDate must be a valid ISO calendar date (YYYY-MM-DD)',
-    );
+    expect(() =>
+      validateGoldSellTransactionInput({ ...validSellInput, saleDate: 'not-a-date' }),
+    ).toThrow('Gold sell saleDate must be a valid ISO calendar date (YYYY-MM-DD)');
   });
 
   it('rejects a non-positive totalAmount', () => {
@@ -96,7 +111,9 @@ describe('validateGoldBrandInput', () => {
   });
 
   it('rejects a blank name', () => {
-    expect(() => validateGoldBrandInput({ name: '   ' } as GoldBrandInput)).toThrow('Gold brand name must not be empty');
+    expect(() => validateGoldBrandInput({ name: '   ' } as GoldBrandInput)).toThrow(
+      'Gold brand name must not be empty',
+    );
   });
 });
 

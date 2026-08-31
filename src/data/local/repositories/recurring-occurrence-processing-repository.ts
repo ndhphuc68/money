@@ -8,20 +8,34 @@ import {
   RecurringOccurrenceProcessingResult,
   SkipRecurringOccurrenceInput,
 } from '@/core/application/ports/recurring-repositories';
-import { computeNextOccurrenceDate, isBeyondScheduleLimit } from '@/core/domain/finance/recurring-date';
+import {
+  computeNextOccurrenceDate,
+  isBeyondScheduleLimit,
+} from '@/core/domain/finance/recurring-date';
 import {
   RecurringOccurrence,
   RecurringOccurrenceEdits,
   validateRecurringOccurrenceEdits,
 } from '@/core/domain/finance/recurring-occurrence';
-import { RecurringSchedule, validateRecurringScheduleInput } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  validateRecurringScheduleInput,
+} from '@/core/domain/finance/recurring-schedule';
 import { Transaction, validateTransactionInput } from '@/core/domain/finance/transaction';
 import { LocalDatabaseClient } from '@/data/local/db/client';
-import { changeLog, recurringOccurrences, recurringSchedules, transactions } from '@/data/local/schema';
+import {
+  changeLog,
+  recurringOccurrences,
+  recurringSchedules,
+  transactions,
+} from '@/data/local/schema';
 
 import { toChangeLogValues } from './change-log-repository';
 import { toTransactionRowValues } from './finance-record-mappers';
-import { toRecurringOccurrenceRowValues, toRecurringScheduleRowValues } from './recurring-record-mappers';
+import {
+  toRecurringOccurrenceRowValues,
+  toRecurringScheduleRowValues,
+} from './recurring-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
 
 type MergedOccurrenceFields = {
@@ -33,7 +47,10 @@ type MergedOccurrenceFields = {
 };
 
 function mergeEdits(
-  occurrence: Pick<RecurringOccurrence, 'amount' | 'accountId' | 'categoryId' | 'displayName' | 'note'>,
+  occurrence: Pick<
+    RecurringOccurrence,
+    'amount' | 'accountId' | 'categoryId' | 'displayName' | 'note'
+  >,
   edits: RecurringOccurrenceEdits,
 ): MergedOccurrenceFields {
   return {
@@ -98,7 +115,11 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     const occurrence: RecurringOccurrence = {
       id: input.occurrenceId,
       scheduleId: schedule.id,
-      scheduledDate: computeNextOccurrenceDate(schedule.startDate, schedule.frequency, schedule.anchorDay),
+      scheduledDate: computeNextOccurrenceDate(
+        schedule.startDate,
+        schedule.frequency,
+        schedule.anchorDay,
+      ),
       amount: schedule.amount,
       accountId: schedule.accountId,
       categoryId: schedule.categoryId,
@@ -115,9 +136,21 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     };
 
     this.database.db.transaction((tx) => {
-      insertTransaction(tx, transaction, input.transactionOperationId, input.originDeviceId, input.now);
+      insertTransaction(
+        tx,
+        transaction,
+        input.transactionOperationId,
+        input.originDeviceId,
+        input.now,
+      );
       insertSchedule(tx, schedule, input.scheduleOperationId, input.originDeviceId, input.now);
-      insertOccurrence(tx, occurrence, input.occurrenceOperationId, input.originDeviceId, input.now);
+      insertOccurrence(
+        tx,
+        occurrence,
+        input.occurrenceOperationId,
+        input.originDeviceId,
+        input.now,
+      );
     });
 
     return { schedule, occurrence };
@@ -127,9 +160,8 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     input: ConfirmRecurringOccurrenceInput,
   ): Promise<RecurringOccurrenceProcessingResult & { transactionId: string }> {
     validateRecurringOccurrenceEdits(input.edits);
-    const { occurrence: existingOccurrence, schedule: existingSchedule } = this.requireOccurrenceAndSchedule(
-      input.occurrenceId,
-    );
+    const { occurrence: existingOccurrence, schedule: existingSchedule } =
+      this.requireOccurrenceAndSchedule(input.occurrenceId);
     if (existingOccurrence.status !== 'pending') {
       throw new Error(`Recurring occurrence ${input.occurrenceId} is not pending`);
     }
@@ -186,11 +218,35 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     });
 
     this.database.db.transaction((tx) => {
-      insertTransaction(tx, confirmedTransaction, input.transactionOperationId, input.originDeviceId, input.now);
-      updateOccurrence(tx, confirmedOccurrence, input.occurrenceOperationId, input.originDeviceId, input.now);
-      updateSchedule(tx, updatedSchedule, input.scheduleOperationId, input.originDeviceId, input.now);
+      insertTransaction(
+        tx,
+        confirmedTransaction,
+        input.transactionOperationId,
+        input.originDeviceId,
+        input.now,
+      );
+      updateOccurrence(
+        tx,
+        confirmedOccurrence,
+        input.occurrenceOperationId,
+        input.originDeviceId,
+        input.now,
+      );
+      updateSchedule(
+        tx,
+        updatedSchedule,
+        input.scheduleOperationId,
+        input.originDeviceId,
+        input.now,
+      );
       if (nextOccurrence && input.nextOccurrenceOperationId) {
-        insertOccurrence(tx, nextOccurrence, input.nextOccurrenceOperationId, input.originDeviceId, input.now);
+        insertOccurrence(
+          tx,
+          nextOccurrence,
+          input.nextOccurrenceOperationId,
+          input.originDeviceId,
+          input.now,
+        );
       }
     });
 
@@ -205,9 +261,8 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
   async skipOccurrence(
     input: SkipRecurringOccurrenceInput,
   ): Promise<RecurringOccurrenceProcessingResult> {
-    const { occurrence: existingOccurrence, schedule: existingSchedule } = this.requireOccurrenceAndSchedule(
-      input.occurrenceId,
-    );
+    const { occurrence: existingOccurrence, schedule: existingSchedule } =
+      this.requireOccurrenceAndSchedule(input.occurrenceId);
     if (existingOccurrence.status !== 'pending') {
       throw new Error(`Recurring occurrence ${input.occurrenceId} is not pending`);
     }
@@ -230,19 +285,38 @@ export class RecurringOccurrenceProcessingRepository implements RecurringOccurre
     });
 
     this.database.db.transaction((tx) => {
-      updateOccurrence(tx, skippedOccurrence, input.occurrenceOperationId, input.originDeviceId, input.now);
-      updateSchedule(tx, updatedSchedule, input.scheduleOperationId, input.originDeviceId, input.now);
+      updateOccurrence(
+        tx,
+        skippedOccurrence,
+        input.occurrenceOperationId,
+        input.originDeviceId,
+        input.now,
+      );
+      updateSchedule(
+        tx,
+        updatedSchedule,
+        input.scheduleOperationId,
+        input.originDeviceId,
+        input.now,
+      );
       if (nextOccurrence && input.nextOccurrenceOperationId) {
-        insertOccurrence(tx, nextOccurrence, input.nextOccurrenceOperationId, input.originDeviceId, input.now);
+        insertOccurrence(
+          tx,
+          nextOccurrence,
+          input.nextOccurrenceOperationId,
+          input.originDeviceId,
+          input.now,
+        );
       }
     });
 
     return { occurrence: skippedOccurrence, schedule: updatedSchedule, nextOccurrence };
   }
 
-  private requireOccurrenceAndSchedule(
-    occurrenceId: string,
-  ): { occurrence: RecurringOccurrence; schedule: RecurringSchedule } {
+  private requireOccurrenceAndSchedule(occurrenceId: string): {
+    occurrence: RecurringOccurrence;
+    schedule: RecurringSchedule;
+  } {
     const occurrenceRow = this.database.db
       .select()
       .from(recurringOccurrences)
@@ -281,7 +355,11 @@ function buildNextPeriod(params: {
   nextOccurrenceId: string | null;
 }): { schedule: RecurringSchedule; nextOccurrence: RecurringOccurrence | null } {
   const { schedule, previousScheduledDate, now, originDeviceId, nextOccurrenceId } = params;
-  const candidateDate = computeNextOccurrenceDate(previousScheduledDate, schedule.frequency, schedule.anchorDay);
+  const candidateDate = computeNextOccurrenceDate(
+    previousScheduledDate,
+    schedule.frequency,
+    schedule.anchorDay,
+  );
   const beyondLimit = isBeyondScheduleLimit({
     endDate: schedule.endDate,
     occurrenceLimit: schedule.occurrenceLimit,
@@ -391,7 +469,10 @@ function insertTransaction(
   now: string,
 ): void {
   const values = toTransactionRowValues(transaction);
-  tx.insert(transactions).values(values).onConflictDoUpdate({ target: transactions.id, set: values }).run();
+  tx.insert(transactions)
+    .values(values)
+    .onConflictDoUpdate({ target: transactions.id, set: values })
+    .run();
   const operation = buildSyncOperation({
     entityType: 'transaction',
     entityId: transaction.id,

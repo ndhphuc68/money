@@ -36,10 +36,12 @@
 ### Task 1: Calendar cell logic (`gold-calendar.ts`)
 
 **Files:**
+
 - Create: `src/features/gold/view-models/gold-calendar.ts`
 - Test: `tests/features/gold/gold-calendar.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing new.
 - Produces:
   - `type GoldCalendarCell = { key: string; label: string; iso: string | null; isSelected: boolean }`
@@ -50,7 +52,10 @@
 
 ```typescript
 // tests/features/gold/gold-calendar.test.ts
-import { buildGoldCalendarCells, formatGoldCalendarMonthLabel } from '@/features/gold/view-models/gold-calendar';
+import {
+  buildGoldCalendarCells,
+  formatGoldCalendarMonthLabel,
+} from '@/features/gold/view-models/gold-calendar';
 
 describe('buildGoldCalendarCells', () => {
   it('produces leading blank cells for a Monday-first week and marks the selected day', () => {
@@ -116,7 +121,11 @@ function pad2(value: number): string {
  * `Date`), with leading blank cells so the first real day lands in its
  * correct weekday column.
  */
-export function buildGoldCalendarCells(year: number, month: number, selectedDate: string): GoldCalendarCell[] {
+export function buildGoldCalendarCells(
+  year: number,
+  month: number,
+  selectedDate: string,
+): GoldCalendarCell[] {
   const firstOfMonth = new Date(year, month, 1);
   const mondayFirstWeekday = (firstOfMonth.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -155,11 +164,13 @@ git commit -m "feat: add gold calendar cell-building logic"
 ### Task 2: i18n keys for the screen's remaining copy
 
 **Files:**
+
 - Modify: `src/i18n/locales/vi.ts`
 - Modify: `src/i18n/locales/en.ts`
 - Modify: `tests/i18n/gold-component-keys.test.ts`
 
 **Interfaces:**
+
 - Consumes: the existing `goldComponentKeys` array in `tests/i18n/gold-component-keys.test.ts` and existing `gold*` keys in both locale files (added by the backend plan's Task 12 — do not duplicate any of: `goldUnitLuong`, `goldUnitChi`, `goldUnitPhan`, `goldUnitGram`, `goldSaleLabel`, `goldOverviewTitle`, `goldOverviewSubtitle`, `goldQuantityLabel`, `goldCostBasisLabel`, `goldHistoryTitle`, `goldTrashLabel`, `goldAddTransactionTitle`, `goldAddTransactionSubtitle`, `goldBuyActionTitle`, `goldBuyActionSubtitle`, `goldSellActionTitle`, `goldSellActionSubtitle`, `goldBuyFormTitle`, `goldSellFormTitle`, `goldDateFieldLabel`, `goldBrandFieldLabel`, `goldSellPlaceLabel`, `goldAddNewBrandOption`, `goldLotFieldLabel`, `goldQuantityFieldLabel`, `goldUnitFieldLabel`, `goldBuyTotalLabel`, `goldSellTotalLabel`, `goldSaveBuyLabel`, `goldSaveSellLabel`, `goldManageBrandsTitle`, `goldManageBrandsSubtitle`, `goldAddBrandLabel`, `goldAddBrandPlaceholder`, `goldSaveBrandLabel`, `goldTrashSheetTitle`, `goldTrashSheetSubtitle`, `goldRestoreLabel`, `goldPurgeConfirmMessage`, `goldTrashBlockedMessage`).
 - Produces: the following new keys added to both locale files: `goldBackLabel`, `goldEmptyHistory`, `goldDeleteBrandLabel`, `goldCloseLabel`, `goldRealizedGainLabel`, `goldRemainingLabel`, `goldPurgeLabel`, `goldSellDisabledHint`, `goldLotAlreadySoldError`, `goldLotNotFoundError`, `goldSaleDateBeforePurchaseError`, `goldRestoreUnavailableError`, `goldAmountRequiredError`, `goldBrandRequiredError`, `goldLotRequiredError`.
 
@@ -252,11 +263,13 @@ git commit -m "feat: add remaining gold management screen i18n keys"
 ### Task 3: `GoldOverviewCard` and `GoldHistoryList` components
 
 **Files:**
+
 - Create: `src/components/gold/GoldOverviewCard.tsx`
 - Create: `src/components/gold/GoldHistoryList.tsx`
 - Create: `src/components/gold/index.ts`
 
 **Interfaces:**
+
 - Consumes: `LotHistoryRow`, `SaleHistoryRow` types from `@/features/gold/view-models/gold-presentation` (existing); `colors`, `radius`, `shadows`, `spacing`, `typography` from `@/theme`.
 - Produces:
   - `GoldOverviewCardProps = { title: string; subtitle: string; quantityLabel: string; quantityValue: string; costBasisLabel: string; costBasisValue: string }`
@@ -579,11 +592,13 @@ git commit -m "feat: add gold overview card and history list components"
 ### Task 4: `GoldActionPickerSheet` and `GoldCalendarModal` components
 
 **Files:**
+
 - Create: `src/components/gold/GoldActionPickerSheet.tsx`
 - Create: `src/components/gold/GoldCalendarModal.tsx`
 - Modify: `src/components/gold/index.ts`
 
 **Interfaces:**
+
 - Consumes: `GoldCalendarCell`, `buildGoldCalendarCells`, `formatGoldCalendarMonthLabel` from Task 1 (`@/features/gold/view-models/gold-calendar`).
 - Produces:
   - `GoldActionPickerSheetProps = { visible: boolean; title: string; subtitle: string; buyTitle: string; buySubtitle: string; sellTitle: string; sellSubtitle: string; sellDisabled: boolean; sellDisabledHint: string; closeLabel: string; onSelectBuy(): void; onSelectSell(): void; onClose(): void }`
@@ -966,10 +981,12 @@ git commit -m "feat: add gold action picker sheet and calendar modal components"
 ### Task 5: `GoldFormSheet` component (buy/sell form)
 
 **Files:**
+
 - Create: `src/components/gold/GoldFormSheet.tsx`
 - Modify: `src/components/gold/index.ts`
 
 **Interfaces:**
+
 - Consumes: `AmountInput` from `@/components/finance` (existing, used for the total-amount field); `GoldWeightUnit` from `@/core/domain/gold/gold-weight`.
 - Produces:
   - `type GoldDropdownOption = { key: string; label: string; isActive: boolean }`
@@ -1414,12 +1431,14 @@ git commit -m "feat: add gold buy/sell form sheet component"
 ### Task 6: `GoldBrandManageSheet`, `GoldDetailSheet`, `GoldTrashSheet` components
 
 **Files:**
+
 - Create: `src/components/gold/GoldBrandManageSheet.tsx`
 - Create: `src/components/gold/GoldDetailSheet.tsx`
 - Create: `src/components/gold/GoldTrashSheet.tsx`
 - Modify: `src/components/gold/index.ts`
 
 **Interfaces:**
+
 - Consumes: `LotHistoryRow`, `SaleHistoryRow` from `@/features/gold/view-models/gold-presentation`; `GoldBrand` from `@/core/domain/gold/gold-brand`.
 - Produces:
   - `GoldBrandManageSheetProps = { visible: boolean; title: string; subtitle: string; closeLabel: string; brands: GoldBrand[]; deleteBrandLabel: string; onDeleteBrand(id: string): void; newBrandName: string; onChangeNewBrandName(text: string): void; addBrandLabel: string; addBrandPlaceholder: string; addDisabled: boolean; saveBrandLabel: string; onAddBrand(): void; onClose(): void }`
@@ -2137,9 +2156,11 @@ git commit -m "feat: add gold brand management, detail, and trash sheet componen
 ### Task 7: `gold-management-screen.tsx` — orchestrating screen
 
 **Files:**
+
 - Create: `src/features/gold/screens/gold-management-screen.tsx`
 
 **Interfaces:**
+
 - Consumes: `GoldManagementViewModel` from `@/features/gold/view-models/use-gold-management` (existing); `formatGoldWeight` from `@/features/gold/view-models/gold-presentation` (existing); `validateGoldLotInput`, `GoldLotInput` from `@/core/domain/gold/gold-lot` (existing); `validateGoldSellTransactionInput`, `GoldSellTransactionInput` from `@/core/domain/gold/gold-sell-transaction` (existing); `GoldWeightUnit` from `@/core/domain/gold/gold-weight` (existing); `formatVnd` from `@/core/domain/finance/money` (existing); every component from Task 3–6 (`@/components/gold`).
 - Produces: `GoldManagementScreenProps = GoldManagementViewModel & { t: Translate; onBack(): void }`, `function GoldManagementScreen(props: GoldManagementScreenProps): JSX.Element`.
 
@@ -2699,13 +2720,15 @@ git commit -m "feat: add gold management screen"
 ### Task 8: Wire the screen into the app shell
 
 **Files:**
+
 - Modify: `src/app/index.tsx`
 
 **Interfaces:**
+
 - Consumes: `createGoldDependencies`, `GoldDependencies` from `@/features/gold/gold-dependencies` (existing); `useGoldManagement` from `@/features/gold/view-models/use-gold-management` (existing); `GoldManagementScreen` from `@/features/gold/screens/gold-management-screen` (Task 7).
 - Produces: a `'gold'` member of the `FinanceView` union; a `ConfiguredGoldManagementScreen` component; `onOpenGoldManagement` wired from `SettingsScreen` through to `setView({ name: 'gold' })`.
 
-Before starting, read the CURRENT contents of `src/app/index.tsx` and `src/features/finance/screens/settings-screen.tsx` — both have uncommitted work-in-progress changes (per the Global Constraints note) that already introduce a `setView` prop on `ConfiguredSettingsScreen` and an `onOpenGoldManagement` prop on `SettingsScreen`. Adapt the exact snippets below to whatever those files' current state actually is; the snippets show the *intent* (add a `'gold'` view branch and wire the callback), not a byte-for-byte diff to apply blindly.
+Before starting, read the CURRENT contents of `src/app/index.tsx` and `src/features/finance/screens/settings-screen.tsx` — both have uncommitted work-in-progress changes (per the Global Constraints note) that already introduce a `setView` prop on `ConfiguredSettingsScreen` and an `onOpenGoldManagement` prop on `SettingsScreen`. Adapt the exact snippets below to whatever those files' current state actually is; the snippets show the _intent_ (add a `'gold'` view branch and wire the callback), not a byte-for-byte diff to apply blindly.
 
 No dedicated test (app-shell wiring; no independently-testable logic). Verified via `npm run typecheck` and Task 9's manual run-through.
 
@@ -2815,6 +2838,7 @@ Expected: no errors.
 - [ ] **Step 3: Manually run the app and verify the golden path**
 
 Use the `run` skill (or `npx expo start`, per whatever the project's existing run convention is) to launch the app, navigate to Settings → Quản lý vàng, and verify:
+
 - Overview card shows `0` quantity/cost basis on a fresh database.
 - Tapping "Thêm giao dịch" → "Mua vàng" opens the buy form; selecting a date via the calendar, picking/adding a brand, entering quantity+unit+total, and saving creates a lot that appears in the history list and updates the overview card.
 - Tapping "Thêm giao dịch" → "Bán vàng" (now enabled) opens the sell form; selecting the lot and entering a total, saving creates a sale, and the lot disappears from the "held" history rows.

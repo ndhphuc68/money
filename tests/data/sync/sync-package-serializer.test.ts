@@ -51,6 +51,8 @@ describe('StableSyncPackageSerializer', () => {
       changes: [{ ...unsignedPackage.changes[0], payload: { valid: true, nested: undefined } }],
     };
 
-    expect(() => serializer.withChecksum(invalidPackage)).toThrow('Sync operation payload must be valid JSON data');
+    expect(() => serializer.withChecksum(invalidPackage)).toThrow(
+      'Sync operation payload must be valid JSON data',
+    );
   });
 });

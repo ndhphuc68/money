@@ -268,7 +268,8 @@ export const en = {
   recurringRemindDaysBeforeLabel: 'Remind before (days)',
   recurringEndLabel: 'Ends',
   recurringOccurrenceLimitLabel: 'Number of periods',
-  recurringFirstPeriodNote: 'This transaction is period 1. Future periods only affect your balance once you confirm them.',
+  recurringFirstPeriodNote:
+    'This transaction is period 1. Future periods only affect your balance once you confirm them.',
   recurringStatusOverdue: 'Overdue',
   recurringStatusUpcoming: 'Upcoming',
   recurringStatusConfirmed: 'Confirmed',
@@ -282,7 +283,8 @@ export const en = {
   recurringSkipAction: 'Skip this period',
   recurringScopeTitle: 'How should this change apply?',
   recurringScopeOnlyThis: 'Only this period',
-  recurringScopeOnlyThisHint: 'Only records this transaction; future periods keep the old schedule.',
+  recurringScopeOnlyThisHint:
+    'Only records this transaction; future periods keep the old schedule.',
   recurringScopeFuture: 'This and future periods',
   recurringScopeFutureHint: 'Records this period and updates the schedule for future periods.',
   recurringScopeBack: 'Back to edit',
@@ -302,4 +304,3 @@ export const en = {
   recurringHistoryTitle: 'Period history',
   recurringHistoryEmpty: 'No confirmed or skipped periods yet.',
 } satisfies LocaleMessages;
-

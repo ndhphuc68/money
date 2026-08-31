@@ -34,13 +34,13 @@ Implemented Task 3 local persistence only. The change does not add a sync engine
 
 ## Validation
 
-| Command | Result |
-| --- | --- |
-| `npm test -- --runInBand tests/data/local/repositories.test.ts` | PASS: 1 suite, 6 tests |
-| `npx drizzle-kit generate` | PASS: generated `drizzle/0000_open_zarda.sql` |
-| `npm test -- --runInBand` | PASS: 4 suites, 19 tests |
-| `npm run typecheck` | PASS: `tsc --noEmit` |
-| `git diff --check` | PASS: no whitespace errors |
+| Command                                                         | Result                                        |
+| --------------------------------------------------------------- | --------------------------------------------- |
+| `npm test -- --runInBand tests/data/local/repositories.test.ts` | PASS: 1 suite, 6 tests                        |
+| `npx drizzle-kit generate`                                      | PASS: generated `drizzle/0000_open_zarda.sql` |
+| `npm test -- --runInBand`                                       | PASS: 4 suites, 19 tests                      |
+| `npm run typecheck`                                             | PASS: `tsc --noEmit`                          |
+| `git diff --check`                                              | PASS: no whitespace errors                    |
 
 ## Concerns
 
@@ -68,10 +68,10 @@ Implemented Task 3 local persistence only. The change does not add a sync engine
 
 ### Fix validation
 
-| Command | Result |
-| --- | --- |
-| `npm test -- --runInBand tests/data/local/repositories.test.ts` | PASS: 1 suite, 13 tests |
-| `npx drizzle-kit generate` | PASS: no schema changes, no migration generated |
-| `npm test -- --runInBand` | PASS: 4 suites, 26 tests |
-| `npm run typecheck` | PASS: `tsc --noEmit` |
-| `git diff --check` | PASS: no whitespace errors |
+| Command                                                         | Result                                          |
+| --------------------------------------------------------------- | ----------------------------------------------- |
+| `npm test -- --runInBand tests/data/local/repositories.test.ts` | PASS: 1 suite, 13 tests                         |
+| `npx drizzle-kit generate`                                      | PASS: no schema changes, no migration generated |
+| `npm test -- --runInBand`                                       | PASS: 4 suites, 26 tests                        |
+| `npm run typecheck`                                             | PASS: `tsc --noEmit`                            |
+| `git diff --check`                                              | PASS: no whitespace errors                      |

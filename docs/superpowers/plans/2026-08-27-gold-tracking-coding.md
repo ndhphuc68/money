@@ -43,6 +43,7 @@
 ### Task 1: Domain types, weight conversion, and validation
 
 **Files:**
+
 - Create: `src/core/domain/gold/gold-weight.ts`
 - Create: `src/core/domain/gold/gold-lot.ts`
 - Create: `src/core/domain/gold/gold-sell-transaction.ts`
@@ -50,6 +51,7 @@
 - Test: `tests/core/gold/gold-domain.test.ts`
 
 **Interfaces:**
+
 - Consumes: `SyncableRecord` from `@/core/domain/sync/syncable-record` (existing).
 - Produces:
   - `GoldWeightUnit = 'luong' | 'chi' | 'phan' | 'gram'`
@@ -79,12 +81,18 @@ describe('normalizeGoldWeightToGrams', () => {
   });
 
   it('rejects a non-positive quantity', () => {
-    expect(() => normalizeGoldWeightToGrams(0, 'chi')).toThrow('Gold weight quantity must be a positive number');
-    expect(() => normalizeGoldWeightToGrams(-1, 'chi')).toThrow('Gold weight quantity must be a positive number');
+    expect(() => normalizeGoldWeightToGrams(0, 'chi')).toThrow(
+      'Gold weight quantity must be a positive number',
+    );
+    expect(() => normalizeGoldWeightToGrams(-1, 'chi')).toThrow(
+      'Gold weight quantity must be a positive number',
+    );
   });
 
   it('rejects an unknown unit', () => {
-    expect(() => normalizeGoldWeightToGrams(1, 'kg' as never)).toThrow('Unknown gold weight unit: kg');
+    expect(() => normalizeGoldWeightToGrams(1, 'kg' as never)).toThrow(
+      'Unknown gold weight unit: kg',
+    );
   });
 });
 ```
@@ -150,7 +158,9 @@ describe('validateGoldLotInput', () => {
   });
 
   it('rejects a missing brandId', () => {
-    expect(() => validateGoldLotInput({ ...validLotInput, brandId: '' })).toThrow('Gold lot brandId must not be empty');
+    expect(() => validateGoldLotInput({ ...validLotInput, brandId: '' })).toThrow(
+      'Gold lot brandId must not be empty',
+    );
   });
 
   it('rejects an invalid purchaseDate', () => {
@@ -160,7 +170,9 @@ describe('validateGoldLotInput', () => {
   });
 
   it('rejects a non-positive quantity', () => {
-    expect(() => validateGoldLotInput({ ...validLotInput, quantity: 0 })).toThrow('Gold lot quantity must be a positive number');
+    expect(() => validateGoldLotInput({ ...validLotInput, quantity: 0 })).toThrow(
+      'Gold lot quantity must be a positive number',
+    );
   });
 
   it('rejects a non-positive totalAmount', () => {
@@ -219,7 +231,9 @@ function isValidCalendarDate(value: unknown): boolean {
   }
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -238,11 +252,19 @@ export function validateGoldLotInput(input: GoldLotInput): void {
   if (!isValidCalendarDate(input.purchaseDate)) {
     throw new Error('Gold lot purchaseDate must be a valid ISO calendar date (YYYY-MM-DD)');
   }
-  if (typeof input.quantity !== 'number' || !Number.isFinite(input.quantity) || input.quantity <= 0) {
+  if (
+    typeof input.quantity !== 'number' ||
+    !Number.isFinite(input.quantity) ||
+    input.quantity <= 0
+  ) {
     throw new Error('Gold lot quantity must be a positive number');
   }
   normalizeGoldWeightToGrams(input.quantity, input.unit);
-  if (typeof input.totalAmount !== 'number' || !Number.isInteger(input.totalAmount) || input.totalAmount <= 0) {
+  if (
+    typeof input.totalAmount !== 'number' ||
+    !Number.isInteger(input.totalAmount) ||
+    input.totalAmount <= 0
+  ) {
     throw new Error('Gold lot totalAmount must be a positive integer');
   }
 }
@@ -257,7 +279,10 @@ Expected: PASS (9 tests)
 
 ```typescript
 // append to tests/core/gold/gold-domain.test.ts
-import { validateGoldSellTransactionInput, GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  validateGoldSellTransactionInput,
+  GoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 import { validateGoldBrandInput, GoldBrandInput } from '@/core/domain/gold/gold-brand';
 
 const validSellInput: GoldSellTransactionInput = {
@@ -272,13 +297,15 @@ describe('validateGoldSellTransactionInput', () => {
   });
 
   it('rejects a missing lotId', () => {
-    expect(() => validateGoldSellTransactionInput({ ...validSellInput, lotId: '' })).toThrow('Gold sell lotId must not be empty');
+    expect(() => validateGoldSellTransactionInput({ ...validSellInput, lotId: '' })).toThrow(
+      'Gold sell lotId must not be empty',
+    );
   });
 
   it('rejects an invalid saleDate', () => {
-    expect(() => validateGoldSellTransactionInput({ ...validSellInput, saleDate: 'not-a-date' })).toThrow(
-      'Gold sell saleDate must be a valid ISO calendar date (YYYY-MM-DD)',
-    );
+    expect(() =>
+      validateGoldSellTransactionInput({ ...validSellInput, saleDate: 'not-a-date' }),
+    ).toThrow('Gold sell saleDate must be a valid ISO calendar date (YYYY-MM-DD)');
   });
 
   it('rejects a non-positive totalAmount', () => {
@@ -294,7 +321,9 @@ describe('validateGoldBrandInput', () => {
   });
 
   it('rejects a blank name', () => {
-    expect(() => validateGoldBrandInput({ name: '   ' } as GoldBrandInput)).toThrow('Gold brand name must not be empty');
+    expect(() => validateGoldBrandInput({ name: '   ' } as GoldBrandInput)).toThrow(
+      'Gold brand name must not be empty',
+    );
   });
 });
 ```
@@ -332,7 +361,9 @@ function isValidCalendarDate(value: unknown): boolean {
   }
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -352,7 +383,11 @@ export function validateGoldSellTransactionInput(input: GoldSellTransactionInput
   if (!isValidCalendarDate(input.saleDate)) {
     throw new Error('Gold sell saleDate must be a valid ISO calendar date (YYYY-MM-DD)');
   }
-  if (typeof input.totalAmount !== 'number' || !Number.isInteger(input.totalAmount) || input.totalAmount <= 0) {
+  if (
+    typeof input.totalAmount !== 'number' ||
+    !Number.isInteger(input.totalAmount) ||
+    input.totalAmount <= 0
+  ) {
     throw new Error('Gold sell totalAmount must be a positive integer');
   }
 }
@@ -394,10 +429,12 @@ git commit -m "feat: add gold domain types, weight conversion, and validation"
 ### Task 2: Realized P&L calculation
 
 **Files:**
+
 - Create: `src/core/domain/gold/gold-calculations.ts`
 - Test: `tests/core/gold/gold-domain.test.ts` (extend)
 
 **Interfaces:**
+
 - Consumes: `GoldLot` from Task 1, `GoldSellTransaction` from Task 1.
 - Produces: `calculateRealizedGain(lot: GoldLot, sale: GoldSellTransaction): number`
 
@@ -506,6 +543,7 @@ git commit -m "feat: add gold realized gain calculation"
 ### Task 3: Drizzle schema and migration
 
 **Files:**
+
 - Create: `src/data/local/schema/gold-brands.ts`
 - Create: `src/data/local/schema/gold-lots.ts`
 - Create: `src/data/local/schema/gold-sell-transactions.ts`
@@ -514,6 +552,7 @@ git commit -m "feat: add gold realized gain calculation"
 - Test: `tests/data/local/gold-schema.test.ts`
 
 **Interfaces:**
+
 - Produces: Drizzle tables `goldBrands`, `goldLots`, `goldSellTransactions`, each exported from `src/data/local/schema/index.ts` and each carrying the sync columns (`createdAt`, `updatedAt`, `deletedAt`, `revision`, `originDeviceId`) matching `SyncableRecord`.
 
 - [ ] **Step 1: Write the failing schema smoke test**
@@ -535,7 +574,15 @@ describe('gold schema', () => {
 
       database.db
         .insert(goldBrands)
-        .values({ id: brandId, name: 'PNJ', createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId: deviceId })
+        .values({
+          id: brandId,
+          name: 'PNJ',
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+          revision: 1,
+          originDeviceId: deviceId,
+        })
         .run();
 
       database.db
@@ -716,9 +763,11 @@ git commit -m "feat: add gold_brands, gold_lots, gold_sell_transactions schema a
 ### Task 4: Repository ports
 
 **Files:**
+
 - Create: `src/core/application/ports/gold-repositories.ts`
 
 **Interfaces:**
+
 - Consumes: `GoldLot`, `GoldLotInput`, `GoldSellTransaction`, `GoldSellTransactionInput`, `GoldBrand`, `GoldBrandInput` from Task 1; `WriteContext` (reuse the existing type from `@/core/application/ports/finance-repositories`, do not redefine it); `SyncOperation` from `@/core/domain/sync/sync-operation`.
 - Produces:
   - `CreateGoldLotInput = WriteContext & GoldLotInput & { id: string }`
@@ -738,7 +787,10 @@ This task has no test of its own (it is a pure TypeScript interface file with no
 import { WriteContext } from '@/core/application/ports/finance-repositories';
 import { GoldBrand, GoldBrandInput } from '@/core/domain/gold/gold-brand';
 import { GoldLot, GoldLotInput, GoldLotStatus } from '@/core/domain/gold/gold-lot';
-import { GoldSellTransaction, GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  GoldSellTransaction,
+  GoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 
 export type CreateGoldLotInput = WriteContext & GoldLotInput & { id: string };
@@ -762,7 +814,8 @@ export interface GoldLotRepository {
   saveWithOperation(record: GoldLot, operation: SyncOperation): Promise<void>;
 }
 
-export type CreateGoldSellTransactionInput = WriteContext & GoldSellTransactionInput & { id: string };
+export type CreateGoldSellTransactionInput = WriteContext &
+  GoldSellTransactionInput & { id: string };
 
 export type GoldSellTransactionListFilter = {
   includeDeleted?: boolean;
@@ -807,6 +860,7 @@ git commit -m "feat: add gold repository ports"
 ### Task 5: Repository implementations (lot, sell transaction, brand)
 
 **Files:**
+
 - Create: `src/data/local/repositories/gold-record-mappers.ts`
 - Create: `src/data/local/repositories/gold-brand-repository.ts`
 - Create: `src/data/local/repositories/gold-lot-repository.ts`
@@ -814,6 +868,7 @@ git commit -m "feat: add gold repository ports"
 - Test: `tests/data/local/gold-repositories.test.ts`
 
 **Interfaces:**
+
 - Consumes: ports from Task 4, schema tables from Task 3, `buildSyncOperation` from `@/data/local/repositories/sync-operation-builder`, `canonicalizeSyncableRecordIdentifiers`/`canonicalizeSyncOperationIdentifiers` from `@/data/local/repositories/sync-identifier-validation`, `toChangeLogValues` from `@/data/local/repositories/change-log-repository`, `openTestLocalDatabase` from `@/data/local/db/client`, `normalizeGoldWeightToGrams` from Task 1.
 - Produces: `GoldBrandRepository`, `GoldLotRepository`, `GoldSellTransactionRepository` classes implementing the Task 4 ports, each constructed as `new XRepository(database: LocalDatabaseClient)`.
 
@@ -858,7 +913,11 @@ describe('gold repositories', () => {
 
   describe('GoldBrandRepository', () => {
     it('creates a brand and appends a matching change operation', async () => {
-      const brand = await brands.create({ id: id('00001'), name: 'PNJ', ...ctx({ operationId: id('90001') }) });
+      const brand = await brands.create({
+        id: id('00001'),
+        name: 'PNJ',
+        ...ctx({ operationId: id('90001') }),
+      });
 
       expect(brand).toMatchObject({ name: 'PNJ', revision: 1 });
       await expect(brands.findById(brand.id)).resolves.toEqual(brand);
@@ -867,8 +926,15 @@ describe('gold repositories', () => {
     });
 
     it('soft-deletes a brand without affecting lots that reference it', async () => {
-      const brand = await brands.create({ id: id('00002'), name: 'SJC', ...ctx({ operationId: id('90002') }) });
-      await brands.softDelete(brand.id, ctx({ operationId: id('90003'), now: '2026-08-24T11:00:00.000Z' }));
+      const brand = await brands.create({
+        id: id('00002'),
+        name: 'SJC',
+        ...ctx({ operationId: id('90002') }),
+      });
+      await brands.softDelete(
+        brand.id,
+        ctx({ operationId: id('90003'), now: '2026-08-24T11:00:00.000Z' }),
+      );
 
       const deleted = await brands.findById(brand.id);
       expect(deleted?.deletedAt).toBe('2026-08-24T11:00:00.000Z');
@@ -993,7 +1059,10 @@ export function toGoldSellTransactionRowValues(sale: GoldSellTransaction): GoldS
 // src/data/local/repositories/gold-brand-repository.ts
 import { eq, isNull } from 'drizzle-orm';
 
-import { CreateGoldBrandInput, GoldBrandRepository as GoldBrandRepositoryPort } from '@/core/application/ports/gold-repositories';
+import {
+  CreateGoldBrandInput,
+  GoldBrandRepository as GoldBrandRepositoryPort,
+} from '@/core/application/ports/gold-repositories';
 import { WriteContext } from '@/core/application/ports/finance-repositories';
 import { GoldBrand, validateGoldBrandInput } from '@/core/domain/gold/gold-brand';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
@@ -1003,7 +1072,10 @@ import { changeLog, goldBrands } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toGoldBrandEntity, toGoldBrandRowValues } from './gold-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class GoldBrandRepository implements GoldBrandRepositoryPort {
   constructor(private readonly database: LocalDatabaseClient) {}
@@ -1066,7 +1138,12 @@ export class GoldBrandRepository implements GoldBrandRepositoryPort {
   }
 
   async listActive(): Promise<GoldBrand[]> {
-    const rows = this.database.db.select().from(goldBrands).where(isNull(goldBrands.deletedAt)).orderBy(goldBrands.name).all();
+    const rows = this.database.db
+      .select()
+      .from(goldBrands)
+      .where(isNull(goldBrands.deletedAt))
+      .orderBy(goldBrands.name)
+      .all();
     return rows.map(toGoldBrandEntity);
   }
 
@@ -1076,7 +1153,11 @@ export class GoldBrandRepository implements GoldBrandRepositoryPort {
     const values = toGoldBrandRowValues(canonicalRecord);
 
     this.database.db.transaction((transaction) => {
-      transaction.insert(goldBrands).values(values).onConflictDoUpdate({ target: goldBrands.id, set: values }).run();
+      transaction
+        .insert(goldBrands)
+        .values(values)
+        .onConflictDoUpdate({ target: goldBrands.id, set: values })
+        .run();
       transaction.insert(changeLog).values(toChangeLogValues(canonicalOperation)).run();
     });
   }
@@ -1110,7 +1191,11 @@ lots = new GoldLotRepository(database);
 
 describe('GoldLotRepository', () => {
   it('creates a lot as held, normalizing quantity to grams', async () => {
-    const brand = await brands.create({ id: id('00010'), name: 'PNJ', ...ctx({ operationId: id('90010') }) });
+    const brand = await brands.create({
+      id: id('00010'),
+      name: 'PNJ',
+      ...ctx({ operationId: id('90010') }),
+    });
     const lot = await lots.create({
       id: id('00011'),
       brandId: brand.id,
@@ -1121,13 +1206,25 @@ describe('GoldLotRepository', () => {
       ...ctx({ operationId: id('90011') }),
     });
 
-    expect(lot).toMatchObject({ brandId: brand.id, quantity: 2, unit: 'chi', quantityGrams: 7.5, totalAmount: 17000000, status: 'held', revision: 1 });
+    expect(lot).toMatchObject({
+      brandId: brand.id,
+      quantity: 2,
+      unit: 'chi',
+      quantityGrams: 7.5,
+      totalAmount: 17000000,
+      status: 'held',
+      revision: 1,
+    });
     await expect(lots.findById(lot.id)).resolves.toEqual(lot);
     await expect(changes.hasOperation(id('90011'))).resolves.toBe(true);
   });
 
   it('soft-deletes and restores a lot', async () => {
-    const brand = await brands.create({ id: id('00012'), name: 'SJC', ...ctx({ operationId: id('90012') }) });
+    const brand = await brands.create({
+      id: id('00012'),
+      name: 'SJC',
+      ...ctx({ operationId: id('90012') }),
+    });
     const lot = await lots.create({
       id: id('00013'),
       brandId: brand.id,
@@ -1138,18 +1235,28 @@ describe('GoldLotRepository', () => {
       ...ctx({ operationId: id('90013') }),
     });
 
-    const trashed = await lots.softDelete(lot.id, ctx({ operationId: id('90014'), now: '2026-08-24T11:00:00.000Z' }));
+    const trashed = await lots.softDelete(
+      lot.id,
+      ctx({ operationId: id('90014'), now: '2026-08-24T11:00:00.000Z' }),
+    );
     expect(trashed.deletedAt).toBe('2026-08-24T11:00:00.000Z');
     await expect(lots.list()).resolves.toEqual([]);
     await expect(lots.list({ includeDeleted: true })).resolves.toEqual([trashed]);
 
-    const restored = await lots.restore(lot.id, ctx({ operationId: id('90015'), now: '2026-08-24T12:00:00.000Z' }));
+    const restored = await lots.restore(
+      lot.id,
+      ctx({ operationId: id('90015'), now: '2026-08-24T12:00:00.000Z' }),
+    );
     expect(restored.deletedAt).toBeNull();
     await expect(lots.list()).resolves.toEqual([restored]);
   });
 
   it('marks a lot sold and back to held', async () => {
-    const brand = await brands.create({ id: id('00016'), name: 'DOJI', ...ctx({ operationId: id('90016') }) });
+    const brand = await brands.create({
+      id: id('00016'),
+      name: 'DOJI',
+      ...ctx({ operationId: id('90016') }),
+    });
     const lot = await lots.create({
       id: id('00017'),
       brandId: brand.id,
@@ -1160,11 +1267,17 @@ describe('GoldLotRepository', () => {
       ...ctx({ operationId: id('90017') }),
     });
 
-    const sold = await lots.markSold(lot.id, ctx({ operationId: id('90018'), now: '2026-08-25T10:00:00.000Z' }));
+    const sold = await lots.markSold(
+      lot.id,
+      ctx({ operationId: id('90018'), now: '2026-08-25T10:00:00.000Z' }),
+    );
     expect(sold.status).toBe('sold');
     await expect(lots.list({ status: 'held' })).resolves.toEqual([]);
 
-    const held = await lots.markHeld(lot.id, ctx({ operationId: id('90019'), now: '2026-08-26T10:00:00.000Z' }));
+    const held = await lots.markHeld(
+      lot.id,
+      ctx({ operationId: id('90019'), now: '2026-08-26T10:00:00.000Z' }),
+    );
     expect(held.status).toBe('held');
     await expect(lots.list({ status: 'held' })).resolves.toEqual([held]);
   });
@@ -1182,7 +1295,11 @@ Expected: FAIL with "Cannot find module '@/data/local/repositories/gold-lot-repo
 // src/data/local/repositories/gold-lot-repository.ts
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { CreateGoldLotInput, GoldLotListFilter, GoldLotRepository as GoldLotRepositoryPort } from '@/core/application/ports/gold-repositories';
+import {
+  CreateGoldLotInput,
+  GoldLotListFilter,
+  GoldLotRepository as GoldLotRepositoryPort,
+} from '@/core/application/ports/gold-repositories';
 import { WriteContext } from '@/core/application/ports/finance-repositories';
 import { GoldLot, validateGoldLotInput } from '@/core/domain/gold/gold-lot';
 import { normalizeGoldWeightToGrams } from '@/core/domain/gold/gold-weight';
@@ -1193,7 +1310,10 @@ import { changeLog, goldLots } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toGoldLotEntity, toGoldLotRowValues } from './gold-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class GoldLotRepository implements GoldLotRepositoryPort {
   constructor(private readonly database: LocalDatabaseClient) {}
@@ -1264,7 +1384,9 @@ export class GoldLotRepository implements GoldLotRepositoryPort {
     }
 
     const query = this.database.db.select().from(goldLots);
-    const rows = (conditions.length > 0 ? query.where(and(...conditions)) : query).orderBy(goldLots.purchaseDate).all();
+    const rows = (conditions.length > 0 ? query.where(and(...conditions)) : query)
+      .orderBy(goldLots.purchaseDate)
+      .all();
     return rows.map(toGoldLotEntity);
   }
 
@@ -1274,7 +1396,11 @@ export class GoldLotRepository implements GoldLotRepositoryPort {
     const values = toGoldLotRowValues(canonicalRecord);
 
     this.database.db.transaction((transaction) => {
-      transaction.insert(goldLots).values(values).onConflictDoUpdate({ target: goldLots.id, set: values }).run();
+      transaction
+        .insert(goldLots)
+        .values(values)
+        .onConflictDoUpdate({ target: goldLots.id, set: values })
+        .run();
       transaction.insert(changeLog).values(toChangeLogValues(canonicalOperation)).run();
     });
   }
@@ -1337,7 +1463,11 @@ sales = new GoldSellTransactionRepository(database);
 
 describe('GoldSellTransactionRepository', () => {
   it('creates a sell transaction and finds it by lotId', async () => {
-    const brand = await brands.create({ id: id('00020'), name: 'PNJ', ...ctx({ operationId: id('90020') }) });
+    const brand = await brands.create({
+      id: id('00020'),
+      name: 'PNJ',
+      ...ctx({ operationId: id('90020') }),
+    });
     const lot = await lots.create({
       id: id('00021'),
       brandId: brand.id,
@@ -1363,7 +1493,11 @@ describe('GoldSellTransactionRepository', () => {
   });
 
   it('soft-deletes a sell transaction so findActiveByLotId returns null', async () => {
-    const brand = await brands.create({ id: id('00023'), name: 'SJC', ...ctx({ operationId: id('90023') }) });
+    const brand = await brands.create({
+      id: id('00023'),
+      name: 'SJC',
+      ...ctx({ operationId: id('90023') }),
+    });
     const lot = await lots.create({
       id: id('00024'),
       brandId: brand.id,
@@ -1381,10 +1515,16 @@ describe('GoldSellTransactionRepository', () => {
       ...ctx({ operationId: id('90025') }),
     });
 
-    await sales.softDelete(sale.id, ctx({ operationId: id('90026'), now: '2026-08-26T10:00:00.000Z' }));
+    await sales.softDelete(
+      sale.id,
+      ctx({ operationId: id('90026'), now: '2026-08-26T10:00:00.000Z' }),
+    );
     await expect(sales.findActiveByLotId(lot.id)).resolves.toBeNull();
 
-    const restored = await sales.restore(sale.id, ctx({ operationId: id('90027'), now: '2026-08-27T10:00:00.000Z' }));
+    const restored = await sales.restore(
+      sale.id,
+      ctx({ operationId: id('90027'), now: '2026-08-27T10:00:00.000Z' }),
+    );
     expect(restored.deletedAt).toBeNull();
     await expect(sales.findActiveByLotId(lot.id)).resolves.toEqual(restored);
   });
@@ -1402,9 +1542,16 @@ Expected: FAIL with "Cannot find module '@/data/local/repositories/gold-sell-tra
 // src/data/local/repositories/gold-sell-transaction-repository.ts
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { CreateGoldSellTransactionInput, GoldSellTransactionListFilter, GoldSellTransactionRepository as GoldSellTransactionRepositoryPort } from '@/core/application/ports/gold-repositories';
+import {
+  CreateGoldSellTransactionInput,
+  GoldSellTransactionListFilter,
+  GoldSellTransactionRepository as GoldSellTransactionRepositoryPort,
+} from '@/core/application/ports/gold-repositories';
 import { WriteContext } from '@/core/application/ports/finance-repositories';
-import { GoldSellTransaction, validateGoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  GoldSellTransaction,
+  validateGoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { changeLog, goldSellTransactions } from '@/data/local/schema';
@@ -1412,7 +1559,10 @@ import { changeLog, goldSellTransactions } from '@/data/local/schema';
 import { toChangeLogValues } from './change-log-repository';
 import { toGoldSellTransactionEntity, toGoldSellTransactionRowValues } from './gold-record-mappers';
 import { buildSyncOperation } from './sync-operation-builder';
-import { canonicalizeSyncableRecordIdentifiers, canonicalizeSyncOperationIdentifiers } from './sync-identifier-validation';
+import {
+  canonicalizeSyncableRecordIdentifiers,
+  canonicalizeSyncOperationIdentifiers,
+} from './sync-identifier-validation';
 
 export class GoldSellTransactionRepository implements GoldSellTransactionRepositoryPort {
   constructor(private readonly database: LocalDatabaseClient) {}
@@ -1457,7 +1607,11 @@ export class GoldSellTransactionRepository implements GoldSellTransactionReposit
   }
 
   async findById(id: string): Promise<GoldSellTransaction | null> {
-    const row = this.database.db.select().from(goldSellTransactions).where(eq(goldSellTransactions.id, id)).get();
+    const row = this.database.db
+      .select()
+      .from(goldSellTransactions)
+      .where(eq(goldSellTransactions.id, id))
+      .get();
     return row ? toGoldSellTransactionEntity(row) : null;
   }
 
@@ -1472,7 +1626,9 @@ export class GoldSellTransactionRepository implements GoldSellTransactionReposit
 
   async list(filter: GoldSellTransactionListFilter = {}): Promise<GoldSellTransaction[]> {
     const query = this.database.db.select().from(goldSellTransactions);
-    const rows = (filter.includeDeleted ? query : query.where(isNull(goldSellTransactions.deletedAt)))
+    const rows = (
+      filter.includeDeleted ? query : query.where(isNull(goldSellTransactions.deletedAt))
+    )
       .orderBy(goldSellTransactions.saleDate)
       .all();
     return rows.map(toGoldSellTransactionEntity);
@@ -1549,11 +1705,13 @@ git commit -m "feat: add gold brand, lot, and sell transaction repositories"
 ### Task 6: Use cases — create lot, manage brands
 
 **Files:**
+
 - Create: `src/core/application/gold/create-gold-lot.ts`
 - Create: `src/core/application/gold/manage-gold-brands.ts`
 - Test: `tests/core/gold/gold-use-cases.test.ts`
 
 **Interfaces:**
+
 - Consumes: `GoldLotRepository`, `GoldBrandRepository`, `CreateGoldLotInput`, `CreateGoldBrandInput` ports from Task 4/5; `GoldLotInput`, `GoldBrandInput` from Task 1.
 - Produces:
   - `class CreateGoldLot { constructor(deps: { goldLotRepository: GoldLotRepository; now: () => string; deviceId: string; generateId: () => string }); execute(input: GoldLotInput): Promise<GoldLot> }`
@@ -1567,7 +1725,11 @@ git commit -m "feat: add gold brand, lot, and sell transaction repositories"
 // tests/core/gold/gold-use-cases.test.ts
 import { randomUUID } from 'expo-crypto';
 
-import { CreateGoldBrand, DeleteGoldBrand, ListGoldBrands } from '@/core/application/gold/manage-gold-brands';
+import {
+  CreateGoldBrand,
+  DeleteGoldBrand,
+  ListGoldBrands,
+} from '@/core/application/gold/manage-gold-brands';
 import { CreateGoldLot } from '@/core/application/gold/create-gold-lot';
 import { LocalDatabaseClient } from '@/data/local/db/client';
 import { openTestLocalDatabase } from '@/data/local/db/client';
@@ -1597,9 +1759,19 @@ describe('gold use cases', () => {
 
   describe('CreateGoldBrand / ListGoldBrands / DeleteGoldBrand', () => {
     it('creates a brand, lists it, then deletes it', async () => {
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const listGoldBrands = new ListGoldBrands({ goldBrandRepository });
-      const deleteGoldBrand = new DeleteGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const deleteGoldBrand = new DeleteGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const brand = await createGoldBrand.execute({ name: 'PNJ' });
       await expect(listGoldBrands.execute()).resolves.toEqual([brand]);
@@ -1611,7 +1783,12 @@ describe('gold use cases', () => {
 
   describe('CreateGoldLot', () => {
     it('creates a lot as held with normalized grams, referencing an existing brand', async () => {
-      const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
+      const createGoldBrand = new CreateGoldBrand({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
       const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
 
       const brand = await createGoldBrand.execute({ name: 'SJC' });
@@ -1623,7 +1800,13 @@ describe('gold use cases', () => {
         totalAmount: 17000000,
       });
 
-      expect(lot).toMatchObject({ brandId: brand.id, quantity: 2, unit: 'chi', quantityGrams: 7.5, status: 'held' });
+      expect(lot).toMatchObject({
+        brandId: brand.id,
+        quantity: 2,
+        unit: 'chi',
+        quantityGrams: 7.5,
+        status: 'held',
+      });
     });
   });
 });
@@ -1728,10 +1911,12 @@ git commit -m "feat: add gold lot creation and brand catalog use cases"
 ### Task 7: Use case — sell a gold lot
 
 **Files:**
+
 - Create: `src/core/application/gold/sell-gold-lot.ts`
 - Test: `tests/core/gold/gold-use-cases.test.ts` (extend)
 
 **Interfaces:**
+
 - Consumes: `GoldLotRepository`, `GoldSellTransactionRepository` from Task 4/5; `GoldSellTransactionInput` from Task 1.
 - Produces: `class SellGoldLot { constructor(deps: { goldLotRepository: GoldLotRepository; goldSellTransactionRepository: GoldSellTransactionRepository; now: () => string; deviceId: string; generateId: () => string }); execute(input: GoldSellTransactionInput): Promise<GoldSellTransaction> }`. Throws `Error('Gold lot not found')`, `Error('Gold lot is not available to sell')` (already sold or trashed), or `Error('Sale date must not be before the lot purchase date')`.
 
@@ -1746,14 +1931,36 @@ import { GoldSellTransactionRepository } from '@/data/local/repositories/gold-se
 describe('SellGoldLot', () => {
   it('sells a held lot, marking it sold and computing the correct lotId link', async () => {
     const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-    const createGoldBrand = new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({ goldBrandRepository, now, deviceId, generateId });
+    const createGoldBrand =
+      new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
     const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-    const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+    const sellGoldLot = new SellGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
 
     const brand = await createGoldBrand.execute({ name: 'PNJ' });
-    const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+    const lot = await createGoldLot.execute({
+      brandId: brand.id,
+      purchaseDate: '2026-08-12',
+      quantity: 1,
+      unit: 'chi',
+      totalAmount: 8500000,
+    });
 
-    const sale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+    const sale = await sellGoldLot.execute({
+      lotId: lot.id,
+      saleDate: '2026-08-25',
+      totalAmount: 8700000,
+    });
 
     expect(sale).toMatchObject({ lotId: lot.id, totalAmount: 8700000 });
     await expect(goldLotRepository.findById(lot.id)).resolves.toMatchObject({ status: 'sold' });
@@ -1761,40 +1968,82 @@ describe('SellGoldLot', () => {
 
   it('rejects selling a lot that does not exist', async () => {
     const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-    const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+    const sellGoldLot = new SellGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
 
-    await expect(sellGoldLot.execute({ lotId: 'missing-lot', saleDate: '2026-08-25', totalAmount: 8700000 })).rejects.toThrow(
-      'Gold lot not found',
-    );
+    await expect(
+      sellGoldLot.execute({ lotId: 'missing-lot', saleDate: '2026-08-25', totalAmount: 8700000 }),
+    ).rejects.toThrow('Gold lot not found');
   });
 
   it('rejects selling a lot that is already sold', async () => {
     const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-    const createGoldBrand = new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({ goldBrandRepository, now, deviceId, generateId });
+    const createGoldBrand =
+      new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
     const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-    const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+    const sellGoldLot = new SellGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
 
     const brand = await createGoldBrand.execute({ name: 'SJC' });
-    const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+    const lot = await createGoldLot.execute({
+      brandId: brand.id,
+      purchaseDate: '2026-08-12',
+      quantity: 1,
+      unit: 'chi',
+      totalAmount: 8500000,
+    });
     await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-20', totalAmount: 8700000 });
 
-    await expect(sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8800000 })).rejects.toThrow(
-      'Gold lot is not available to sell',
-    );
+    await expect(
+      sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8800000 }),
+    ).rejects.toThrow('Gold lot is not available to sell');
   });
 
   it('rejects a sale date earlier than the purchase date', async () => {
     const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-    const createGoldBrand = new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({ goldBrandRepository, now, deviceId, generateId });
+    const createGoldBrand =
+      new (require('@/core/application/gold/manage-gold-brands').CreateGoldBrand)({
+        goldBrandRepository,
+        now,
+        deviceId,
+        generateId,
+      });
     const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-    const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+    const sellGoldLot = new SellGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
 
     const brand = await createGoldBrand.execute({ name: 'DOJI' });
-    const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-20', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+    const lot = await createGoldLot.execute({
+      brandId: brand.id,
+      purchaseDate: '2026-08-20',
+      quantity: 1,
+      unit: 'chi',
+      totalAmount: 8500000,
+    });
 
-    await expect(sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-19', totalAmount: 8700000 })).rejects.toThrow(
-      'Sale date must not be before the lot purchase date',
-    );
+    await expect(
+      sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-19', totalAmount: 8700000 }),
+    ).rejects.toThrow('Sale date must not be before the lot purchase date');
   });
 });
 ```
@@ -1808,8 +2057,14 @@ Expected: FAIL with "Cannot find module '@/core/application/gold/sell-gold-lot'"
 
 ```typescript
 // src/core/application/gold/sell-gold-lot.ts
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
-import { GoldSellTransaction, GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transaction';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
+import {
+  GoldSellTransaction,
+  GoldSellTransactionInput,
+} from '@/core/domain/gold/gold-sell-transaction';
 
 export type SellGoldLotDeps = {
   goldLotRepository: GoldLotRepository;
@@ -1870,12 +2125,14 @@ git commit -m "feat: add sell-gold-lot use case"
 ### Task 8: Use cases — trash, restore, purge
 
 **Files:**
+
 - Create: `src/core/application/gold/trash-gold-transaction.ts`
 - Create: `src/core/application/gold/restore-gold-transaction.ts`
 - Create: `src/core/application/gold/purge-gold-transaction.ts`
 - Test: `tests/core/gold/gold-use-cases.test.ts` (extend)
 
 **Interfaces:**
+
 - Consumes: `GoldLotRepository`, `GoldSellTransactionRepository` from Task 4/5.
 - Produces:
   - `class TrashGoldLot { execute(id: string): Promise<GoldLot> }` — throws `Error('Cannot trash a gold lot with an active sell transaction')` if `goldSellTransactionRepository.findActiveByLotId(id)` returns non-null.
@@ -1902,19 +2159,66 @@ describe('trash / restore / purge', () => {
     const changeLogRepository = new ChangeLogRepository(database);
     const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
     const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-    const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-    const trashGoldLot = new TrashGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-    const trashGoldSale = new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+    const sellGoldLot = new SellGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
+    const trashGoldLot = new TrashGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
+    const trashGoldSale = new TrashGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
     const restoreGoldLot = new RestoreGoldLot({ goldLotRepository, now, deviceId, generateId });
-    const restoreGoldSale = new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-    const purgeGoldLot = new PurgeGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-    const purgeGoldSale = new PurgeGoldSale({ goldSellTransactionRepository, now, deviceId, generateId });
+    const restoreGoldSale = new RestoreGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
+    const purgeGoldLot = new PurgeGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
+    const purgeGoldSale = new PurgeGoldSale({
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
 
     const brand = await createGoldBrand.execute({ name: 'PNJ' });
-    const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
-    const sale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-25', totalAmount: 8700000 });
+    const lot = await createGoldLot.execute({
+      brandId: brand.id,
+      purchaseDate: '2026-08-12',
+      quantity: 1,
+      unit: 'chi',
+      totalAmount: 8500000,
+    });
+    const sale = await sellGoldLot.execute({
+      lotId: lot.id,
+      saleDate: '2026-08-25',
+      totalAmount: 8700000,
+    });
 
-    await expect(trashGoldLot.execute(lot.id)).rejects.toThrow('Cannot trash a gold lot with an active sell transaction');
+    await expect(trashGoldLot.execute(lot.id)).rejects.toThrow(
+      'Cannot trash a gold lot with an active sell transaction',
+    );
 
     const trashedSale = await trashGoldSale.execute(sale.id);
     expect(trashedSale.deletedAt).not.toBeNull();
@@ -1948,17 +2252,47 @@ describe('trash / restore / purge', () => {
     const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
     const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
     const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
-    const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-    const trashGoldSale = new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
-    const restoreGoldSale = new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+    const sellGoldLot = new SellGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
+    const trashGoldSale = new TrashGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
+    const restoreGoldSale = new RestoreGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
 
     const brand = await createGoldBrand.execute({ name: 'SJC' });
-    const lot = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 1, unit: 'chi', totalAmount: 8500000 });
-    const firstSale = await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-20', totalAmount: 8700000 });
+    const lot = await createGoldLot.execute({
+      brandId: brand.id,
+      purchaseDate: '2026-08-12',
+      quantity: 1,
+      unit: 'chi',
+      totalAmount: 8500000,
+    });
+    const firstSale = await sellGoldLot.execute({
+      lotId: lot.id,
+      saleDate: '2026-08-20',
+      totalAmount: 8700000,
+    });
     await trashGoldSale.execute(firstSale.id);
     await sellGoldLot.execute({ lotId: lot.id, saleDate: '2026-08-22', totalAmount: 8600000 });
 
-    await expect(restoreGoldSale.execute(firstSale.id)).rejects.toThrow('Cannot restore: the gold lot is no longer available');
+    await expect(restoreGoldSale.execute(firstSale.id)).rejects.toThrow(
+      'Cannot restore: the gold lot is no longer available',
+    );
   });
 });
 ```
@@ -1972,7 +2306,10 @@ Expected: FAIL with "Cannot find module '@/core/application/gold/trash-gold-tran
 
 ```typescript
 // src/core/application/gold/trash-gold-transaction.ts
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
 import { GoldLot } from '@/core/domain/gold/gold-lot';
 import { GoldSellTransaction } from '@/core/domain/gold/gold-sell-transaction';
 
@@ -2023,7 +2360,10 @@ export class TrashGoldSale {
 
 ```typescript
 // src/core/application/gold/restore-gold-transaction.ts
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
 import { GoldLot } from '@/core/domain/gold/gold-lot';
 import { GoldSellTransaction } from '@/core/domain/gold/gold-sell-transaction';
 
@@ -2089,7 +2429,10 @@ export class RestoreGoldSale {
 
 ```typescript
 // src/core/application/gold/purge-gold-transaction.ts
-import { GoldLotRepository, GoldSellTransactionRepository } from '@/core/application/ports/gold-repositories';
+import {
+  GoldLotRepository,
+  GoldSellTransactionRepository,
+} from '@/core/application/ports/gold-repositories';
 import { SyncOperation } from '@/core/domain/sync/sync-operation';
 
 export type PurgeGoldLotDeps = {
@@ -2182,10 +2525,12 @@ git commit -m "feat: add gold trash, restore, and purge use cases"
 ### Task 9: Overview aggregation use case
 
 **Files:**
+
 - Create: `src/core/application/gold/get-gold-overview.ts`
 - Test: `tests/core/gold/gold-use-cases.test.ts` (extend)
 
 **Interfaces:**
+
 - Consumes: `GoldLotRepository` from Task 4.
 - Produces: `class GetGoldOverview { constructor(deps: { goldLotRepository: GoldLotRepository }); execute(): Promise<{ totalQuantityGrams: number; totalCostBasis: number; heldLots: GoldLot[] }> }` — matches the UI card's "Khối lượng" + "Giá vốn" totals (spec §Cấu trúc màn hình, reduced-scope card).
 
@@ -2200,12 +2545,30 @@ describe('GetGoldOverview', () => {
     const createGoldBrand = new CreateGoldBrand({ goldBrandRepository, now, deviceId, generateId });
     const createGoldLot = new CreateGoldLot({ goldLotRepository, now, deviceId, generateId });
     const goldSellTransactionRepository = new GoldSellTransactionRepository(database);
-    const sellGoldLot = new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, now, deviceId, generateId });
+    const sellGoldLot = new SellGoldLot({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      now,
+      deviceId,
+      generateId,
+    });
     const getGoldOverview = new GetGoldOverview({ goldLotRepository });
 
     const brand = await createGoldBrand.execute({ name: 'PNJ' });
-    const lotA = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-12', quantity: 2, unit: 'chi', totalAmount: 17000000 });
-    const lotB = await createGoldLot.execute({ brandId: brand.id, purchaseDate: '2026-08-20', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+    const lotA = await createGoldLot.execute({
+      brandId: brand.id,
+      purchaseDate: '2026-08-12',
+      quantity: 2,
+      unit: 'chi',
+      totalAmount: 17000000,
+    });
+    const lotB = await createGoldLot.execute({
+      brandId: brand.id,
+      purchaseDate: '2026-08-20',
+      quantity: 1,
+      unit: 'chi',
+      totalAmount: 8500000,
+    });
     await sellGoldLot.execute({ lotId: lotB.id, saleDate: '2026-08-25', totalAmount: 8700000 });
 
     const overview = await getGoldOverview.execute();
@@ -2266,9 +2629,11 @@ git commit -m "feat: add gold overview aggregation use case"
 ### Task 10: Composition root — `gold-dependencies.ts`
 
 **Files:**
+
 - Create: `src/features/gold/gold-dependencies.ts`
 
 **Interfaces:**
+
 - Consumes: every repository (Task 5) and use case (Tasks 6–9); `DeviceIdentity` from `@/infrastructure/expo/device-identity/device-identity` (existing, reused as-is); `randomUUID` from `expo-crypto`.
 - Produces: `type GoldDependencies = { goldBrandRepository; goldLotRepository; goldSellTransactionRepository; createGoldLot; createGoldBrand; listGoldBrands; deleteGoldBrand; sellGoldLot; trashGoldLot; trashGoldSale; restoreGoldLot; restoreGoldSale; purgeGoldLot; purgeGoldSale; getGoldOverview }` and `async function createGoldDependencies(database: LocalDatabaseClient): Promise<GoldDependencies>`.
 
@@ -2282,7 +2647,11 @@ import { randomUUID } from 'expo-crypto';
 
 import { CreateGoldLot } from '@/core/application/gold/create-gold-lot';
 import { GetGoldOverview } from '@/core/application/gold/get-gold-overview';
-import { CreateGoldBrand, DeleteGoldBrand, ListGoldBrands } from '@/core/application/gold/manage-gold-brands';
+import {
+  CreateGoldBrand,
+  DeleteGoldBrand,
+  ListGoldBrands,
+} from '@/core/application/gold/manage-gold-brands';
 import { PurgeGoldLot, PurgeGoldSale } from '@/core/application/gold/purge-gold-transaction';
 import { RestoreGoldLot, RestoreGoldSale } from '@/core/application/gold/restore-gold-transaction';
 import { SellGoldLot } from '@/core/application/gold/sell-gold-lot';
@@ -2317,7 +2686,9 @@ export type GoldDependencies = {
  * (`src/features/finance/finance-dependencies.ts`). Async because resolving
  * a stable device identity touches secure storage.
  */
-export async function createGoldDependencies(database: LocalDatabaseClient): Promise<GoldDependencies> {
+export async function createGoldDependencies(
+  database: LocalDatabaseClient,
+): Promise<GoldDependencies> {
   const now = () => new Date().toISOString();
   const generateId = () => randomUUID();
   const deviceId = await new DeviceIdentity().get();
@@ -2337,9 +2708,17 @@ export async function createGoldDependencies(database: LocalDatabaseClient): Pro
     deleteGoldBrand: new DeleteGoldBrand({ goldBrandRepository, ...shared }),
     sellGoldLot: new SellGoldLot({ goldLotRepository, goldSellTransactionRepository, ...shared }),
     trashGoldLot: new TrashGoldLot({ goldLotRepository, goldSellTransactionRepository, ...shared }),
-    trashGoldSale: new TrashGoldSale({ goldLotRepository, goldSellTransactionRepository, ...shared }),
+    trashGoldSale: new TrashGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      ...shared,
+    }),
     restoreGoldLot: new RestoreGoldLot({ goldLotRepository, ...shared }),
-    restoreGoldSale: new RestoreGoldSale({ goldLotRepository, goldSellTransactionRepository, ...shared }),
+    restoreGoldSale: new RestoreGoldSale({
+      goldLotRepository,
+      goldSellTransactionRepository,
+      ...shared,
+    }),
     purgeGoldLot: new PurgeGoldLot({ goldLotRepository, goldSellTransactionRepository, ...shared }),
     purgeGoldSale: new PurgeGoldSale({ goldSellTransactionRepository, ...shared }),
     getGoldOverview: new GetGoldOverview({ goldLotRepository }),
@@ -2364,11 +2743,13 @@ git commit -m "feat: add gold feature composition root"
 ### Task 11: Presentation helpers and `useGoldManagement` view-model
 
 **Files:**
+
 - Create: `src/features/gold/view-models/gold-presentation.ts`
 - Create: `src/features/gold/view-models/use-gold-management.ts`
 - Test: `tests/features/gold/use-gold-management.test.ts`
 
 **Interfaces:**
+
 - Consumes: `GoldDependencies` from Task 10; `Translate` type from `@/i18n/translations` (existing); `formatVnd` from `@/core/domain/finance/money` (existing, reused as-is).
 - Produces:
   - `gold-presentation.ts`: `formatGoldWeight(quantity: number, unit: GoldWeightUnit, t: Translate): string` (e.g. "2 chỉ"), `buildLotHistoryRow(lot: GoldLot, brandName: string): { id; title; subtitle; amountLabel }`, `buildSaleHistoryRow(sale: GoldSellTransaction, lot: GoldLot | null, brandName: string): { id; title; subtitle; amountLabel }`.
@@ -2418,7 +2799,13 @@ describe('useGoldManagement', () => {
     const brandId = result.current.brands[0].id;
 
     await act(async () => {
-      await result.current.createLot({ brandId, purchaseDate: '2026-08-24', quantity: 2, unit: 'chi', totalAmount: 17000000 });
+      await result.current.createLot({
+        brandId,
+        purchaseDate: '2026-08-24',
+        quantity: 2,
+        unit: 'chi',
+        totalAmount: 17000000,
+      });
     });
     expect(result.current.heldLots).toHaveLength(1);
     expect(result.current.overview?.totalCostBasis).toBe(17000000);
@@ -2441,7 +2828,13 @@ describe('useGoldManagement', () => {
     });
     const brandId = result.current.brands[0].id;
     await act(async () => {
-      await result.current.createLot({ brandId, purchaseDate: '2026-08-24', quantity: 1, unit: 'chi', totalAmount: 8500000 });
+      await result.current.createLot({
+        brandId,
+        purchaseDate: '2026-08-24',
+        quantity: 1,
+        unit: 'chi',
+        totalAmount: 8500000,
+      });
     });
     const lotId = result.current.heldLots[0].id;
 
@@ -2519,7 +2912,12 @@ export type SaleHistoryRow = {
   amountLabel: string;
 };
 
-export function buildSaleHistoryRow(sale: GoldSellTransaction, lot: GoldLot | null, brandName: string, t: Translate): SaleHistoryRow {
+export function buildSaleHistoryRow(
+  sale: GoldSellTransaction,
+  lot: GoldLot | null,
+  brandName: string,
+  t: Translate,
+): SaleHistoryRow {
   const weightLabel = lot ? formatGoldWeight(lot.quantity, lot.unit, t) : '';
   return {
     id: sale.id,
@@ -2543,7 +2941,12 @@ import { GoldSellTransactionInput } from '@/core/domain/gold/gold-sell-transacti
 import { GoldDependencies } from '@/features/gold/gold-dependencies';
 import { Translate } from '@/i18n/translations';
 
-import { buildLotHistoryRow, buildSaleHistoryRow, LotHistoryRow, SaleHistoryRow } from './gold-presentation';
+import {
+  buildLotHistoryRow,
+  buildSaleHistoryRow,
+  LotHistoryRow,
+  SaleHistoryRow,
+} from './gold-presentation';
 
 export type GoldManagementDependencies = Pick<
   GoldDependencies,
@@ -2585,7 +2988,10 @@ export type GoldManagementViewModel = {
   purgeSale(id: string): Promise<void>;
 };
 
-export function useGoldManagement(options: { dependencies: GoldManagementDependencies; t: Translate }): GoldManagementViewModel {
+export function useGoldManagement(options: {
+  dependencies: GoldManagementDependencies;
+  t: Translate;
+}): GoldManagementViewModel {
   const { dependencies, t } = options;
   const [overview, setOverview] = useState<GoldOverview | null>(null);
   const [heldLots, setHeldLots] = useState<LotHistoryRow[]>([]);
@@ -2602,8 +3008,12 @@ export function useGoldManagement(options: { dependencies: GoldManagementDepende
       const [overviewResult, activeLots, deletedLots, deletedSales, brandList] = await Promise.all([
         dependencies.getGoldOverview.execute(),
         dependencies.goldLotRepository.list({ status: 'held' }),
-        dependencies.goldLotRepository.list({ includeDeleted: true }).then((lots: GoldLot[]) => lots.filter((lot) => lot.deletedAt !== null)),
-        dependencies.goldSellTransactionRepository.list({ includeDeleted: true }).then((sales) => sales.filter((sale) => sale.deletedAt !== null)),
+        dependencies.goldLotRepository
+          .list({ includeDeleted: true })
+          .then((lots: GoldLot[]) => lots.filter((lot) => lot.deletedAt !== null)),
+        dependencies.goldSellTransactionRepository
+          .list({ includeDeleted: true })
+          .then((sales) => sales.filter((sale) => sale.deletedAt !== null)),
         dependencies.listGoldBrands.execute(),
       ]);
 
@@ -2706,11 +3116,13 @@ git commit -m "feat: add gold presentation helpers and useGoldManagement view-mo
 ### Task 12: i18n keys
 
 **Files:**
+
 - Modify: `src/i18n/locales/vi.ts`
 - Modify: `src/i18n/locales/en.ts`
 - Create: `tests/i18n/gold-component-keys.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing new — extends the existing flat key→string maps.
 - Produces: the following keys added to both locale files: `goldUnitLuong`, `goldUnitChi`, `goldUnitPhan`, `goldUnitGram`, `goldSaleLabel`, `goldOverviewTitle`, `goldOverviewSubtitle`, `goldQuantityLabel`, `goldCostBasisLabel`, `goldHistoryTitle`, `goldTrashLabel`, `goldAddTransactionTitle`, `goldAddTransactionSubtitle`, `goldBuyActionTitle`, `goldBuyActionSubtitle`, `goldSellActionTitle`, `goldSellActionSubtitle`, `goldBuyFormTitle`, `goldSellFormTitle`, `goldDateFieldLabel`, `goldBrandFieldLabel`, `goldSellPlaceLabel`, `goldAddNewBrandOption`, `goldLotFieldLabel`, `goldQuantityFieldLabel`, `goldUnitFieldLabel`, `goldBuyTotalLabel`, `goldSellTotalLabel`, `goldSaveBuyLabel`, `goldSaveSellLabel`, `goldManageBrandsTitle`, `goldManageBrandsSubtitle`, `goldAddBrandLabel`, `goldAddBrandPlaceholder`, `goldSaveBrandLabel`, `goldTrashSheetTitle`, `goldTrashSheetSubtitle`, `goldRestoreLabel`, `goldPurgeConfirmMessage`, `goldTrashBlockedMessage`.
 

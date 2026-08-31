@@ -1,14 +1,22 @@
 // src/features/finance/view-models/use-recurring-management.ts
 import { useCallback, useEffect, useState } from 'react';
 
-import type { EndRecurringSchedule, PauseRecurringSchedule, ResumeRecurringSchedule, UpdateRecurringSchedule } from '@/core/application/finance/manage-recurring-schedule';
+import type {
+  EndRecurringSchedule,
+  PauseRecurringSchedule,
+  ResumeRecurringSchedule,
+  UpdateRecurringSchedule,
+} from '@/core/application/finance/manage-recurring-schedule';
 import type { GetRecurringOverview } from '@/core/application/finance/get-recurring-overview';
 import type { RecurringOccurrenceRepository } from '@/core/application/ports/recurring-repositories';
 import { formatVnd } from '@/core/domain/finance/money';
-import { RecurringSchedule, RecurringScheduleStatus } from '@/core/domain/finance/recurring-schedule';
+import {
+  RecurringSchedule,
+  RecurringScheduleStatus,
+} from '@/core/domain/finance/recurring-schedule';
 import type { Translate, TranslationKey } from '@/i18n/translations';
 
-import { formatFrequencyLabel } from './recurring-presentation';
+import { formatFrequencyLabel, resolveCategoryMeta } from './recurring-presentation';
 import { formatDateLabel } from './transaction-presentation';
 
 export type RecurringManagementDependencies = {
@@ -27,6 +35,8 @@ export type RecurringScheduleListItem = {
   frequencyLabel: string;
   status: RecurringScheduleStatus;
   statusLabel: string;
+  categoryInitials: string;
+  categoryBg: string;
 };
 
 export type RecurringScheduleDetail = {
@@ -59,6 +69,7 @@ const STATUS_KEYS: Record<RecurringScheduleStatus, TranslationKey> = {
 };
 
 function toListItem(schedule: RecurringSchedule, t: Translate): RecurringScheduleListItem {
+  const meta = resolveCategoryMeta(schedule.displayName);
   return {
     id: schedule.id,
     displayName: schedule.displayName,
@@ -66,6 +77,8 @@ function toListItem(schedule: RecurringSchedule, t: Translate): RecurringSchedul
     frequencyLabel: formatFrequencyLabel(schedule.frequency, t),
     status: schedule.status,
     statusLabel: t(STATUS_KEYS[schedule.status]),
+    categoryInitials: meta.initials,
+    categoryBg: meta.bg,
   };
 }
 
@@ -87,7 +100,6 @@ export function useRecurringManagement({
     const overview = await dependencies.getRecurringOverview.execute();
     setSchedules(overview.schedules);
     setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencies]);
 
   useEffect(() => {
@@ -114,12 +126,18 @@ export function useRecurringManagement({
       const occurrences = await dependencies.recurringOccurrenceRepository.listByScheduleId(id);
       setHistory(
         occurrences
-          .filter((occurrence) => occurrence.status === 'confirmed' || occurrence.status === 'skipped')
+          .filter(
+            (occurrence) => occurrence.status === 'confirmed' || occurrence.status === 'skipped',
+          )
           .map((occurrence) => ({
             id: occurrence.id,
             scheduledDateLabel: formatDateLabel(occurrence.scheduledDate),
             amountLabel: formatVnd(occurrence.amount),
-            statusLabel: t(occurrence.status === 'confirmed' ? 'recurringStatusConfirmed' : 'recurringStatusSkipped'),
+            statusLabel: t(
+              occurrence.status === 'confirmed'
+                ? 'recurringStatusConfirmed'
+                : 'recurringStatusSkipped',
+            ),
           })),
       );
     },
@@ -178,5 +196,16 @@ export function useRecurringManagement({
     [dependencies, reload, selectedId],
   );
 
-  return { loading, submitting, items, selected, openDetail, closeDetail, pause, resume, end, updateAmount };
+  return {
+    loading,
+    submitting,
+    items,
+    selected,
+    openDetail,
+    closeDetail,
+    pause,
+    resume,
+    end,
+    updateAmount,
+  };
 }

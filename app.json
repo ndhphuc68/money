@@ -8,11 +8,7 @@
     "icon": "./assets/branding/vimo-icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "ios": {
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "Vimo cần quyền thông báo để nhắc bạn trước khi đến hạn chi tiêu định kỳ."

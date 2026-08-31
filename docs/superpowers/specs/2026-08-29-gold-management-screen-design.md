@@ -58,7 +58,7 @@ Props: everything needed to render either the buy or sell variant: `formType`, `
 
 ### `GoldCalendarModal`
 
-Props: `{ visible: boolean; year: number; month: number; selectedDate: string; onSelectDate(iso): void; onPrevMonth(): void; onNextMonth(): void; onClose(): void }`. The calendar-cell-building logic (blank leading cells for month offset, day cells with an ISO date) is a pure function — extract it as `buildCalendarCells(year, month, selectedDate)` in a small `gold-calendar.ts` helper (mirrors the prototype's `buildCalendarCells`), so it's independently testable as logic (per the no-UI-tests convention, this pure function *can* get a unit test; the modal rendering does not).
+Props: `{ visible: boolean; year: number; month: number; selectedDate: string; onSelectDate(iso): void; onPrevMonth(): void; onNextMonth(): void; onClose(): void }`. The calendar-cell-building logic (blank leading cells for month offset, day cells with an ISO date) is a pure function — extract it as `buildCalendarCells(year, month, selectedDate)` in a small `gold-calendar.ts` helper (mirrors the prototype's `buildCalendarCells`), so it's independently testable as logic (per the no-UI-tests convention, this pure function _can_ get a unit test; the modal rendering does not).
 
 ### `GoldBrandManageSheet`
 
@@ -113,6 +113,7 @@ Reuse the existing `gold*` keys from `vi.ts`/`en.ts` (Task 12 of the backend pla
 ## Testing
 
 Per project convention (no UI/render tests — logic only):
+
 - No render tests for `gold-management-screen.tsx` or any `src/components/gold/*` component.
 - Unit test the pure `buildCalendarCells(year, month, selectedDate)` helper in `gold-calendar.ts` (calendar cell generation is non-trivial logic worth covering, same spirit as the existing `gold-domain.test.ts` suite).
 - Unit test `buildGoldOverviewLabels` if it contains any non-trivial branching (skip if it's a one-line passthrough of already-tested `formatVnd`/`formatGoldWeight`).

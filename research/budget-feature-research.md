@@ -107,12 +107,12 @@ Hiển thị nên gồm cả tiền và phần trăm: `đã chi 800.000 / 1.000.
 
 Đề xuất cho MVP:
 
-| Trạng thái | Điều kiện | UI/hành vi |
-| --- | --- | --- |
-| Bình thường | `percent_used < 80%` và `remaining >= 0` | Màu trung tính/xanh; không gửi push. |
-| Sắp vượt | `80% <= percent_used < 100%` | Hiển thị cảnh báo trong danh mục; có thể gửi tối đa một push cho mỗi danh mục/kỳ. |
-| Đã chạm hạn mức | `percent_used >= 100%` và `remaining >= 0` | Đổi trạng thái cảnh báo; đề nghị xem chi tiết hoặc giảm chi. |
-| Vượt | `remaining < 0` | Hiển thị `vượt X`; cho phép tăng hạn mức, chuyển tiền từ danh mục khác, hoặc giữ nguyên và ghi nhận vượt. |
+| Trạng thái      | Điều kiện                                  | UI/hành vi                                                                                                |
+| --------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Bình thường     | `percent_used < 80%` và `remaining >= 0`   | Màu trung tính/xanh; không gửi push.                                                                      |
+| Sắp vượt        | `80% <= percent_used < 100%`               | Hiển thị cảnh báo trong danh mục; có thể gửi tối đa một push cho mỗi danh mục/kỳ.                         |
+| Đã chạm hạn mức | `percent_used >= 100%` và `remaining >= 0` | Đổi trạng thái cảnh báo; đề nghị xem chi tiết hoặc giảm chi.                                              |
+| Vượt            | `remaining < 0`                            | Hiển thị `vượt X`; cho phép tăng hạn mức, chuyển tiền từ danh mục khác, hoặc giữ nguyên và ghi nhận vượt. |
 
 Các ngưỡng 80%/100% là lựa chọn sản phẩm để cảnh báo sớm và cảnh báo cứng; không nên trình bày chúng như quy tắc tài chính chung. Tính linh hoạt là cần thiết vì YNAB dùng trạng thái underfunded/overspent để thúc đẩy người dùng điều chỉnh kế hoạch, không tự suy ra một ngưỡng “đúng” cho mọi danh mục. [YNAB — How to Use Targets](https://support.ynab.com/how-to-use-targets-rk5kkI9ks), [YNAB — Getting Out of Overdraft](https://support.ynab.com/en_us/getting-out-of-overdraft-in-ynab-a-guide-B1blkysC9)
 

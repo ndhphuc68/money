@@ -9,7 +9,11 @@ import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence'
 import { RecurringSchedule } from '@/core/domain/finance/recurring-schedule';
 import type { Translate } from '@/i18n/translations';
 
-import { buildOccurrenceListItem, formatFrequencyLabel, RecurringOccurrenceListItem } from './recurring-presentation';
+import {
+  buildOccurrenceListItem,
+  formatFrequencyLabel,
+  RecurringOccurrenceListItem,
+} from './recurring-presentation';
 import { formatDateLabel, todayIsoDate } from './transaction-presentation';
 
 export type RecurringOccurrencesDependencies = {
@@ -32,6 +36,8 @@ export type RecurringOccurrencesViewModel = {
   submitting: boolean;
   view: 'list' | 'detail' | 'scope' | 'success';
   items: RecurringOccurrenceListItem[];
+  overdueCount: number;
+  upcomingCount: number;
   selected: RecurringOccurrenceDetail | null;
   editedAmount: number | null;
   scopeDiffLabel: string | null;
@@ -65,9 +71,10 @@ export function useRecurringOccurrences({
   const [view, setView] = useState<'list' | 'detail' | 'scope' | 'success'>('list');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editedAmount, setEditedAmountState] = useState<number | null>(null);
-  const [successSummary, setSuccessSummary] = useState<{ amountLabel: string; nextDateLabel: string | null } | null>(
-    null,
-  );
+  const [successSummary, setSuccessSummary] = useState<{
+    amountLabel: string;
+    nextDateLabel: string | null;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -76,7 +83,6 @@ export function useRecurringOccurrences({
     setOccurrences(overview.dueOccurrences);
     setSchedulesById(new Map(overview.schedules.map((schedule) => [schedule.id, schedule])));
     setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependencies]);
 
   useEffect(() => {
@@ -88,8 +94,19 @@ export function useRecurringOccurrences({
     [occurrences, today, t],
   );
 
+  const overdueCount = useMemo(
+    () => items.filter((item) => item.displayStatus === 'overdue').length,
+    [items],
+  );
+  const upcomingCount = useMemo(
+    () => items.filter((item) => item.displayStatus !== 'overdue').length,
+    [items],
+  );
+
   const selectedOccurrence = occurrences.find((occurrence) => occurrence.id === selectedId) ?? null;
-  const selectedSchedule = selectedOccurrence ? (schedulesById.get(selectedOccurrence.scheduleId) ?? null) : null;
+  const selectedSchedule = selectedOccurrence
+    ? (schedulesById.get(selectedOccurrence.scheduleId) ?? null)
+    : null;
   const selected: RecurringOccurrenceDetail | null =
     selectedOccurrence && selectedSchedule
       ? {
@@ -103,8 +120,13 @@ export function useRecurringOccurrences({
       : null;
 
   const scopeDiffLabel =
-    selectedOccurrence && selectedSchedule && editedAmount !== null && editedAmount !== selectedSchedule.amount
-      ? t('recurringScopeDiff', { diff: formatVnd(Math.abs(editedAmount - selectedSchedule.amount)) })
+    selectedOccurrence &&
+    selectedSchedule &&
+    editedAmount !== null &&
+    editedAmount !== selectedSchedule.amount
+      ? t('recurringScopeDiff', {
+          diff: formatVnd(Math.abs(editedAmount - selectedSchedule.amount)),
+        })
       : null;
 
   const openDetail = useCallback((id: string) => {
@@ -128,11 +150,20 @@ export function useRecurringOccurrences({
       }
       setSubmitting(true);
       try {
-        const edits = editedAmount !== null && editedAmount !== selectedOccurrence.amount ? { amount: editedAmount } : {};
-        const result = await dependencies.confirmRecurringOccurrence.execute(selectedOccurrence.id, edits, scope);
+        const edits =
+          editedAmount !== null && editedAmount !== selectedOccurrence.amount
+            ? { amount: editedAmount }
+            : {};
+        const result = await dependencies.confirmRecurringOccurrence.execute(
+          selectedOccurrence.id,
+          edits,
+          scope,
+        );
         setSuccessSummary({
           amountLabel: formatVnd(result.occurrence.amount),
-          nextDateLabel: result.nextOccurrence ? formatDateLabel(result.nextOccurrence.scheduledDate) : null,
+          nextDateLabel: result.nextOccurrence
+            ? formatDateLabel(result.nextOccurrence.scheduledDate)
+            : null,
         });
         setView('success');
         await reload();
@@ -183,6 +214,8 @@ export function useRecurringOccurrences({
     submitting,
     view,
     items,
+    overdueCount,
+    upcomingCount,
     selected,
     editedAmount,
     scopeDiffLabel,

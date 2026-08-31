@@ -123,7 +123,12 @@ describe('SyncEngine', () => {
     });
     const invalid = pkg([incoming, malformed]);
 
-    await expect(engine.import(invalid)).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 2 });
+    await expect(engine.import(invalid)).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 2,
+    });
     await expect(records.findById(incoming.entityId)).resolves.toBeNull();
     await expect(changes.hasOperation(incoming.operationId)).resolves.toBe(false);
   });
@@ -141,7 +146,12 @@ describe('SyncEngine', () => {
     });
 
     expect(serializer.verify(mismatchedSchemaPackage)).toBe(true);
-    await expect(engine.import(mismatchedSchemaPackage)).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 0, rejected: 1 });
+    await expect(engine.import(mismatchedSchemaPackage)).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 1,
+    });
     await expect(records.findById(incoming.entityId)).resolves.toBeNull();
     await expect(changes.hasOperation(incoming.operationId)).resolves.toBe(false);
   });
@@ -150,8 +160,18 @@ describe('SyncEngine', () => {
     const incoming = operation();
     const incomingPackage = pkg([incoming]);
 
-    await expect(engine.import(incomingPackage)).resolves.toEqual({ applied: 1, skipped: 0, conflicted: 0, rejected: 0 });
-    await expect(engine.import(incomingPackage)).resolves.toEqual({ applied: 0, skipped: 1, conflicted: 0, rejected: 0 });
+    await expect(engine.import(incomingPackage)).resolves.toEqual({
+      applied: 1,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 0,
+    });
+    await expect(engine.import(incomingPackage)).resolves.toEqual({
+      applied: 0,
+      skipped: 1,
+      conflicted: 0,
+      rejected: 0,
+    });
     await expect(records.findById(incoming.entityId)).resolves.toEqual(incoming.payload);
     await expect(engine.exportPending()).resolves.toMatchObject({ changes: [] });
   });
@@ -160,9 +180,21 @@ describe('SyncEngine', () => {
     const lowerCaseOperation = operation();
     const uppercaseOperation = uppercaseIdentifiers(lowerCaseOperation);
 
-    await expect(engine.import(pkg([uppercaseOperation]))).resolves.toEqual({ applied: 1, skipped: 0, conflicted: 0, rejected: 0 });
-    await expect(engine.import(pkg([lowerCaseOperation]))).resolves.toEqual({ applied: 0, skipped: 1, conflicted: 0, rejected: 0 });
-    await expect(records.findById(lowerCaseOperation.entityId)).resolves.toEqual(lowerCaseOperation.payload);
+    await expect(engine.import(pkg([uppercaseOperation]))).resolves.toEqual({
+      applied: 1,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 0,
+    });
+    await expect(engine.import(pkg([lowerCaseOperation]))).resolves.toEqual({
+      applied: 0,
+      skipped: 1,
+      conflicted: 0,
+      rejected: 0,
+    });
+    await expect(records.findById(lowerCaseOperation.entityId)).resolves.toEqual(
+      lowerCaseOperation.payload,
+    );
   });
 
   it('uses originDeviceId to retain the deterministic winner when timestamps are tied', async () => {
@@ -170,20 +202,37 @@ describe('SyncEngine', () => {
     const incoming = operation({ payload: syncRecord({ originDeviceId: sourceDeviceId }) });
     await records.save(local);
 
-    await expect(engine.import(pkg([incoming]))).resolves.toEqual({ applied: 0, skipped: 0, conflicted: 1, rejected: 0 });
+    await expect(engine.import(pkg([incoming]))).resolves.toEqual({
+      applied: 0,
+      skipped: 0,
+      conflicted: 1,
+      rejected: 0,
+    });
     await expect(records.findById(local.id)).resolves.toEqual(local);
   });
 
   it('persists a newer tombstone and excludes it from active records', async () => {
-    const local = syncRecord({ updatedAt: '2026-08-24T10:01:00.000Z', originDeviceId: localDeviceId });
+    const local = syncRecord({
+      updatedAt: '2026-08-24T10:01:00.000Z',
+      originDeviceId: localDeviceId,
+    });
     const tombstone = syncRecord({
       updatedAt: '2026-08-24T10:02:00.000Z',
       deletedAt: '2026-08-24T10:02:00.000Z',
     });
-    const incoming = operation({ payload: tombstone, operation: 'delete', revision: tombstone.revision });
+    const incoming = operation({
+      payload: tombstone,
+      operation: 'delete',
+      revision: tombstone.revision,
+    });
     await records.save(local);
 
-    await expect(engine.import(pkg([incoming]))).resolves.toEqual({ applied: 1, skipped: 0, conflicted: 0, rejected: 0 });
+    await expect(engine.import(pkg([incoming]))).resolves.toEqual({
+      applied: 1,
+      skipped: 0,
+      conflicted: 0,
+      rejected: 0,
+    });
     await expect(records.findById(tombstone.id)).resolves.toEqual(tombstone);
     await expect(records.listActive()).resolves.toEqual([]);
   });
@@ -196,12 +245,14 @@ describe('SyncEngine', () => {
       entityId: secondRecord.id,
       payload: secondRecord,
     });
-    database.db.run(sql.raw(`
+    database.db.run(
+      sql.raw(`
       CREATE TRIGGER fail_imported_operation
       BEFORE INSERT ON change_log
       WHEN NEW.operation_id = '${second.operationId}'
       BEGIN SELECT RAISE(ABORT, 'forced import failure'); END;
-    `));
+    `),
+    );
 
     await expect(engine.import(pkg([first, second]))).rejects.toThrow('forced import failure');
     await expect(records.findById(first.entityId)).resolves.toBeNull();

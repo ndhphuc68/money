@@ -78,7 +78,10 @@ describe('local repositories', () => {
   });
 
   it('canonicalizes UUID identifiers before persisting records and operations', async () => {
-    const uppercaseRecord = record({ id: recordId.toUpperCase(), originDeviceId: deviceId.toUpperCase() });
+    const uppercaseRecord = record({
+      id: recordId.toUpperCase(),
+      originDeviceId: deviceId.toUpperCase(),
+    });
     const uppercaseOperation = operation({
       operationId: '550e8400-e29b-41d4-a716-446655440012'.toUpperCase(),
       entityId: recordId.toUpperCase(),
@@ -150,7 +153,9 @@ describe('local repositories', () => {
   it('rejects a nested undefined operation payload before writing to SQLite', async () => {
     const invalidOperation = operation({ payload: { label: 'invalid', nested: undefined } });
 
-    await expect(changes.append(invalidOperation)).rejects.toThrow('Sync operation payload must be valid JSON data');
+    await expect(changes.append(invalidOperation)).rejects.toThrow(
+      'Sync operation payload must be valid JSON data',
+    );
 
     await expect(changes.listPending()).resolves.toEqual([]);
   });

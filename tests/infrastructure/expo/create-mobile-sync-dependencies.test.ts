@@ -1,4 +1,6 @@
-jest.mock('expo-crypto', () => ({ randomUUID: jest.fn(() => '550e8400-e29b-41d4-a716-446655440099') }));
+jest.mock('expo-crypto', () => ({
+  randomUUID: jest.fn(() => '550e8400-e29b-41d4-a716-446655440099'),
+}));
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(async () => null),
   setItemAsync: jest.fn(async () => undefined),
@@ -14,7 +16,9 @@ describe('createMobileSyncDependencies', () => {
     const database = await openTestLocalDatabase();
 
     try {
-      expect(() => createMobileSyncDependencies(database, '')).toThrow('shared passphrase must not be empty');
+      expect(() => createMobileSyncDependencies(database, '')).toThrow(
+        'shared passphrase must not be empty',
+      );
     } finally {
       await database.close();
     }
@@ -29,14 +33,18 @@ describe('createMobileSyncDependencies', () => {
     try {
       const exported = await dependencies.exportSyncPackage.execute();
 
-      expect(new HmacSha256AuthenticationProvider(passphrase).verify(
-        serializer.authenticationInput(exported),
-        exported.authTag,
-      )).toBe(true);
-      expect(new HmacSha256AuthenticationProvider('offline-first-sync-development').verify(
-        serializer.authenticationInput(exported),
-        exported.authTag,
-      )).toBe(false);
+      expect(
+        new HmacSha256AuthenticationProvider(passphrase).verify(
+          serializer.authenticationInput(exported),
+          exported.authTag,
+        ),
+      ).toBe(true);
+      expect(
+        new HmacSha256AuthenticationProvider('offline-first-sync-development').verify(
+          serializer.authenticationInput(exported),
+          exported.authTag,
+        ),
+      ).toBe(false);
       await expect(dependencies.importSyncPackage.execute(exported)).resolves.toEqual({
         applied: 0,
         skipped: 0,

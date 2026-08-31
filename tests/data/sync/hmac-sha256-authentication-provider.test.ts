@@ -12,8 +12,12 @@ describe('HmacSha256AuthenticationProvider', () => {
   it('rejects a tag created with a different shared passphrase', () => {
     const trustedProvider = new HmacSha256AuthenticationProvider('trusted passphrase');
     const untrustedProvider = new HmacSha256AuthenticationProvider('different passphrase');
-    const authTag = trustedProvider.authenticate('{"checksum":"fnv1a-32:deadbeef","formatVersion":2}');
+    const authTag = trustedProvider.authenticate(
+      '{"checksum":"fnv1a-32:deadbeef","formatVersion":2}',
+    );
 
-    expect(untrustedProvider.verify('{"checksum":"fnv1a-32:deadbeef","formatVersion":2}', authTag)).toBe(false);
+    expect(
+      untrustedProvider.verify('{"checksum":"fnv1a-32:deadbeef","formatVersion":2}', authTag),
+    ).toBe(false);
   });
 });

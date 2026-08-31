@@ -264,7 +264,8 @@ export const vi = {
   recurringRemindDaysBeforeLabel: 'Nhắc trước (ngày)',
   recurringEndLabel: 'Kết thúc',
   recurringOccurrenceLimitLabel: 'Số kỳ',
-  recurringFirstPeriodNote: 'Giao dịch này là kỳ đầu tiên. Các kỳ sau chỉ ảnh hưởng số dư khi bạn xác nhận.',
+  recurringFirstPeriodNote:
+    'Giao dịch này là kỳ đầu tiên. Các kỳ sau chỉ ảnh hưởng số dư khi bạn xác nhận.',
   recurringStatusOverdue: 'Quá hạn',
   recurringStatusUpcoming: 'Sắp tới',
   recurringStatusConfirmed: 'Đã xác nhận',
@@ -298,4 +299,3 @@ export const vi = {
   recurringHistoryTitle: 'Lịch sử kỳ',
   recurringHistoryEmpty: 'Chưa có kỳ nào được xác nhận hoặc bỏ qua.',
 };
-

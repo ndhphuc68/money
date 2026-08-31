@@ -31,11 +31,13 @@
 ### Task 1: Chuẩn hóa dashboard presentation model và copy
 
 **Files:**
+
 - Modify: `src/features/finance/view-models/use-dashboard.ts`
 - Modify: `src/i18n/translations.ts`
 - Test: `tests/features/finance/dashboard.test.tsx`
 
 **Interfaces:**
+
 - Produces: dashboard labels for greeting/user identity, balance metadata, stats, category summary, recent transactions, and empty/loading states.
 - Consumes: existing `GetDashboard`, account/category/profile repositories; no new repository contract.
 
@@ -48,6 +50,7 @@
 ### Task 2: Rebuild the Tổng quan content layout
 
 **Files:**
+
 - Modify: `src/features/finance/screens/dashboard-screen.tsx`
 - Modify: `src/components/finance/BalanceCard.tsx`
 - Modify: `src/components/finance/StatCard.tsx`
@@ -56,6 +59,7 @@
 - Test: `tests/components/finance/cards.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `DashboardViewModel` labels and callbacks from Task 1; existing card component props remain backwards-compatible.
 - Produces: a scrollable dashboard with prototype order, pressed states, accessible balance toggle, empty states, and no duplicate quick-link footer.
 
@@ -70,6 +74,7 @@
 ### Task 3: Wire the prototype bottom navigation and FAB
 
 **Files:**
+
 - Modify: `src/app/index.tsx`
 - Modify: `src/components/finance/BottomNav.tsx`
 - Modify: `src/components/finance/icons.tsx` if a required nav icon is missing
@@ -77,6 +82,7 @@
 - Test: `tests/smoke/app-starts.test.ts`
 
 **Interfaces:**
+
 - Consumes: existing `FinanceView` state and screen callbacks.
 - Produces: five bottom-nav positions matching the prototype’s geometry: Tổng quan, Giao dịch, FAB Thêm giao dịch, Báo cáo, and Cá nhân. `Báo cáo` preserves the existing route where the prototype says `Mục tiêu`; `Cá nhân` opens the existing Settings screen.
 
@@ -90,12 +96,14 @@
 ### Task 4: Verify visual behavior and accessibility against the HTML prototype
 
 **Files:**
+
 - Modify: `tests/features/finance/dashboard.test.tsx` if coverage gaps remain
 - Modify: `tests/components/finance/navigation.test.tsx` if coverage gaps remain
 - Reference: `design/All Screens.dc.html`
 - Reference: `design/Finance App.dc.html`
 
 **Interfaces:**
+
 - Consumes: completed dashboard screen and app shell from Tasks 2–3.
 - Produces: regression coverage for loading, empty data, hidden amounts, long transaction names, navigation, and actionable controls.
 

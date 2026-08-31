@@ -41,7 +41,11 @@ describe('gold repositories', () => {
 
   describe('GoldBrandRepository', () => {
     it('creates a brand and appends a matching change operation', async () => {
-      const brand = await brands.create({ id: id('00001'), name: 'PNJ', ...ctx({ operationId: id('90001') }) });
+      const brand = await brands.create({
+        id: id('00001'),
+        name: 'PNJ',
+        ...ctx({ operationId: id('90001') }),
+      });
 
       expect(brand).toMatchObject({ name: 'PNJ', revision: 1 });
       await expect(brands.findById(brand.id)).resolves.toEqual(brand);
@@ -50,8 +54,15 @@ describe('gold repositories', () => {
     });
 
     it('soft-deletes a brand without affecting lots that reference it', async () => {
-      const brand = await brands.create({ id: id('00002'), name: 'SJC', ...ctx({ operationId: id('90002') }) });
-      await brands.softDelete(brand.id, ctx({ operationId: id('90003'), now: '2026-08-24T11:00:00.000Z' }));
+      const brand = await brands.create({
+        id: id('00002'),
+        name: 'SJC',
+        ...ctx({ operationId: id('90002') }),
+      });
+      await brands.softDelete(
+        brand.id,
+        ctx({ operationId: id('90003'), now: '2026-08-24T11:00:00.000Z' }),
+      );
 
       const deleted = await brands.findById(brand.id);
       expect(deleted?.deletedAt).toBe('2026-08-24T11:00:00.000Z');
@@ -61,7 +72,11 @@ describe('gold repositories', () => {
 
   describe('GoldLotRepository', () => {
     it('creates a lot as held, normalizing quantity to grams', async () => {
-      const brand = await brands.create({ id: id('00010'), name: 'PNJ', ...ctx({ operationId: id('90010') }) });
+      const brand = await brands.create({
+        id: id('00010'),
+        name: 'PNJ',
+        ...ctx({ operationId: id('90010') }),
+      });
       const lot = await lots.create({
         id: id('00011'),
         brandId: brand.id,
@@ -72,13 +87,25 @@ describe('gold repositories', () => {
         ...ctx({ operationId: id('90011') }),
       });
 
-      expect(lot).toMatchObject({ brandId: brand.id, quantity: 2, unit: 'chi', quantityGrams: 7.5, totalAmount: 17000000, status: 'held', revision: 1 });
+      expect(lot).toMatchObject({
+        brandId: brand.id,
+        quantity: 2,
+        unit: 'chi',
+        quantityGrams: 7.5,
+        totalAmount: 17000000,
+        status: 'held',
+        revision: 1,
+      });
       await expect(lots.findById(lot.id)).resolves.toEqual(lot);
       await expect(changes.hasOperation(id('90011'))).resolves.toBe(true);
     });
 
     it('soft-deletes and restores a lot', async () => {
-      const brand = await brands.create({ id: id('00012'), name: 'SJC', ...ctx({ operationId: id('90012') }) });
+      const brand = await brands.create({
+        id: id('00012'),
+        name: 'SJC',
+        ...ctx({ operationId: id('90012') }),
+      });
       const lot = await lots.create({
         id: id('00013'),
         brandId: brand.id,
@@ -89,18 +116,28 @@ describe('gold repositories', () => {
         ...ctx({ operationId: id('90013') }),
       });
 
-      const trashed = await lots.softDelete(lot.id, ctx({ operationId: id('90014'), now: '2026-08-24T11:00:00.000Z' }));
+      const trashed = await lots.softDelete(
+        lot.id,
+        ctx({ operationId: id('90014'), now: '2026-08-24T11:00:00.000Z' }),
+      );
       expect(trashed.deletedAt).toBe('2026-08-24T11:00:00.000Z');
       await expect(lots.list()).resolves.toEqual([]);
       await expect(lots.list({ includeDeleted: true })).resolves.toEqual([trashed]);
 
-      const restored = await lots.restore(lot.id, ctx({ operationId: id('90015'), now: '2026-08-24T12:00:00.000Z' }));
+      const restored = await lots.restore(
+        lot.id,
+        ctx({ operationId: id('90015'), now: '2026-08-24T12:00:00.000Z' }),
+      );
       expect(restored.deletedAt).toBeNull();
       await expect(lots.list()).resolves.toEqual([restored]);
     });
 
     it('marks a lot sold and back to held', async () => {
-      const brand = await brands.create({ id: id('00016'), name: 'DOJI', ...ctx({ operationId: id('90016') }) });
+      const brand = await brands.create({
+        id: id('00016'),
+        name: 'DOJI',
+        ...ctx({ operationId: id('90016') }),
+      });
       const lot = await lots.create({
         id: id('00017'),
         brandId: brand.id,
@@ -111,11 +148,17 @@ describe('gold repositories', () => {
         ...ctx({ operationId: id('90017') }),
       });
 
-      const sold = await lots.markSold(lot.id, ctx({ operationId: id('90018'), now: '2026-08-25T10:00:00.000Z' }));
+      const sold = await lots.markSold(
+        lot.id,
+        ctx({ operationId: id('90018'), now: '2026-08-25T10:00:00.000Z' }),
+      );
       expect(sold.status).toBe('sold');
       await expect(lots.list({ status: 'held' })).resolves.toEqual([]);
 
-      const held = await lots.markHeld(lot.id, ctx({ operationId: id('90019'), now: '2026-08-26T10:00:00.000Z' }));
+      const held = await lots.markHeld(
+        lot.id,
+        ctx({ operationId: id('90019'), now: '2026-08-26T10:00:00.000Z' }),
+      );
       expect(held.status).toBe('held');
       await expect(lots.list({ status: 'held' })).resolves.toEqual([held]);
     });
@@ -123,7 +166,11 @@ describe('gold repositories', () => {
 
   describe('GoldSellTransactionRepository', () => {
     it('creates a sell transaction and finds it by lotId', async () => {
-      const brand = await brands.create({ id: id('00020'), name: 'PNJ', ...ctx({ operationId: id('90020') }) });
+      const brand = await brands.create({
+        id: id('00020'),
+        name: 'PNJ',
+        ...ctx({ operationId: id('90020') }),
+      });
       const lot = await lots.create({
         id: id('00021'),
         brandId: brand.id,
@@ -149,7 +196,11 @@ describe('gold repositories', () => {
     });
 
     it('soft-deletes a sell transaction so findActiveByLotId returns null', async () => {
-      const brand = await brands.create({ id: id('00023'), name: 'SJC', ...ctx({ operationId: id('90023') }) });
+      const brand = await brands.create({
+        id: id('00023'),
+        name: 'SJC',
+        ...ctx({ operationId: id('90023') }),
+      });
       const lot = await lots.create({
         id: id('00024'),
         brandId: brand.id,
@@ -167,10 +218,16 @@ describe('gold repositories', () => {
         ...ctx({ operationId: id('90025') }),
       });
 
-      await sales.softDelete(sale.id, ctx({ operationId: id('90026'), now: '2026-08-26T10:00:00.000Z' }));
+      await sales.softDelete(
+        sale.id,
+        ctx({ operationId: id('90026'), now: '2026-08-26T10:00:00.000Z' }),
+      );
       await expect(sales.findActiveByLotId(lot.id)).resolves.toBeNull();
 
-      const restored = await sales.restore(sale.id, ctx({ operationId: id('90027'), now: '2026-08-27T10:00:00.000Z' }));
+      const restored = await sales.restore(
+        sale.id,
+        ctx({ operationId: id('90027'), now: '2026-08-27T10:00:00.000Z' }),
+      );
       expect(restored.deletedAt).toBeNull();
       await expect(sales.findActiveByLotId(lot.id)).resolves.toEqual(restored);
     });

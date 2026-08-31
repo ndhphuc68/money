@@ -1,24 +1,24 @@
 :root {
-  --color-bg: #F4F5FA;
-  --color-surface: #FFFFFF;
+  --color-bg: #f4f5fa;
+  --color-surface: #ffffff;
   --color-text: #101828;
-  --color-text-muted: #8B93A7;
-  --color-text-muted-2: #9AA1B4;
-  --color-text-faint: #B4BACB;
+  --color-text-muted: #8b93a7;
+  --color-text-muted-2: #9aa1b4;
+  --color-text-faint: #b4bacb;
 
-  --color-primary: #2F6FED;
-  --color-accent: #F2734A;
-  --color-success: #1FAA59;
-  --color-danger: #E25050;
+  --color-primary: #2f6fed;
+  --color-accent: #f2734a;
+  --color-success: #1faa59;
+  --color-danger: #e25050;
 
-  --color-cat-income: #1FAA59;
-  --color-cat-food: #F2734A;
-  --color-cat-shopping: #7C5CFC;
-  --color-cat-bills: #2F6FED;
-  --color-cat-transport: #14B8A6;
+  --color-cat-income: #1faa59;
+  --color-cat-food: #f2734a;
+  --color-cat-shopping: #7c5cfc;
+  --color-cat-bills: #2f6fed;
+  --color-cat-transport: #14b8a6;
 
-  --gradient-balance: linear-gradient(135deg, #3A5FE5 0%, #182B6E 100%);
-  --gradient-premium: linear-gradient(135deg, #F58B5E 0%, #D9502F 100%);
+  --gradient-balance: linear-gradient(135deg, #3a5fe5 0%, #182b6e 100%);
+  --gradient-premium: linear-gradient(135deg, #f58b5e 0%, #d9502f 100%);
 
   --divider: rgba(16, 24, 40, 0.06);
   --shadow-card: 0 2px 10px rgba(16, 24, 40, 0.05);

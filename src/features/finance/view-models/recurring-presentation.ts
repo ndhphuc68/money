@@ -21,6 +21,15 @@ export function formatFrequencyLabel(frequency: RecurringFrequency, t: Translate
   return t(FREQUENCY_KEYS[frequency]);
 }
 
+export function resolveCategoryMeta(name: string = ''): { initials: string; bg: string } {
+  const lower = name.toLowerCase();
+  if (/an uong|food|nha hang|quan|cafe|ca phe/.test(lower))
+    return { initials: 'AU', bg: '#F2734A' };
+  if (/mua sam|shopping|shopee/.test(lower)) return { initials: 'MS', bg: '#7C5CFC' };
+  if (/di chuyen|transport|grab|xang/.test(lower)) return { initials: 'DC', bg: '#14B8A6' };
+  return { initials: 'HĐ', bg: '#2F6FED' };
+}
+
 export type RecurringOccurrenceListItem = {
   id: string;
   displayName: string;
@@ -28,6 +37,8 @@ export type RecurringOccurrenceListItem = {
   scheduledDateLabel: string;
   metaLabel: string;
   displayStatus: RecurringOccurrenceDisplayStatus;
+  categoryInitials: string;
+  categoryBg: string;
 };
 
 /** Builds one row for the "Sắp tới / Quá hạn" list (spec §Cấu trúc màn hình → Kỳ sắp tới / Quá hạn). */
@@ -39,6 +50,7 @@ export function buildOccurrenceListItem(
   const displayStatus = deriveOccurrenceDisplayStatus(occurrence, today);
   const statusLabel =
     displayStatus === 'overdue' ? t('recurringStatusOverdue') : t('recurringStatusUpcoming');
+  const meta = resolveCategoryMeta(occurrence.displayName);
 
   return {
     id: occurrence.id,
@@ -47,5 +59,7 @@ export function buildOccurrenceListItem(
     scheduledDateLabel: formatDateLabel(occurrence.scheduledDate),
     metaLabel: `${statusLabel} · ${formatDateLabel(occurrence.scheduledDate)}`,
     displayStatus,
+    categoryInitials: meta.initials,
+    categoryBg: meta.bg,
   };
 }

@@ -114,7 +114,10 @@ describe('finance database schema', () => {
       ...syncFields(),
     });
 
-    const rows = await database.db.select().from(transactions).where(eq(transactions.id, transactionId));
+    const rows = await database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, transactionId));
 
     expect(rows).toEqual([
       {
@@ -169,7 +172,10 @@ describe('finance database schema', () => {
       ...syncFields(),
     });
 
-    const rows = await database.db.select().from(transactions).where(eq(transactions.id, transactionId));
+    const rows = await database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, transactionId));
 
     expect(rows).toEqual([
       {
@@ -220,10 +226,22 @@ describe('finance database schema', () => {
       ...syncFields(),
     });
 
-    const byAccount = await database.db.select().from(transactions).where(eq(transactions.accountId, accountId));
-    const byDate = await database.db.select().from(transactions).where(eq(transactions.transactionDate, '2026-08-22'));
-    const byType = await database.db.select().from(transactions).where(eq(transactions.type, 'expense'));
-    const byCategory = await database.db.select().from(transactions).where(eq(transactions.categoryId, categoryId));
+    const byAccount = await database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.accountId, accountId));
+    const byDate = await database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.transactionDate, '2026-08-22'));
+    const byType = await database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.type, 'expense'));
+    const byCategory = await database.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.categoryId, categoryId));
 
     expect(byAccount).toHaveLength(1);
     expect(byDate).toHaveLength(1);

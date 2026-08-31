@@ -53,19 +53,33 @@ const confirmedOccurrence: RecurringOccurrence = {
 
 function buildDependencies() {
   return {
-    getRecurringOverview: { execute: jest.fn().mockResolvedValue({ dueOccurrences: [], schedules: [schedule] }) },
-    recurringOccurrenceRepository: { listByScheduleId: jest.fn().mockResolvedValue([confirmedOccurrence]) },
-    pauseRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'paused' }) },
-    resumeRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'active' }) },
-    endRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, status: 'ended' }) },
-    updateRecurringSchedule: { execute: jest.fn().mockResolvedValue({ ...schedule, amount: 199000 }) },
+    getRecurringOverview: {
+      execute: jest.fn().mockResolvedValue({ dueOccurrences: [], schedules: [schedule] }),
+    },
+    recurringOccurrenceRepository: {
+      listByScheduleId: jest.fn().mockResolvedValue([confirmedOccurrence]),
+    },
+    pauseRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, status: 'paused' }),
+    },
+    resumeRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, status: 'active' }),
+    },
+    endRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, status: 'ended' }),
+    },
+    updateRecurringSchedule: {
+      execute: jest.fn().mockResolvedValue({ ...schedule, amount: 199000 }),
+    },
   } as const;
 }
 
 describe('useRecurringManagement', () => {
   it('lists every schedule', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.items).toHaveLength(1);
@@ -74,20 +88,27 @@ describe('useRecurringManagement', () => {
 
   it('opens a schedule detail with its confirmed/skipped history', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
       await result.current.openDetail('schedule-1');
     });
 
-    expect(result.current.selected).toMatchObject({ id: 'schedule-1', displayName: 'YouTube Premium' });
+    expect(result.current.selected).toMatchObject({
+      id: 'schedule-1',
+      displayName: 'YouTube Premium',
+    });
     expect(result.current.selected?.history).toHaveLength(1);
   });
 
   it('pauses, resumes and ends the selected schedule', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.openDetail('schedule-1');
@@ -111,7 +132,9 @@ describe('useRecurringManagement', () => {
 
   it('updates the selected schedule amount', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringManagement({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringManagement({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.openDetail('schedule-1');
@@ -121,6 +144,8 @@ describe('useRecurringManagement', () => {
       await result.current.updateAmount(199000);
     });
 
-    expect(dependencies.updateRecurringSchedule.execute).toHaveBeenCalledWith('schedule-1', { amount: 199000 });
+    expect(dependencies.updateRecurringSchedule.execute).toHaveBeenCalledWith('schedule-1', {
+      amount: 199000,
+    });
   });
 });

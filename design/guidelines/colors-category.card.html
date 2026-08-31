@@ -1,18 +1,72 @@
 <!-- @dsCard group="Colors" viewport="700x150" subtitle="Fixed per-category colors for transactions & goals" name="Category Colors" -->
-<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
-<style>
-body{margin:0;font-family:var(--font-sans);background:var(--color-bg);padding:20px}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.sw{background:#fff;border-radius:var(--radius-md);padding:14px;box-shadow:var(--shadow-card);text-align:center}
-.dot{width:40px;height:40px;border-radius:50%;margin:0 auto 8px}
-.name{font-size:12px;font-weight:var(--weight-bold)}
-.hex{font-size:11px;font-family:monospace;opacity:.7}
-</style></head><body>
-<div class="grid">
-  <div class="sw"><div class="dot" style="background:var(--color-cat-income)"></div><div class="name">Income</div><div class="hex">#1FAA59</div></div>
-  <div class="sw"><div class="dot" style="background:var(--color-cat-food)"></div><div class="name">Food</div><div class="hex">#F2734A</div></div>
-  <div class="sw"><div class="dot" style="background:var(--color-cat-shopping)"></div><div class="name">Shopping</div><div class="hex">#7C5CFC</div></div>
-  <div class="sw"><div class="dot" style="background:var(--color-cat-bills)"></div><div class="name">Bills</div><div class="hex">#2F6FED</div></div>
-  <div class="sw"><div class="dot" style="background:var(--color-cat-transport)"></div><div class="name">Transport</div><div class="hex">#14B8A6</div></div>
-</div>
-</body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: var(--font-sans);
+        background: var(--color-bg);
+        padding: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+      }
+      .sw {
+        background: #fff;
+        border-radius: var(--radius-md);
+        padding: 14px;
+        box-shadow: var(--shadow-card);
+        text-align: center;
+      }
+      .dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 0 auto 8px;
+      }
+      .name {
+        font-size: 12px;
+        font-weight: var(--weight-bold);
+      }
+      .hex {
+        font-size: 11px;
+        font-family: monospace;
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <div class="sw">
+        <div class="dot" style="background: var(--color-cat-income)"></div>
+        <div class="name">Income</div>
+        <div class="hex">#1FAA59</div>
+      </div>
+      <div class="sw">
+        <div class="dot" style="background: var(--color-cat-food)"></div>
+        <div class="name">Food</div>
+        <div class="hex">#F2734A</div>
+      </div>
+      <div class="sw">
+        <div class="dot" style="background: var(--color-cat-shopping)"></div>
+        <div class="name">Shopping</div>
+        <div class="hex">#7C5CFC</div>
+      </div>
+      <div class="sw">
+        <div class="dot" style="background: var(--color-cat-bills)"></div>
+        <div class="name">Bills</div>
+        <div class="hex">#2F6FED</div>
+      </div>
+      <div class="sw">
+        <div class="dot" style="background: var(--color-cat-transport)"></div>
+        <div class="name">Transport</div>
+        <div class="hex">#14B8A6</div>
+      </div>
+    </div>
+  </body>
+</html>

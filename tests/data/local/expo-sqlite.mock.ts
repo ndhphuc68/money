@@ -9,7 +9,9 @@ class TestSQLiteStatement {
 
   executeSync(parameters: BindParameters = []): TestSQLiteExecuteResult<Record<string, unknown>> {
     if (this.statement.reader) {
-      return new TestSQLiteExecuteResult(this.statement.all(parameters) as Record<string, unknown>[]);
+      return new TestSQLiteExecuteResult(
+        this.statement.all(parameters) as Record<string, unknown>[],
+      );
     }
 
     const result = this.statement.run(parameters);

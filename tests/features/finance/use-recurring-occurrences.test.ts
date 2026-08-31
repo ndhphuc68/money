@@ -53,7 +53,9 @@ const occurrence: RecurringOccurrence = {
 
 function buildDependencies(overrides?: { confirmResult?: unknown }) {
   return {
-    getRecurringOverview: { execute: jest.fn().mockResolvedValue({ dueOccurrences: [occurrence], schedules: [schedule] }) },
+    getRecurringOverview: {
+      execute: jest.fn().mockResolvedValue({ dueOccurrences: [occurrence], schedules: [schedule] }),
+    },
     confirmRecurringOccurrence: {
       execute: jest.fn().mockResolvedValue(
         overrides?.confirmResult ?? {
@@ -77,7 +79,9 @@ function buildDependencies(overrides?: { confirmResult?: unknown }) {
 describe('useRecurringOccurrences', () => {
   it('loads due occurrences into the list view', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.items).toHaveLength(1);
@@ -86,18 +90,25 @@ describe('useRecurringOccurrences', () => {
 
   it('opens detail for a selected occurrence', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     act(() => result.current.openDetail('occurrence-1'));
 
     expect(result.current.view).toBe('detail');
-    expect(result.current.selected).toMatchObject({ id: 'occurrence-1', displayName: 'YouTube Premium' });
+    expect(result.current.selected).toMatchObject({
+      id: 'occurrence-1',
+      displayName: 'YouTube Premium',
+    });
   });
 
   it('confirms directly to success when the amount was not edited', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     act(() => result.current.openDetail('occurrence-1'));
 
@@ -105,13 +116,19 @@ describe('useRecurringOccurrences', () => {
       await result.current.confirm();
     });
 
-    expect(dependencies.confirmRecurringOccurrence.execute).toHaveBeenCalledWith('occurrence-1', {}, 'this_only');
+    expect(dependencies.confirmRecurringOccurrence.execute).toHaveBeenCalledWith(
+      'occurrence-1',
+      {},
+      'this_only',
+    );
     expect(result.current.view).toBe('success');
   });
 
   it('routes to the scope screen when the edited amount differs from the schedule default', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     act(() => result.current.openDetail('occurrence-1'));
     act(() => result.current.setEditedAmount(189000));
@@ -137,7 +154,9 @@ describe('useRecurringOccurrences', () => {
 
   it('skips an occurrence and returns to the list', async () => {
     const dependencies = buildDependencies();
-    const { result } = renderHook(() => useRecurringOccurrences({ dependencies: dependencies as never, t }));
+    const { result } = renderHook(() =>
+      useRecurringOccurrences({ dependencies: dependencies as never, t }),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     act(() => result.current.openDetail('occurrence-1'));
 

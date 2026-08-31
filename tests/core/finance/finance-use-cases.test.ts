@@ -24,8 +24,15 @@ import { DEFAULT_CATEGORIES } from '@/core/application/finance/default-categorie
 import { Onboarding } from '@/core/application/finance/onboarding';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
-import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
-import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  createDefaultProfileSettings,
+  ProfileSettings,
+} from '@/core/domain/finance/profile-settings';
+import {
+  Transaction,
+  TransactionInput,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 
 const DEVICE_ID = '550e8400-e29b-41d4-a716-446655440099';
 
@@ -69,7 +76,12 @@ class FakeAccountRepository implements AccountRepository {
 
   async softDeleteOrHide(id: string, context: WriteContext): Promise<Account> {
     const existing = this.requireById(id);
-    const updated: Account = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 };
+    const updated: Account = {
+      ...existing,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    };
     this.store.set(id, updated);
     return updated;
   }
@@ -116,14 +128,24 @@ class FakeCategoryRepository implements CategoryRepository {
 
   async update(id: string, changes: UpdateCategoryInput, context: WriteContext): Promise<Category> {
     const existing = this.requireById(id);
-    const updated: Category = { ...existing, ...changes, updatedAt: context.now, revision: existing.revision + 1 };
+    const updated: Category = {
+      ...existing,
+      ...changes,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    };
     this.store.set(id, updated);
     return updated;
   }
 
   async hide(id: string, context: WriteContext): Promise<Category> {
     const existing = this.requireById(id);
-    const updated: Category = { ...existing, isArchived: true, updatedAt: context.now, revision: existing.revision + 1 };
+    const updated: Category = {
+      ...existing,
+      isArchived: true,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    };
     this.store.set(id, updated);
     return updated;
   }
@@ -133,7 +155,9 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 
   async listActiveByType(type: Category['type']): Promise<Category[]> {
-    return Array.from(this.store.values()).filter((category) => category.type === type && category.deletedAt === null);
+    return Array.from(this.store.values()).filter(
+      (category) => category.type === type && category.deletedAt === null,
+    );
   }
 
   async isUsedByTransaction(): Promise<boolean> {
@@ -153,9 +177,13 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 }
 
-function mergeTransactionInput(existing: Transaction, changes: UpdateTransactionInput): TransactionInput {
+function mergeTransactionInput(
+  existing: Transaction,
+  changes: UpdateTransactionInput,
+): TransactionInput {
   const type = changes.type ?? existing.type;
-  const existingDestinationAccountId = existing.type === 'transfer' ? existing.destinationAccountId : null;
+  const existingDestinationAccountId =
+    existing.type === 'transfer' ? existing.destinationAccountId : null;
   const existingCategoryId = existing.type === 'transfer' ? null : existing.categoryId;
 
   const destinationAccountId =
@@ -164,7 +192,12 @@ function mergeTransactionInput(existing: Transaction, changes: UpdateTransaction
       : type === 'transfer'
         ? existingDestinationAccountId
         : null;
-  const categoryId = changes.categoryId !== undefined ? changes.categoryId : type === 'transfer' ? null : existingCategoryId;
+  const categoryId =
+    changes.categoryId !== undefined
+      ? changes.categoryId
+      : type === 'transfer'
+        ? null
+        : existingCategoryId;
 
   return {
     type,
@@ -198,9 +231,19 @@ function buildTransaction(id: string, input: TransactionInput, meta: Transaction
   };
 
   if (input.type === 'transfer') {
-    return { ...base, type: 'transfer', destinationAccountId: input.destinationAccountId as string, categoryId: null };
+    return {
+      ...base,
+      type: 'transfer',
+      destinationAccountId: input.destinationAccountId as string,
+      categoryId: null,
+    };
   }
-  return { ...base, type: input.type, categoryId: input.categoryId as string, destinationAccountId: null };
+  return {
+    ...base,
+    type: input.type,
+    categoryId: input.categoryId as string,
+    destinationAccountId: null,
+  };
 }
 
 function monthRange(month: string): { from: string; to: string } {
@@ -228,7 +271,11 @@ class FakeTransactionRepository implements TransactionRepository {
     return transaction;
   }
 
-  async update(id: string, changes: UpdateTransactionInput, context: WriteContext): Promise<Transaction> {
+  async update(
+    id: string,
+    changes: UpdateTransactionInput,
+    context: WriteContext,
+  ): Promise<Transaction> {
     const existing = this.requireById(id);
     const merged = mergeTransactionInput(existing, changes);
     validateTransactionInput(merged);
@@ -245,14 +292,24 @@ class FakeTransactionRepository implements TransactionRepository {
 
   async softDelete(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
 
   async restore(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: null, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: null,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
@@ -274,7 +331,9 @@ class FakeTransactionRepository implements TransactionRepository {
       items = items.filter((t) => t.categoryId === filter.categoryId);
     }
     if (filter.accountId) {
-      items = items.filter((t) => t.accountId === filter.accountId || t.destinationAccountId === filter.accountId);
+      items = items.filter(
+        (t) => t.accountId === filter.accountId || t.destinationAccountId === filter.accountId,
+      );
     }
     if (filter.query) {
       items = items.filter((t) => t.name.toLowerCase().includes(filter.query!.toLowerCase()));
@@ -291,7 +350,9 @@ class FakeTransactionRepository implements TransactionRepository {
       }
     }
 
-    return items.sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)));
+    return items.sort((a, b) =>
+      a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date),
+    );
   }
 
   async saveWithOperation(record: Transaction): Promise<void> {
@@ -354,7 +415,11 @@ describe('CreateAccount', () => {
       generateId: makeIdFactory('id'),
     });
 
-    const account = await useCase.execute({ name: '  Cash  ', type: 'cash', openingBalance: 1000000 });
+    const account = await useCase.execute({
+      name: '  Cash  ',
+      type: 'cash',
+      openingBalance: 1000000,
+    });
 
     expect(account.name).toBe('Cash');
     expect(account.type).toBe('cash');
@@ -371,7 +436,9 @@ describe('CreateAccount', () => {
       generateId: makeIdFactory('id'),
     });
 
-    await expect(useCase.execute({ name: '   ', type: 'cash', openingBalance: 0 })).rejects.toThrow();
+    await expect(
+      useCase.execute({ name: '   ', type: 'cash', openingBalance: 0 }),
+    ).rejects.toThrow();
   });
 
   it('rejects a non-integer opening balance', async () => {
@@ -382,7 +449,9 @@ describe('CreateAccount', () => {
       generateId: makeIdFactory('id'),
     });
 
-    await expect(useCase.execute({ name: 'Cash', type: 'cash', openingBalance: 1.5 })).rejects.toThrow();
+    await expect(
+      useCase.execute({ name: 'Cash', type: 'cash', openingBalance: 1.5 }),
+    ).rejects.toThrow();
   });
 });
 
@@ -397,10 +466,30 @@ describe('finance transaction use cases', () => {
     const generateId = makeIdFactory('tx');
     return {
       transactionRepository,
-      createTransaction: new CreateTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId }),
-      updateTransaction: new UpdateTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId }),
-      deleteTransaction: new DeleteTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId }),
-      restoreTransaction: new RestoreTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId }),
+      createTransaction: new CreateTransaction({
+        transactionRepository,
+        now,
+        deviceId: DEVICE_ID,
+        generateId,
+      }),
+      updateTransaction: new UpdateTransaction({
+        transactionRepository,
+        now,
+        deviceId: DEVICE_ID,
+        generateId,
+      }),
+      deleteTransaction: new DeleteTransaction({
+        transactionRepository,
+        now,
+        deviceId: DEVICE_ID,
+        generateId,
+      }),
+      restoreTransaction: new RestoreTransaction({
+        transactionRepository,
+        now,
+        deviceId: DEVICE_ID,
+        generateId,
+      }),
     };
   }
 
@@ -463,13 +552,16 @@ describe('finance transaction use cases', () => {
   });
 
   it('deletes a transaction as a tombstone and can restore it', async () => {
-    const { createTransaction, deleteTransaction, restoreTransaction, transactionRepository } = setup();
+    const { createTransaction, deleteTransaction, restoreTransaction, transactionRepository } =
+      setup();
     const created = await createTransaction.execute(expenseInput);
 
     const deleted = await deleteTransaction.execute(created.id);
     expect(deleted.deletedAt).not.toBeNull();
     expect((await transactionRepository.list({})).find((t) => t.id === created.id)).toBeUndefined();
-    expect((await transactionRepository.list({ includeDeleted: true })).find((t) => t.id === created.id)).toBeDefined();
+    expect(
+      (await transactionRepository.list({ includeDeleted: true })).find((t) => t.id === created.id),
+    ).toBeDefined();
 
     const restored = await restoreTransaction.execute(created.id);
     expect(restored.deletedAt).toBeNull();
@@ -507,7 +599,12 @@ describe('GetDashboard', () => {
       now: now(),
     });
 
-    const createTransaction = new CreateTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId });
+    const createTransaction = new CreateTransaction({
+      transactionRepository,
+      now,
+      deviceId: DEVICE_ID,
+      generateId,
+    });
 
     await createTransaction.execute({
       type: 'income',
@@ -556,7 +653,12 @@ describe('GetDashboard', () => {
       note: null,
     });
 
-    const deleteTransaction = new DeleteTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId });
+    const deleteTransaction = new DeleteTransaction({
+      transactionRepository,
+      now,
+      deviceId: DEVICE_ID,
+      generateId,
+    });
     const deletedOne = await createTransaction.execute({
       type: 'expense',
       amount: 500000,
@@ -587,7 +689,11 @@ describe('GetDashboard', () => {
     expect(view.netCashFlow).toBe(4700000);
 
     expect(view.chartSeries).toHaveLength(6);
-    expect(view.chartSeries[view.chartSeries.length - 1]).toEqual({ month: '2026-08', income: 5000000, expense: 300000 });
+    expect(view.chartSeries[view.chartSeries.length - 1]).toEqual({
+      month: '2026-08',
+      income: 5000000,
+      expense: 300000,
+    });
 
     expect(view.categorySpending).toEqual([{ id: 'category-food', amount: 300000 }]);
 
@@ -601,7 +707,12 @@ describe('GetReport', () => {
     const transactionRepository = new FakeTransactionRepository();
     const now = makeClock('2026-08-25T00:00:00.000Z');
     const generateId = makeIdFactory('rep');
-    const createTransaction = new CreateTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId });
+    const createTransaction = new CreateTransaction({
+      transactionRepository,
+      now,
+      deviceId: DEVICE_ID,
+      generateId,
+    });
 
     await createTransaction.execute({
       type: 'income',
@@ -650,7 +761,12 @@ describe('GetReport', () => {
     const transactionRepository = new FakeTransactionRepository();
     const now = makeClock('2026-08-25T00:00:00.000Z');
     const generateId = makeIdFactory('rep2');
-    const createTransaction = new CreateTransaction({ transactionRepository, now, deviceId: DEVICE_ID, generateId });
+    const createTransaction = new CreateTransaction({
+      transactionRepository,
+      now,
+      deviceId: DEVICE_ID,
+      generateId,
+    });
 
     await createTransaction.execute({
       type: 'expense',
@@ -690,7 +806,14 @@ describe('Onboarding', () => {
     const profileSettingsRepository = new FakeProfileSettingsRepository();
     const now = makeClock('2026-08-25T00:00:00.000Z');
     const generateId = makeIdFactory('ob');
-    const onboarding = new Onboarding({ accountRepository, categoryRepository, profileSettingsRepository, now, deviceId: DEVICE_ID, generateId });
+    const onboarding = new Onboarding({
+      accountRepository,
+      categoryRepository,
+      profileSettingsRepository,
+      now,
+      deviceId: DEVICE_ID,
+      generateId,
+    });
     return { onboarding, accountRepository, categoryRepository, profileSettingsRepository };
   }
 
@@ -708,7 +831,11 @@ describe('Onboarding', () => {
     const { onboarding } = setup();
 
     // No saveDisplayName call at all; caller advances straight to account creation.
-    const account = await onboarding.createFirstAccount({ name: 'Cash', type: 'cash', openingBalance: 0 });
+    const account = await onboarding.createFirstAccount({
+      name: 'Cash',
+      type: 'cash',
+      openingBalance: 0,
+    });
     expect(account.name).toBe('Cash');
 
     const state = await onboarding.getState();
@@ -773,7 +900,11 @@ describe('Onboarding', () => {
       operationId: 'op-1',
       now: '2026-08-25T00:00:00.000Z',
     });
-    await profileSettingsRepository.save({ displayName: 'Phuc', amountsHidden: false, onboardingCompleted: false });
+    await profileSettingsRepository.save({
+      displayName: 'Phuc',
+      amountsHidden: false,
+      onboardingCompleted: false,
+    });
 
     // A fresh Onboarding instance simulates re-entering the app after exiting mid-flow.
     const resumed = new Onboarding({
@@ -802,7 +933,11 @@ describe('Onboarding', () => {
       operationId: 'op-1',
       now: '2026-08-25T00:00:00.000Z',
     });
-    await profileSettingsRepository.save({ displayName: 'Phuc', amountsHidden: false, onboardingCompleted: true });
+    await profileSettingsRepository.save({
+      displayName: 'Phuc',
+      amountsHidden: false,
+      onboardingCompleted: true,
+    });
 
     const resumed = new Onboarding({
       accountRepository,

@@ -18,8 +18,15 @@ import { GetDashboard } from '@/core/application/finance/get-dashboard';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { formatVnd } from '@/core/domain/finance/money';
-import { createDefaultProfileSettings, ProfileSettings } from '@/core/domain/finance/profile-settings';
-import { Transaction, TransactionInput, validateTransactionInput } from '@/core/domain/finance/transaction';
+import {
+  createDefaultProfileSettings,
+  ProfileSettings,
+} from '@/core/domain/finance/profile-settings';
+import {
+  Transaction,
+  TransactionInput,
+  validateTransactionInput,
+} from '@/core/domain/finance/transaction';
 import { DashboardScreen } from '@/features/finance/screens/dashboard-screen';
 import { useDashboard } from '@/features/finance/view-models/use-dashboard';
 import { Locale, translate } from '@/i18n/translations';
@@ -52,7 +59,11 @@ class FakeAccountRepository implements AccountRepository {
     return account;
   }
 
-  async update(_id: string, _changes: UpdateAccountInput, _context: WriteContext): Promise<Account> {
+  async update(
+    _id: string,
+    _changes: UpdateAccountInput,
+    _context: WriteContext,
+  ): Promise<Account> {
     throw new Error('not implemented');
   }
 
@@ -92,7 +103,11 @@ class FakeCategoryRepository implements CategoryRepository {
     return category;
   }
 
-  async update(_id: string, _changes: UpdateCategoryInput, _context: WriteContext): Promise<Category> {
+  async update(
+    _id: string,
+    _changes: UpdateCategoryInput,
+    _context: WriteContext,
+  ): Promise<Category> {
     throw new Error('not implemented');
   }
 
@@ -105,7 +120,9 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 
   async listActiveByType(type: Category['type']): Promise<Category[]> {
-    return Array.from(this.store.values()).filter((category) => category.type === type && category.deletedAt === null);
+    return Array.from(this.store.values()).filter(
+      (category) => category.type === type && category.deletedAt === null,
+    );
   }
 
   async isUsedByTransaction(): Promise<boolean> {
@@ -135,25 +152,45 @@ class FakeTransactionRepository implements TransactionRepository {
   async create(input: CreateTransactionInput): Promise<Transaction> {
     const { id, originDeviceId, operationId: _operationId, now, ...rest } = input;
     validateTransactionInput(rest);
-    const transaction = buildTransaction(id, rest, { createdAt: now, updatedAt: now, deletedAt: null, revision: 1, originDeviceId });
+    const transaction = buildTransaction(id, rest, {
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      revision: 1,
+      originDeviceId,
+    });
     this.store.set(id, transaction);
     return transaction;
   }
 
-  async update(_id: string, _changes: UpdateTransactionInput, _context: WriteContext): Promise<Transaction> {
+  async update(
+    _id: string,
+    _changes: UpdateTransactionInput,
+    _context: WriteContext,
+  ): Promise<Transaction> {
     throw new Error('not implemented');
   }
 
   async softDelete(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: context.now, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: context.now,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
 
   async restore(id: string, context: WriteContext): Promise<Transaction> {
     const existing = this.requireById(id);
-    const updated = { ...existing, deletedAt: null, updatedAt: context.now, revision: existing.revision + 1 } as Transaction;
+    const updated = {
+      ...existing,
+      deletedAt: null,
+      updatedAt: context.now,
+      revision: existing.revision + 1,
+    } as Transaction;
     this.store.set(id, updated);
     return updated;
   }
@@ -183,12 +220,40 @@ class FakeTransactionRepository implements TransactionRepository {
   }
 }
 
-function buildTransaction(id: string, input: TransactionInput, meta: { createdAt: string; updatedAt: string; deletedAt: string | null; revision: number; originDeviceId: string }): Transaction {
-  const base = { id, amount: input.amount, accountId: input.accountId, date: input.date, name: input.name, note: input.note ?? null, ...meta };
+function buildTransaction(
+  id: string,
+  input: TransactionInput,
+  meta: {
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    revision: number;
+    originDeviceId: string;
+  },
+): Transaction {
+  const base = {
+    id,
+    amount: input.amount,
+    accountId: input.accountId,
+    date: input.date,
+    name: input.name,
+    note: input.note ?? null,
+    ...meta,
+  };
   if (input.type === 'transfer') {
-    return { ...base, type: 'transfer', destinationAccountId: input.destinationAccountId as string, categoryId: null };
+    return {
+      ...base,
+      type: 'transfer',
+      destinationAccountId: input.destinationAccountId as string,
+      categoryId: null,
+    };
   }
-  return { ...base, type: input.type, categoryId: input.categoryId as string, destinationAccountId: null };
+  return {
+    ...base,
+    type: input.type,
+    categoryId: input.categoryId as string,
+    destinationAccountId: null,
+  };
 }
 
 function makeIdFactory(prefix: string): () => string {
@@ -207,10 +272,19 @@ function makeRepos() {
   const categoryRepository = new FakeCategoryRepository();
   const transactionRepository = new FakeTransactionRepository();
   const profileSettingsRepository = new FakeProfileSettingsRepository();
-  return { accountRepository, categoryRepository, transactionRepository, profileSettingsRepository };
+  return {
+    accountRepository,
+    categoryRepository,
+    transactionRepository,
+    profileSettingsRepository,
+  };
 }
 
-function Harness({ dependencies }: { dependencies: ReturnType<typeof makeRepos> & { getDashboard: GetDashboard } }) {
+function Harness({
+  dependencies,
+}: {
+  dependencies: ReturnType<typeof makeRepos> & { getDashboard: GetDashboard };
+}) {
   const viewModel = useDashboard({ dependencies, now: () => new Date(NOW), t });
   return (
     <DashboardScreen
@@ -282,7 +356,8 @@ describe('dashboard screen + view model', () => {
 
   it('renders total balance, month income/expense/net, category spending and recent transactions', async () => {
     const repos = makeRepos();
-    const { account, expenseCategory, incomeCategory, generateId } = await seedAccountAndCategory(repos);
+    const { account, expenseCategory, incomeCategory, generateId } =
+      await seedAccountAndCategory(repos);
 
     await repos.transactionRepository.create({
       id: generateId(),

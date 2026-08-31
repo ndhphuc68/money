@@ -13,7 +13,7 @@
 - Icons: only `lucide-react-native` components, never emoji or Unicode glyphs as icon substitutes (`CLAUDE.md` → Icons).
 - Lint/format: run `npx expo lint` before any task is considered done (`CLAUDE.md` → ESLint và Prettier).
 - Type check: run `npx tsc --noEmit` — the project has `strict: true`.
-- No raw hex colors in screens outside of `src/theme/colors.ts` — existing hardcoded gold-tone hex values (`#FFF4D6`, `#A96308`) are pre-existing and out of scope for this plan (tracked as backlog in the new CLAUDE.md rule); do not introduce *new* raw hex values.
+- No raw hex colors in screens outside of `src/theme/colors.ts` — existing hardcoded gold-tone hex values (`#FFF4D6`, `#A96308`) are pre-existing and out of scope for this plan (tracked as backlog in the new CLAUDE.md rule); do not introduce _new_ raw hex values.
 - Every feature component's exported name, file path, and prop types must stay identical to today — only internals change. This is what lets the existing test suite (`tests/components/finance/*.test.tsx`) serve as the regression check.
 - Do not touch: `BottomNav`'s overall 5-item layout, `UndoBanner`, `DateField`'s date-parsing logic, `GoldActionPickerSheet`'s buy/sell tiles, `FilterBar`'s month-shift logic, `TransactionForm`'s validation/submit logic, `SegmentedControl`, the gold-tone badge colors, `ProgressBar`-shaped code in `GoalCard`/`BudgetRow`, or field error-text styling — these are explicitly out of scope per the design spec.
 - Design spec: `docs/superpowers/specs/2026-08-31-shared-base-components-design.md`.
@@ -23,12 +23,14 @@
 ## Task 1: Scaffold `src/components/base/` and move `Dropdown`
 
 **Files:**
+
 - Create: `src/components/base/Dropdown.tsx` (moved from `src/components/shared/Dropdown.tsx`, content unchanged)
 - Create: `src/components/base/index.ts`
 - Modify: `src/components/gold/GoldFormSheet.tsx:6` (import path)
 - Delete: `src/components/shared/Dropdown.tsx`, `src/components/shared/index.ts`
 
 **Interfaces:**
+
 - Produces: `Dropdown` component and `DropdownOption`/`DropdownProps` types, now exported from `@/components/base`.
 
 - [ ] **Step 1: Confirm the only consumer of the old path**
@@ -84,11 +86,13 @@ git commit -m "refactor: move Dropdown into src/components/base"
 ## Task 2: Create `base/Card`
 
 **Files:**
+
 - Create: `src/components/base/Card.tsx`
 - Create: `tests/components/base/card.test.tsx`
 - Modify: `src/components/base/index.ts`
 
 **Interfaces:**
+
 - Produces: `Card` component, `CardProps` type — `{ children, elevation?, radius?, padding?, backgroundColor?, style? }`.
 
 - [ ] **Step 1: Write the failing test**
@@ -151,7 +155,11 @@ export function Card({
 
   return (
     <View
-      style={[elevationStyle, { backgroundColor, borderRadius: radius[radiusKey], padding }, style]}>
+      style={[
+        elevationStyle,
+        { backgroundColor, borderRadius: radius[radiusKey], padding },
+        style,
+      ]}>
       {children}
     </View>
   );
@@ -184,11 +192,13 @@ git commit -m "feat: add base Card component"
 ## Task 3: Create `base/IconButton`
 
 **Files:**
+
 - Create: `src/components/base/IconButton.tsx`
 - Create: `tests/components/base/icon-button.test.tsx`
 - Modify: `src/components/base/index.ts`
 
 **Interfaces:**
+
 - Produces: `IconButton` component, `IconButtonProps` type — `{ icon, onPress?, size?, radius?, backgroundColor?, pressedBackgroundColor?, accessibilityLabel, disabled?, style? }`.
 
 - [ ] **Step 1: Write the failing test**
@@ -275,7 +285,8 @@ export function IconButton({
           height: size,
           width: size,
           borderRadius: radius[radiusKey],
-          backgroundColor: pressed && pressedBackgroundColor ? pressedBackgroundColor : backgroundColor,
+          backgroundColor:
+            pressed && pressedBackgroundColor ? pressedBackgroundColor : backgroundColor,
         },
         style,
       ]}>
@@ -318,11 +329,13 @@ git commit -m "feat: add base IconButton component"
 ## Task 4: Create `base/PrimaryButton`
 
 **Files:**
+
 - Create: `src/components/base/PrimaryButton.tsx`
 - Create: `tests/components/base/primary-button.test.tsx`
 - Modify: `src/components/base/index.ts`
 
 **Interfaces:**
+
 - Produces: `PrimaryButton` component, `PrimaryButtonProps` type — `{ label, onPress, disabled?, backgroundColor?, pressedBackgroundColor?, textColor?, textStyle?, radius?, minHeight?, style? }`.
 
 - [ ] **Step 1: Write the failing test**
@@ -416,7 +429,9 @@ export function PrimaryButton({
           borderRadius: radius[radiusKey],
           minHeight,
           backgroundColor:
-            pressed && !disabled && pressedBackgroundColor ? pressedBackgroundColor : backgroundColor,
+            pressed && !disabled && pressedBackgroundColor
+              ? pressedBackgroundColor
+              : backgroundColor,
         },
         disabled && styles.disabled,
         style,
@@ -467,11 +482,13 @@ git commit -m "feat: add base PrimaryButton component"
 ## Task 5: Create `base/ListRow`
 
 **Files:**
+
 - Create: `src/components/base/ListRow.tsx`
 - Create: `tests/components/base/list-row.test.tsx`
 - Modify: `src/components/base/index.ts`
 
 **Interfaces:**
+
 - Produces: `ListRow` component, `ListRowProps` type — `{ leading?, title, subtitle?, trailing?, showDivider?, dividerColor?, onPress?, accessibilityLabel?, gap?, minHeight?, titleStyle?, subtitleStyle?, style? }`.
 
 - [ ] **Step 1: Write the failing test**
@@ -662,11 +679,13 @@ git commit -m "feat: add base ListRow component"
 ## Task 6: Create `base/PillChip`
 
 **Files:**
+
 - Create: `src/components/base/PillChip.tsx`
 - Create: `tests/components/base/pill-chip.test.tsx`
 - Modify: `src/components/base/index.ts`
 
 **Interfaces:**
+
 - Produces: `PillChip` component, `PillChipProps` type — `{ label, active, onPress }`.
 
 - [ ] **Step 1: Write the failing test**
@@ -783,11 +802,13 @@ git commit -m "feat: add base PillChip component"
 ## Task 7: Create `base/Sheet`
 
 **Files:**
+
 - Create: `src/components/base/Sheet.tsx`
 - Create: `tests/components/base/sheet.test.tsx`
 - Modify: `src/components/base/index.ts`
 
 **Interfaces:**
+
 - Consumes: `IconButton` from Task 3 (`src/components/base/IconButton.tsx`).
 - Produces: `Sheet` component, `SheetProps` type — `{ visible, onClose, title?, subtitle?, closeLabel?, variant?, showHandle?, applyBottomInset?, closeButtonBackgroundColor?, onBodyPress?, style?, children }`.
 
@@ -1008,10 +1029,12 @@ git commit -m "feat: add base Sheet component"
 ## Task 8: Refactor `StatCard`, `BalanceCard`, `GoalCard` onto `Card`/`IconButton`
 
 **Files:**
+
 - Modify: `src/components/finance/StatCard.tsx`, `src/components/finance/BalanceCard.tsx`, `src/components/finance/GoalCard.tsx`
 - Test (existing, unchanged): `tests/components/finance/cards.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `Card` (Task 2), `IconButton` (Task 3).
 
 - [ ] **Step 1: Confirm the baseline test passes before touching anything**
@@ -1099,7 +1122,11 @@ export function BalanceCard({
   hideBalanceLabel,
 }: BalanceCardProps) {
   return (
-    <Card backgroundColor={colors.gradient.balance[0]} elevation="elevated" padding={22} radius="xl">
+    <Card
+      backgroundColor={colors.gradient.balance[0]}
+      elevation="elevated"
+      padding={22}
+      radius="xl">
       <View style={styles.header}>
         <Text style={styles.label}>{label}</Text>
         <IconButton
@@ -1320,9 +1347,11 @@ git commit -m "refactor: compose StatCard, BalanceCard, GoalCard from base Card/
 ## Task 9: Refactor `GoldOverviewCard` onto `Card`
 
 **Files:**
+
 - Modify: `src/components/gold/GoldOverviewCard.tsx`
 
 **Interfaces:**
+
 - Consumes: `Card` (Task 2).
 
 - [ ] **Step 1: Rewrite `GoldOverviewCard.tsx`**
@@ -1462,10 +1491,12 @@ git commit -m "refactor: compose GoldOverviewCard from base Card"
 ## Task 10: Refactor `AmountInput`, `FilterBar`, `TransactionForm` onto `Card`/`PrimaryButton`
 
 **Files:**
+
 - Modify: `src/components/finance/AmountInput.tsx`, `src/components/finance/FilterBar.tsx`, `src/components/finance/TransactionForm.tsx`
 - Test (existing, unchanged): `tests/components/finance/entry-controls.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `Card` (Task 2), `PrimaryButton` (Task 4).
 
 - [ ] **Step 1: Confirm the baseline test passes**
@@ -2235,10 +2266,12 @@ git commit -m "refactor: compose AmountInput, FilterBar, TransactionForm from ba
 ## Task 11: Refactor `AccountPicker`, `CategoryPicker` onto `PillChip`
 
 **Files:**
+
 - Modify: `src/components/finance/AccountPicker.tsx`, `src/components/finance/CategoryPicker.tsx`
 - Test (existing, unchanged): `tests/components/finance/entry-controls.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `PillChip` (Task 6).
 
 - [ ] **Step 1: Confirm the baseline test passes**
@@ -2425,10 +2458,12 @@ git commit -m "refactor: compose AccountPicker, CategoryPicker from base PillChi
 ## Task 12: Refactor `TransactionRow`, `SettingsList` onto `ListRow`
 
 **Files:**
+
 - Modify: `src/components/finance/TransactionRow.tsx`, `src/components/finance/SettingsList.tsx`
 - Test (existing, unchanged): `tests/components/finance/cards.test.tsx`, `tests/components/finance/navigation.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `ListRow` (Task 5).
 
 - [ ] **Step 1: Confirm the baseline tests pass**
@@ -2614,9 +2649,11 @@ git commit -m "refactor: compose TransactionRow, SettingsList from base ListRow"
 ## Task 13: Refactor `GoldHistoryList` onto `Card`/`ListRow`
 
 **Files:**
+
 - Modify: `src/components/gold/GoldHistoryList.tsx`
 
 **Interfaces:**
+
 - Consumes: `Card` (Task 2), `ListRow` (Task 5).
 
 - [ ] **Step 1: Rewrite `GoldHistoryList.tsx`**
@@ -2680,7 +2717,8 @@ export function GoldHistoryList({
                     styles.rowBadge,
                     item.kind === 'sale' ? styles.rowBadgeSale : styles.rowBadgeLot,
                   ]}>
-                  <Text style={[styles.rowBadgeText, item.kind === 'sale' && styles.rowBadgeTextSale]}>
+                  <Text
+                    style={[styles.rowBadgeText, item.kind === 'sale' && styles.rowBadgeTextSale]}>
                     {item.kind === 'sale' ? '↗' : 'Au'}
                   </Text>
                 </View>
@@ -2694,7 +2732,10 @@ export function GoldHistoryList({
               title={item.title}
               trailing={
                 <Text
-                  style={[styles.rowAmount, item.amountTone === 'positive' && styles.rowAmountPositive]}>
+                  style={[
+                    styles.rowAmount,
+                    item.amountTone === 'positive' && styles.rowAmountPositive,
+                  ]}>
                   {item.amountLabel}
                 </Text>
               }
@@ -2797,10 +2838,12 @@ git commit -m "refactor: compose GoldHistoryList from base Card/ListRow"
 ## Task 14: Refactor `BottomNav`'s FAB onto `IconButton`
 
 **Files:**
+
 - Modify: `src/components/finance/BottomNav.tsx`
 - Test (existing, unchanged): `tests/components/finance/navigation.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `IconButton` (Task 3).
 
 - [ ] **Step 1: Confirm the baseline test passes**
@@ -2951,10 +2994,12 @@ git commit -m "refactor: compose BottomNav FAB from base IconButton"
 ## Task 15: Refactor `DateField`'s iOS sheet onto `Sheet`/`PrimaryButton`
 
 **Files:**
+
 - Modify: `src/components/finance/DateField.tsx`
 - Test (existing, unchanged): `tests/components/finance/entry-controls.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `Sheet` (Task 7), `PrimaryButton` (Task 4).
 
 - [ ] **Step 1: Confirm the baseline test passes**
@@ -3120,9 +3165,11 @@ git commit -m "refactor: compose DateField's iOS sheet from base Sheet/PrimaryBu
 ## Task 16: Refactor `GoldActionPickerSheet` onto `Sheet` (dialog variant)
 
 **Files:**
+
 - Modify: `src/components/gold/GoldActionPickerSheet.tsx`
 
 **Interfaces:**
+
 - Consumes: `Sheet` (Task 7).
 
 - [ ] **Step 1: Rewrite `GoldActionPickerSheet.tsx`**
@@ -3264,9 +3311,11 @@ git commit -m "refactor: compose GoldActionPickerSheet from base Sheet dialog va
 ## Task 17: Refactor `GoldBrandManageSheet` onto `Sheet`/`IconButton`/`ListRow`/`PrimaryButton`
 
 **Files:**
+
 - Modify: `src/components/gold/GoldBrandManageSheet.tsx`
 
 **Interfaces:**
+
 - Consumes: `Sheet`, `IconButton`, `ListRow`, `PrimaryButton`, `Card` (Tasks 2–7).
 
 - [ ] **Step 1: Rewrite `GoldBrandManageSheet.tsx`**
@@ -3315,7 +3364,12 @@ export function GoldBrandManageSheet({
   onClose,
 }: GoldBrandManageSheetProps) {
   return (
-    <Sheet closeLabel={closeLabel} onClose={onClose} subtitle={subtitle} title={title} visible={visible}>
+    <Sheet
+      closeLabel={closeLabel}
+      onClose={onClose}
+      subtitle={subtitle}
+      title={title}
+      visible={visible}>
       <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Card padding={0} style={styles.card}>
           {brands.map((brand, index) => (
@@ -3436,9 +3490,11 @@ git commit -m "refactor: compose GoldBrandManageSheet from base Sheet/IconButton
 ## Task 18: Refactor `GoldFormSheet` onto `Sheet`/`PrimaryButton`
 
 **Files:**
+
 - Modify: `src/components/gold/GoldFormSheet.tsx`
 
 **Interfaces:**
+
 - Consumes: `Sheet`, `PrimaryButton`, `Dropdown` (already imported from `@/components/base` since Task 1).
 
 - [ ] **Step 1: Rewrite `GoldFormSheet.tsx`**
@@ -3498,7 +3554,8 @@ export type GoldFormSheetProps = {
 };
 
 export function GoldFormSheet(props: GoldFormSheetProps) {
-  const { visible, title, subtitle, closeLabel, onSave, onClose, onCloseDropdowns, formType } = props;
+  const { visible, title, subtitle, closeLabel, onSave, onClose, onCloseDropdowns, formType } =
+    props;
 
   return (
     <Sheet
@@ -3654,9 +3711,11 @@ git commit -m "refactor: compose GoldFormSheet from base Sheet/PrimaryButton"
 ## Task 19: Refactor `GoldTrashSheet` onto `Sheet`/`IconButton`/`ListRow`
 
 **Files:**
+
 - Modify: `src/components/gold/GoldTrashSheet.tsx`
 
 **Interfaces:**
+
 - Consumes: `Sheet`, `IconButton`, `ListRow`, `Card` (Tasks 2–7).
 
 - [ ] **Step 1: Rewrite `GoldTrashSheet.tsx`**
@@ -3726,7 +3785,12 @@ export function GoldTrashSheet({
   ];
 
   return (
-    <Sheet closeLabel={closeLabel} onClose={onClose} subtitle={subtitle} title={title} visible={visible}>
+    <Sheet
+      closeLabel={closeLabel}
+      onClose={onClose}
+      subtitle={subtitle}
+      title={title}
+      visible={visible}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Card padding={0} style={styles.card}>
           {rows.map((row, index) => (
@@ -3817,9 +3881,11 @@ git commit -m "refactor: compose GoldTrashSheet from base Sheet/IconButton/ListR
 ## Task 20: Refactor `GoldDetailSheet` onto `Sheet`/`PrimaryButton`
 
 **Files:**
+
 - Modify: `src/components/gold/GoldDetailSheet.tsx`
 
 **Interfaces:**
+
 - Consumes: `Sheet`, `PrimaryButton` (Tasks 4, 7).
 
 - [ ] **Step 1: Rewrite `GoldDetailSheet.tsx`**
@@ -3866,7 +3932,12 @@ export function GoldDetailSheet({
   onClose,
 }: GoldDetailSheetProps) {
   return (
-    <Sheet closeLabel={closeLabel} onClose={onClose} subtitle={subtitle} title={title} visible={visible}>
+    <Sheet
+      closeLabel={closeLabel}
+      onClose={onClose}
+      subtitle={subtitle}
+      title={title}
+      visible={visible}>
       <View style={styles.card}>
         <View style={[styles.row, styles.rowDivider]}>
           <Text style={styles.rowLabel}>{weightLabel}</Text>
@@ -3965,6 +4036,7 @@ git commit -m "refactor: compose GoldDetailSheet from base Sheet/PrimaryButton"
 ## Task 21: Add the base-component rule to `CLAUDE.md`
 
 **Files:**
+
 - Modify: `CLAUDE.md`
 
 - [ ] **Step 1: Append the new rule section**
@@ -3972,7 +4044,6 @@ git commit -m "refactor: compose GoldDetailSheet from base Sheet/PrimaryButton"
 Add after the existing "ESLint và Prettier" section in `CLAUDE.md`:
 
 ```markdown
-
 ## Component: Base & Feature-specific
 
 Component chia làm 2 lớp:
@@ -4018,6 +4089,7 @@ Expected: no errors.
 - [ ] **Step 4: Manual smoke check**
 
 Start the app (`npx expo start`) and, per project convention for UI changes, walk through:
+
 - A finance screen showing `StatCard`/`BalanceCard`/`GoalCard`/`TransactionRow` (e.g. the overview/transactions screen) — confirm balance mask toggle, transaction rows, and goal progress bar render and behave as before.
 - The transaction entry form (`AmountInput`, `AccountPicker`/`CategoryPicker` chips, `DateField`, save button) — confirm validation errors and submit still work.
 - The gold management screen: open the action picker (buy/sell dialog), the buy/sell form sheet (date field, brand/lot/unit dropdowns, save), the brand-manage sheet (add/delete brand), the detail sheet (view + move-to-trash), and the trash sheet (restore/purge) — confirm every sheet opens, closes (via backdrop tap and the close button), and its actions still fire.

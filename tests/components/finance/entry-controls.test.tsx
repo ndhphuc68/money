@@ -19,9 +19,17 @@ jest.mock('react-native-safe-area-context', () => ({
 
 const t = translate.bind(null, 'vi');
 const filterLabels = {
-  account: t('filterAccount'), all: t('filterAll'), category: t('filterCategory'), expense: t('filterExpense'),
-  income: t('filterIncome'), month: t('filterMonth'), nextMonth: t('filterNextMonth'), previousMonth: t('filterPreviousMonth'),
-  searchLabel: t('filterSearchLabel'), searchPlaceholder: t('filterSearchPlaceholder'), transfer: t('filterTransfer'),
+  account: t('filterAccount'),
+  all: t('filterAll'),
+  category: t('filterCategory'),
+  expense: t('filterExpense'),
+  income: t('filterIncome'),
+  month: t('filterMonth'),
+  nextMonth: t('filterNextMonth'),
+  previousMonth: t('filterPreviousMonth'),
+  searchLabel: t('filterSearchLabel'),
+  searchPlaceholder: t('filterSearchPlaceholder'),
+  transfer: t('filterTransfer'),
 };
 
 function makeAccount(overrides: Partial<Account>): Account {
@@ -81,7 +89,15 @@ const categories: Category[] = [
 describe('AmountInput', () => {
   it('formats VND with thousands separators while typing', () => {
     const onChange = jest.fn();
-    const screen = render(<AmountInput invalidMessage={t('amountInvalid')} label={t('transactionFormAmountLabel')} onChange={onChange} placeholder={t('amountPlaceholder')} value={null} />);
+    const screen = render(
+      <AmountInput
+        invalidMessage={t('amountInvalid')}
+        label={t('transactionFormAmountLabel')}
+        onChange={onChange}
+        placeholder={t('amountPlaceholder')}
+        value={null}
+      />,
+    );
     const input = screen.getByLabelText('Số tiền');
 
     fireEvent.changeText(input, '1000000');
@@ -92,7 +108,15 @@ describe('AmountInput', () => {
 
   it('parses formatted VND text into a positive integer and flags invalid input', () => {
     const onChange = jest.fn();
-    const screen = render(<AmountInput invalidMessage={t('amountInvalid')} label={t('transactionFormAmountLabel')} onChange={onChange} placeholder={t('amountPlaceholder')} value={null} />);
+    const screen = render(
+      <AmountInput
+        invalidMessage={t('amountInvalid')}
+        label={t('transactionFormAmountLabel')}
+        onChange={onChange}
+        placeholder={t('amountPlaceholder')}
+        value={null}
+      />,
+    );
     const input = screen.getByLabelText('Số tiền');
 
     fireEvent.changeText(input, '1.000.000');
@@ -112,10 +136,17 @@ describe('AccountPicker', () => {
   it('lists accounts with accessible labels and reports selection', () => {
     const onSelect = jest.fn();
     const screen = render(
-      <AccountPicker accounts={accounts} label="Tài khoản" onSelect={onSelect} selectedId="acc-cash" />,
+      <AccountPicker
+        accounts={accounts}
+        label="Tài khoản"
+        onSelect={onSelect}
+        selectedId="acc-cash"
+      />,
     );
 
-    expect(screen.getByRole('button', { name: 'Vi tien mat' }).props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByRole('button', { name: 'Vi tien mat' }).props.accessibilityState).toEqual({
+      selected: true,
+    });
     fireEvent.press(screen.getByRole('button', { name: 'Ngan hang ACB' }));
     expect(onSelect).toHaveBeenCalledWith('acc-bank');
   });
@@ -123,7 +154,13 @@ describe('AccountPicker', () => {
   it('shows an "all" chip and reports null selection when allowUnselect is set', () => {
     const onSelect = jest.fn();
     const screen = render(
-      <AccountPicker allLabel={t('filterAll')} accounts={accounts} allowUnselect onSelect={onSelect} selectedId={null} />,
+      <AccountPicker
+        allLabel={t('filterAll')}
+        accounts={accounts}
+        allowUnselect
+        onSelect={onSelect}
+        selectedId={null}
+      />,
     );
 
     fireEvent.press(screen.getByRole('button', { name: 'Tất cả' }));
@@ -135,7 +172,12 @@ describe('CategoryPicker', () => {
   it('only lists categories matching the given type', () => {
     const onSelect = jest.fn();
     const screen = render(
-      <CategoryPicker categories={categories} onSelect={onSelect} selectedId={null} type="expense" />,
+      <CategoryPicker
+        categories={categories}
+        onSelect={onSelect}
+        selectedId={null}
+        type="expense"
+      />,
     );
 
     expect(screen.getByRole('button', { name: 'An uong' })).toBeTruthy();
@@ -149,7 +191,9 @@ describe('CategoryPicker', () => {
 describe('DateField', () => {
   it('defaults to displaying the given date and exposes an accessible label', () => {
     const iso = todayIso();
-    const screen = render(<DateField label={t('dateTransactionLabel')} onChange={jest.fn()} value={iso} />);
+    const screen = render(
+      <DateField label={t('dateTransactionLabel')} onChange={jest.fn()} value={iso} />,
+    );
 
     expect(screen.getByText(formatDmy(iso))).toBeTruthy();
     expect(screen.getByRole('button', { name: `Ngày giao dịch: ${formatDmy(iso)}` })).toBeTruthy();
@@ -344,7 +388,14 @@ describe('UndoBanner', () => {
 
   it('calls restore once when pressed and stops accepting further presses', () => {
     const onUndo = jest.fn();
-    const screen = render(<UndoBanner durationMs={5000} message={t('transactionsDeleteUndoMessage')} onUndo={onUndo} undoLabel={t('undoAction')} />);
+    const screen = render(
+      <UndoBanner
+        durationMs={5000}
+        message={t('transactionsDeleteUndoMessage')}
+        onUndo={onUndo}
+        undoLabel={t('undoAction')}
+      />,
+    );
 
     expect(screen.getByText('Đã xóa giao dịch')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Hoàn tác' }));
@@ -356,7 +407,15 @@ describe('UndoBanner', () => {
   it('expires after the configured window and calls onExpire', () => {
     const onUndo = jest.fn();
     const onExpire = jest.fn();
-    render(<UndoBanner durationMs={2000} message={t('transactionsDeleteUndoMessage')} onExpire={onExpire} onUndo={onUndo} undoLabel={t('undoAction')} />);
+    render(
+      <UndoBanner
+        durationMs={2000}
+        message={t('transactionsDeleteUndoMessage')}
+        onExpire={onExpire}
+        onUndo={onUndo}
+        undoLabel={t('undoAction')}
+      />,
+    );
 
     jest.advanceTimersByTime(2000);
 

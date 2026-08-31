@@ -1,5 +1,8 @@
 // tests/features/finance/recurring-presentation.test.ts
-import { buildOccurrenceListItem, formatFrequencyLabel } from '@/features/finance/view-models/recurring-presentation';
+import {
+  buildOccurrenceListItem,
+  formatFrequencyLabel,
+} from '@/features/finance/view-models/recurring-presentation';
 import { RecurringOccurrence } from '@/core/domain/finance/recurring-occurrence';
 import { translate, Translate } from '@/i18n/translations';
 
@@ -36,7 +39,11 @@ describe('formatFrequencyLabel', () => {
 describe('buildOccurrenceListItem', () => {
   it('labels a not-yet-due occurrence as pending', () => {
     const item = buildOccurrenceListItem(baseOccurrence, '2026-09-01', t);
-    expect(item).toMatchObject({ id: 'occurrence-1', displayName: 'YouTube Premium', displayStatus: 'pending' });
+    expect(item).toMatchObject({
+      id: 'occurrence-1',
+      displayName: 'YouTube Premium',
+      displayStatus: 'pending',
+    });
     expect(item.amountLabel).toContain('179');
   });
 

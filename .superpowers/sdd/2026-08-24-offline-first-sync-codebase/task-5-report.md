@@ -38,14 +38,14 @@ Implemented the file-backed sync transport and Expo system adapters without addi
 
 ## Validation
 
-| Command | Result |
-| --- | --- |
-| `npm test -- --runInBand tests/data/sync/file-sync-transport.test.ts` (red) | Expected FAIL: missing `FileSyncTransport` module |
-| `npm test -- --runInBand tests/data/sync/file-sync-transport.test.ts` (green) | PASS: 1 suite, 9 tests |
-| `npm test -- --runInBand` | PASS: 9 suites, 52 tests |
-| `npm run typecheck` | PASS: `tsc --noEmit` |
-| `npx drizzle-kit generate` | PASS: no schema changes, no migration generated |
-| `git diff --check` | PASS: no whitespace errors |
+| Command                                                                       | Result                                            |
+| ----------------------------------------------------------------------------- | ------------------------------------------------- |
+| `npm test -- --runInBand tests/data/sync/file-sync-transport.test.ts` (red)   | Expected FAIL: missing `FileSyncTransport` module |
+| `npm test -- --runInBand tests/data/sync/file-sync-transport.test.ts` (green) | PASS: 1 suite, 9 tests                            |
+| `npm test -- --runInBand`                                                     | PASS: 9 suites, 52 tests                          |
+| `npm run typecheck`                                                           | PASS: `tsc --noEmit`                              |
+| `npx drizzle-kit generate`                                                    | PASS: no schema changes, no migration generated   |
+| `git diff --check`                                                            | PASS: no whitespace errors                        |
 
 ## Concerns
 

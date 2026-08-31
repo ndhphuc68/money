@@ -79,7 +79,9 @@ export function toRecurringOccurrenceEntity(row: RecurringOccurrenceRow): Recurr
   };
 }
 
-export function toRecurringOccurrenceRowValues(occurrence: RecurringOccurrence): RecurringOccurrenceRow {
+export function toRecurringOccurrenceRowValues(
+  occurrence: RecurringOccurrence,
+): RecurringOccurrenceRow {
   return {
     id: occurrence.id,
     scheduleId: occurrence.scheduleId,

@@ -119,4 +119,3 @@
 2. Không làm sai số dư và báo cáo khi sửa, xóa hoặc chuyển khoản.
 3. Dữ liệu nghiệp vụ phải có thể mở rộng sang household mà không cần viết lại toàn bộ.
 4. Tính năng tương lai chỉ được thêm vào MVP khi có bằng chứng người dùng thực sự cần.
-

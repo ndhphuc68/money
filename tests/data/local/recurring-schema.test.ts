@@ -1,6 +1,12 @@
 // tests/data/local/recurring-schema.test.ts
 import { openTestLocalDatabase, LocalDatabaseClient } from '@/data/local/db/client';
-import { accounts, categories, recurringOccurrences, recurringSchedules, transactions } from '@/data/local/schema';
+import {
+  accounts,
+  categories,
+  recurringOccurrences,
+  recurringSchedules,
+  transactions,
+} from '@/data/local/schema';
 
 const deviceId = '550e8400-e29b-41d4-a716-446655440020';
 const now = '2026-08-27T09:00:00.000Z';
@@ -147,6 +153,10 @@ describe('recurring schema', () => {
       .run();
 
     const row = database.db.select().from(recurringOccurrences).get();
-    expect(row).toMatchObject({ id: 'occurrence-1', scheduleId: 'schedule-youtube', status: 'pending' });
+    expect(row).toMatchObject({
+      id: 'occurrence-1',
+      scheduleId: 'schedule-youtube',
+      status: 'pending',
+    });
   });
 });

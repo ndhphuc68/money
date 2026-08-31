@@ -102,7 +102,6 @@ describe('isBeyondScheduleLimit', () => {
   });
 });
 
-
 const validScheduleInput: RecurringScheduleInput = {
   displayName: 'YouTube Premium',
   accountId: 'account-main',
@@ -128,9 +127,9 @@ describe('validateRecurringScheduleInput', () => {
   });
 
   it('rejects an empty displayName, accountId or categoryId', () => {
-    expect(() => validateRecurringScheduleInput({ ...validScheduleInput, displayName: '' })).toThrow(
-      'Recurring schedule displayName must not be empty',
-    );
+    expect(() =>
+      validateRecurringScheduleInput({ ...validScheduleInput, displayName: '' }),
+    ).toThrow('Recurring schedule displayName must not be empty');
     expect(() => validateRecurringScheduleInput({ ...validScheduleInput, accountId: '' })).toThrow(
       'Recurring schedule accountId must not be empty',
     );
@@ -199,19 +198,28 @@ describe('validateRecurringOccurrenceEdits', () => {
 describe('deriveOccurrenceDisplayStatus', () => {
   it('returns overdue when pending and past the scheduled date', () => {
     expect(
-      deriveOccurrenceDisplayStatus({ status: 'pending', scheduledDate: '2026-08-26' }, '2026-08-27'),
+      deriveOccurrenceDisplayStatus(
+        { status: 'pending', scheduledDate: '2026-08-26' },
+        '2026-08-27',
+      ),
     ).toBe('overdue');
   });
 
   it('returns pending when not yet due', () => {
     expect(
-      deriveOccurrenceDisplayStatus({ status: 'pending', scheduledDate: '2026-08-27' }, '2026-08-27'),
+      deriveOccurrenceDisplayStatus(
+        { status: 'pending', scheduledDate: '2026-08-27' },
+        '2026-08-27',
+      ),
     ).toBe('pending');
   });
 
   it('returns the stored status for confirmed/skipped regardless of date', () => {
     expect(
-      deriveOccurrenceDisplayStatus({ status: 'confirmed', scheduledDate: '2020-01-01' }, '2026-08-27'),
+      deriveOccurrenceDisplayStatus(
+        { status: 'confirmed', scheduledDate: '2020-01-01' },
+        '2026-08-27',
+      ),
     ).toBe('confirmed');
   });
 });

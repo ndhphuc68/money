@@ -93,7 +93,8 @@ function operationFor(
   payload: SyncableRecord,
   overrides: Partial<SyncOperation> = {},
 ): SyncOperation {
-  const kind: SyncOperationKind = overrides.operation ?? (payload.deletedAt === null ? 'create' : 'delete');
+  const kind: SyncOperationKind =
+    overrides.operation ?? (payload.deletedAt === null ? 'create' : 'delete');
 
   return {
     operationId: overrides.operationId ?? payload.id,
@@ -108,7 +109,10 @@ function operationFor(
   };
 }
 
-function pkg(changes: SyncOperation[], overrides: Partial<SyncPackageWithoutAuth> = {}): SyncPackageWithoutAuth {
+function pkg(
+  changes: SyncOperation[],
+  overrides: Partial<SyncPackageWithoutAuth> = {},
+): SyncPackageWithoutAuth {
   return serializer.withChecksum({
     format: 'app-sync',
     formatVersion: 2,

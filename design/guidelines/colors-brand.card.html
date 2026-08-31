@@ -1,23 +1,94 @@
 <!-- @dsCard group="Colors" viewport="700x260" subtitle="Background, surface, text, brand" name="Brand & Text" -->
-<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
-<style>
-body{margin:0;font-family:var(--font-sans);background:var(--color-bg);padding:20px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.sw{border-radius:var(--radius-md);padding:14px;box-shadow:var(--shadow-card)}
-.name{font-size:12px;font-weight:var(--weight-bold);margin-top:8px}
-.hex{font-size:11px;font-family:monospace;opacity:.7}
-.box{height:48px;border-radius:8px}
-</style></head><body>
-<div class="grid">
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-bg);border:1px solid #eee"></div><div class="name">Background</div><div class="hex">#F4F5FA</div></div>
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-surface);border:1px solid #eee"></div><div class="name">Surface</div><div class="hex">#FFFFFF</div></div>
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-text)"></div><div class="name">Text</div><div class="hex">#101828</div></div>
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-text-muted)"></div><div class="name">Text muted</div><div class="hex">#8B93A7</div></div>
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-primary)"></div><div class="name">Primary</div><div class="hex">#2F6FED</div></div>
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-accent)"></div><div class="name">Accent</div><div class="hex">#F2734A</div></div>
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-success)"></div><div class="name">Success</div><div class="hex">#1FAA59</div></div>
-  <div class="sw" style="background:#fff"><div class="box" style="background:var(--color-danger)"></div><div class="name">Danger</div><div class="hex">#E25050</div></div>
-  <div class="sw" style="background:#fff;grid-column:span 2"><div class="box" style="background:var(--gradient-balance)"></div><div class="name">Balance gradient</div><div class="hex">135deg #3A5FE5 &#8594; #182B6E</div></div>
-  <div class="sw" style="background:#fff;grid-column:span 2"><div class="box" style="background:var(--gradient-premium)"></div><div class="name">Premium gradient</div><div class="hex">135deg #F58B5E &#8594; #D9502F</div></div>
-</div>
-</body></html>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: var(--font-sans);
+        background: var(--color-bg);
+        padding: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .sw {
+        border-radius: var(--radius-md);
+        padding: 14px;
+        box-shadow: var(--shadow-card);
+      }
+      .name {
+        font-size: 12px;
+        font-weight: var(--weight-bold);
+        margin-top: 8px;
+      }
+      .hex {
+        font-size: 11px;
+        font-family: monospace;
+        opacity: 0.7;
+      }
+      .box {
+        height: 48px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-bg); border: 1px solid #eee"></div>
+        <div class="name">Background</div>
+        <div class="hex">#F4F5FA</div>
+      </div>
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-surface); border: 1px solid #eee"></div>
+        <div class="name">Surface</div>
+        <div class="hex">#FFFFFF</div>
+      </div>
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-text)"></div>
+        <div class="name">Text</div>
+        <div class="hex">#101828</div>
+      </div>
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-text-muted)"></div>
+        <div class="name">Text muted</div>
+        <div class="hex">#8B93A7</div>
+      </div>
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-primary)"></div>
+        <div class="name">Primary</div>
+        <div class="hex">#2F6FED</div>
+      </div>
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-accent)"></div>
+        <div class="name">Accent</div>
+        <div class="hex">#F2734A</div>
+      </div>
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-success)"></div>
+        <div class="name">Success</div>
+        <div class="hex">#1FAA59</div>
+      </div>
+      <div class="sw" style="background: #fff">
+        <div class="box" style="background: var(--color-danger)"></div>
+        <div class="name">Danger</div>
+        <div class="hex">#E25050</div>
+      </div>
+      <div class="sw" style="background: #fff; grid-column: span 2">
+        <div class="box" style="background: var(--gradient-balance)"></div>
+        <div class="name">Balance gradient</div>
+        <div class="hex">135deg #3A5FE5 &#8594; #182B6E</div>
+      </div>
+      <div class="sw" style="background: #fff; grid-column: span 2">
+        <div class="box" style="background: var(--gradient-premium)"></div>
+        <div class="name">Premium gradient</div>
+        <div class="hex">135deg #F58B5E &#8594; #D9502F</div>
+      </div>
+    </div>
+  </body>
+</html>

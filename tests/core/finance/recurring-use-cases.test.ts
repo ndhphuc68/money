@@ -36,7 +36,12 @@ class FakeNotificationScheduler implements NotificationScheduler {
   async requestPermissions(): Promise<boolean> {
     return true;
   }
-  async scheduleAt(params: { id: string; title: string; body: string; fireDate: Date }): Promise<void> {
+  async scheduleAt(params: {
+    id: string;
+    title: string;
+    body: string;
+    fireDate: Date;
+  }): Promise<void> {
     this.scheduled.push(params);
   }
 }
@@ -54,11 +59,32 @@ describe('recurring expense use cases', () => {
     const seedNow = '2026-08-27T09:00:00.000Z';
     database.db
       .insert(accounts)
-      .values({ id: 'account-main', name: 'Ví chính', type: 'cash', openingBalance: 0, isArchived: false, createdAt: seedNow, updatedAt: seedNow, deletedAt: null, revision: 1, originDeviceId: deviceId })
+      .values({
+        id: 'account-main',
+        name: 'Ví chính',
+        type: 'cash',
+        openingBalance: 0,
+        isArchived: false,
+        createdAt: seedNow,
+        updatedAt: seedNow,
+        deletedAt: null,
+        revision: 1,
+        originDeviceId: deviceId,
+      })
       .run();
     database.db
       .insert(categories)
-      .values({ id: 'category-bills', name: 'Hóa đơn', type: 'expense', isArchived: false, createdAt: seedNow, updatedAt: seedNow, deletedAt: null, revision: 1, originDeviceId: deviceId })
+      .values({
+        id: 'category-bills',
+        name: 'Hóa đơn',
+        type: 'expense',
+        isArchived: false,
+        createdAt: seedNow,
+        updatedAt: seedNow,
+        deletedAt: null,
+        revision: 1,
+        originDeviceId: deviceId,
+      })
       .run();
 
     processing = new RecurringOccurrenceProcessingRepository(database);
@@ -74,25 +100,70 @@ describe('recurring expense use cases', () => {
 
   describe('CreateRecurringExpense', () => {
     it('creates the first transaction, the schedule and one pending occurrence', async () => {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
-
-      const result = await createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27' },
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
       });
 
-      expect(result.schedule).toMatchObject({ status: 'active', frequency: 'monthly', anchorDay: 27, generatedCount: 1 });
+      const result = await createRecurringExpense.execute({
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+        },
+      });
+
+      expect(result.schedule).toMatchObject({
+        status: 'active',
+        frequency: 'monthly',
+        anchorDay: 27,
+        generatedCount: 1,
+      });
       expect(result.occurrence).toMatchObject({ status: 'pending', scheduledDate: '2026-09-27' });
-      await expect(occurrenceRepository.findActiveByScheduleId(result.schedule.id)).resolves.toMatchObject({ id: result.occurrence.id });
+      await expect(
+        occurrenceRepository.findActiveByScheduleId(result.schedule.id),
+      ).resolves.toMatchObject({ id: result.occurrence.id });
     });
   });
 
   describe('ConfirmRecurringOccurrence and SkipRecurringOccurrence', () => {
     async function seedSchedule() {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
+      });
       return createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27' },
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+        },
       });
     }
 
@@ -110,7 +181,10 @@ describe('recurring expense use cases', () => {
       const result = await confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only');
 
       expect(result.occurrence).toMatchObject({ status: 'confirmed' });
-      expect(result.nextOccurrence).toMatchObject({ status: 'pending', scheduledDate: '2026-10-27' });
+      expect(result.nextOccurrence).toMatchObject({
+        status: 'pending',
+        scheduledDate: '2026-10-27',
+      });
       await expect(occurrenceRepository.listByStatus(['pending'])).resolves.toHaveLength(1);
     });
 
@@ -126,9 +200,9 @@ describe('recurring expense use cases', () => {
       });
       await confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only');
 
-      await expect(confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only')).rejects.toThrow(
-        `Recurring occurrence ${occurrence.id} is not pending`,
-      );
+      await expect(
+        confirmRecurringOccurrence.execute(occurrence.id, {}, 'this_only'),
+      ).rejects.toThrow(`Recurring occurrence ${occurrence.id} is not pending`);
     });
 
     it('skips the pending occurrence and generates exactly one next occurrence', async () => {
@@ -144,16 +218,38 @@ describe('recurring expense use cases', () => {
       const result = await skipRecurringOccurrence.execute(occurrence.id);
 
       expect(result.occurrence).toMatchObject({ status: 'skipped', transactionId: null });
-      expect(result.nextOccurrence).toMatchObject({ status: 'pending', scheduledDate: '2026-10-27' });
+      expect(result.nextOccurrence).toMatchObject({
+        status: 'pending',
+        scheduledDate: '2026-10-27',
+      });
     });
   });
 
   describe('manage recurring schedule use cases', () => {
     async function seedSchedule() {
-      const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+      const createRecurringExpense = new CreateRecurringExpense({
+        processing,
+        now,
+        deviceId,
+        generateId,
+      });
       return createRecurringExpense.execute({
-        transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-        recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27' },
+        transaction: {
+          amount: 179000,
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          date: '2026-08-27',
+          name: 'YouTube Premium',
+          note: null,
+        },
+        recurring: {
+          displayName: 'YouTube Premium',
+          accountId: 'account-main',
+          categoryId: 'category-bills',
+          amount: 179000,
+          frequency: 'monthly',
+          startDate: '2026-08-27',
+        },
       });
     }
 
@@ -175,17 +271,28 @@ describe('recurring expense use cases', () => {
 
     it('updates a schedule default and refreshes its current unresolved occurrence', async () => {
       const { schedule, occurrence } = await seedSchedule();
-      const update = new UpdateRecurringSchedule({ scheduleRepository, occurrenceRepository, now, deviceId, generateId });
+      const update = new UpdateRecurringSchedule({
+        scheduleRepository,
+        occurrenceRepository,
+        now,
+        deviceId,
+        generateId,
+      });
 
       const updated = await update.execute(schedule.id, { amount: 199000 });
 
       expect(updated).toMatchObject({ amount: 199000 });
-      await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({ amount: 199000 });
+      await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({
+        amount: 199000,
+      });
     });
 
     it('GetRecurringOverview lists pending occurrences and all schedules', async () => {
       const { schedule, occurrence } = await seedSchedule();
-      const getRecurringOverview = new GetRecurringOverview({ scheduleRepository, occurrenceRepository });
+      const getRecurringOverview = new GetRecurringOverview({
+        scheduleRepository,
+        occurrenceRepository,
+      });
 
       const overview = await getRecurringOverview.execute();
 
@@ -197,10 +304,30 @@ describe('recurring expense use cases', () => {
   describe('ScanAndScheduleRecurringNotifications', () => {
     it('schedules a future reminder for a not-yet-due occurrence and marks it notified', async () => {
       const { occurrence } = await (async () => {
-        const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+        const createRecurringExpense = new CreateRecurringExpense({
+          processing,
+          now,
+          deviceId,
+          generateId,
+        });
         return createRecurringExpense.execute({
-          transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-          recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+          transaction: {
+            amount: 179000,
+            accountId: 'account-main',
+            categoryId: 'category-bills',
+            date: '2026-08-27',
+            name: 'YouTube Premium',
+            note: null,
+          },
+          recurring: {
+            displayName: 'YouTube Premium',
+            accountId: 'account-main',
+            categoryId: 'category-bills',
+            amount: 179000,
+            frequency: 'monthly',
+            startDate: '2026-08-27',
+            remindDaysBefore: 1,
+          },
         });
       })();
 
@@ -217,17 +344,44 @@ describe('recurring expense use cases', () => {
       await scan.execute();
 
       expect(notificationScheduler.scheduled).toHaveLength(1);
-      expect(notificationScheduler.scheduled[0]).toMatchObject({ id: occurrence.id, body: 'YouTube Premium' });
-      expect(notificationScheduler.scheduled[0].fireDate.toISOString().slice(0, 10)).toBe('2026-09-26');
-      await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({ notifiedAt: '2026-08-28T08:00:00.000Z' });
+      expect(notificationScheduler.scheduled[0]).toMatchObject({
+        id: occurrence.id,
+        body: 'YouTube Premium',
+      });
+      expect(notificationScheduler.scheduled[0].fireDate.toISOString().slice(0, 10)).toBe(
+        '2026-09-26',
+      );
+      await expect(occurrenceRepository.findById(occurrence.id)).resolves.toMatchObject({
+        notifiedAt: '2026-08-28T08:00:00.000Z',
+      });
     });
 
     it('sends a catch-up reminder immediately when opening the app after the reminder date has passed', async () => {
       const { occurrence } = await (async () => {
-        const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+        const createRecurringExpense = new CreateRecurringExpense({
+          processing,
+          now,
+          deviceId,
+          generateId,
+        });
         return createRecurringExpense.execute({
-          transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-          recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+          transaction: {
+            amount: 179000,
+            accountId: 'account-main',
+            categoryId: 'category-bills',
+            date: '2026-08-27',
+            name: 'YouTube Premium',
+            note: null,
+          },
+          recurring: {
+            displayName: 'YouTube Premium',
+            accountId: 'account-main',
+            categoryId: 'category-bills',
+            amount: 179000,
+            frequency: 'monthly',
+            startDate: '2026-08-27',
+            remindDaysBefore: 1,
+          },
         });
       })();
 
@@ -249,10 +403,30 @@ describe('recurring expense use cases', () => {
 
     it('never notifies the same occurrence twice', async () => {
       const { occurrence } = await (async () => {
-        const createRecurringExpense = new CreateRecurringExpense({ processing, now, deviceId, generateId });
+        const createRecurringExpense = new CreateRecurringExpense({
+          processing,
+          now,
+          deviceId,
+          generateId,
+        });
         return createRecurringExpense.execute({
-          transaction: { amount: 179000, accountId: 'account-main', categoryId: 'category-bills', date: '2026-08-27', name: 'YouTube Premium', note: null },
-          recurring: { displayName: 'YouTube Premium', accountId: 'account-main', categoryId: 'category-bills', amount: 179000, frequency: 'monthly', startDate: '2026-08-27', remindDaysBefore: 1 },
+          transaction: {
+            amount: 179000,
+            accountId: 'account-main',
+            categoryId: 'category-bills',
+            date: '2026-08-27',
+            name: 'YouTube Premium',
+            note: null,
+          },
+          recurring: {
+            displayName: 'YouTube Premium',
+            accountId: 'account-main',
+            categoryId: 'category-bills',
+            amount: 179000,
+            frequency: 'monthly',
+            startDate: '2026-08-27',
+            remindDaysBefore: 1,
+          },
         });
       })();
 
