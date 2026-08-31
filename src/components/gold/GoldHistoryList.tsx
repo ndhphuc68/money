@@ -1,7 +1,8 @@
 // src/components/gold/GoldHistoryList.tsx
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { Card, ListRow } from '@/components/base';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export type GoldHistoryRowKind = 'lot' | 'sale';
 
@@ -40,49 +41,46 @@ export function GoldHistoryList({
         </Pressable>
       </View>
       {items.length === 0 ? (
-        <View style={styles.emptyCard}>
+        <Card padding={spacing[5]}>
           <Text style={styles.emptyText}>{emptyLabel}</Text>
-        </View>
+        </Card>
       ) : (
-        <View style={styles.card}>
+        <Card padding={0} style={styles.card}>
           {items.map((item, index) => (
-            <Pressable
+            <ListRow
+              gap={spacing[3]}
               key={`${item.kind}-${item.id}`}
-              accessibilityRole="button"
+              leading={
+                <View
+                  style={[
+                    styles.rowBadge,
+                    item.kind === 'sale' ? styles.rowBadgeSale : styles.rowBadgeLot,
+                  ]}>
+                  <Text
+                    style={[styles.rowBadgeText, item.kind === 'sale' && styles.rowBadgeTextSale]}>
+                    {item.kind === 'sale' ? '↗' : 'Au'}
+                  </Text>
+                </View>
+              }
+              minHeight={64}
               onPress={() => onSelectItem(item)}
-              style={({ pressed }) => [
-                styles.row,
-                index < items.length - 1 && styles.rowDivider,
-                pressed && styles.rowPressed,
-              ]}>
-              <View
-                style={[
-                  styles.rowBadge,
-                  item.kind === 'sale' ? styles.rowBadgeSale : styles.rowBadgeLot,
-                ]}>
+              showDivider={index < items.length - 1}
+              style={styles.row}
+              subtitle={item.subtitle}
+              subtitleStyle={styles.rowSubtitle}
+              title={item.title}
+              trailing={
                 <Text
-                  style={[styles.rowBadgeText, item.kind === 'sale' && styles.rowBadgeTextSale]}>
-                  {item.kind === 'sale' ? '↗' : 'Au'}
+                  style={[
+                    styles.rowAmount,
+                    item.amountTone === 'positive' && styles.rowAmountPositive,
+                  ]}>
+                  {item.amountLabel}
                 </Text>
-              </View>
-              <View style={styles.rowText}>
-                <Text numberOfLines={1} style={styles.rowTitle}>
-                  {item.title}
-                </Text>
-                <Text numberOfLines={1} style={styles.rowSubtitle}>
-                  {item.subtitle}
-                </Text>
-              </View>
-              <Text
-                style={[
-                  styles.rowAmount,
-                  item.amountTone === 'positive' && styles.rowAmountPositive,
-                ]}>
-                {item.amountLabel}
-              </Text>
-            </Pressable>
+              }
+            />
           ))}
-        </View>
+        </Card>
       )}
     </View>
   );
@@ -90,16 +88,7 @@ export function GoldHistoryList({
 
 const styles = StyleSheet.create({
   card: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
     paddingHorizontal: spacing[4],
-  },
-  emptyCard: {
-    ...shadows.card,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.lg,
-    padding: spacing[5],
   },
   emptyText: {
     color: colors.content.secondary,
@@ -121,10 +110,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   row: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing[3],
-    minHeight: 64,
     paddingVertical: spacing[3],
   },
   rowAmount: {
@@ -159,27 +144,8 @@ const styles = StyleSheet.create({
   rowBadgeTextSale: {
     color: colors.status.positive,
   },
-  rowDivider: {
-    borderBottomColor: colors.border.subtle,
-    borderBottomWidth: 1,
-  },
-  rowPressed: {
-    backgroundColor: colors.surface.muted,
-  },
   rowSubtitle: {
-    color: colors.content.secondary,
-    fontSize: typography.sizes.small,
-    fontWeight: typography.weights.semibold,
     marginTop: spacing[1],
-  },
-  rowText: {
-    flex: 1,
-    minWidth: 0,
-  },
-  rowTitle: {
-    color: colors.content.primary,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.black,
   },
   trashLink: {
     color: colors.content.secondary,
