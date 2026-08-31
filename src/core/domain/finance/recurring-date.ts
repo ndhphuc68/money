@@ -76,8 +76,9 @@ export function isBeyondScheduleLimit(params: {
   if (params.endDate !== null && params.candidateDate > params.endDate) {
     return true;
   }
-  if (params.occurrenceLimit !== null && params.generatedCount + 1 > params.occurrenceLimit) {
+  if (params.occurrenceLimit !== null && params.generatedCount + 1 >= params.occurrenceLimit) {
     return true;
   }
+
   return false;
 }

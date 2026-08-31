@@ -87,7 +87,7 @@ describe('isBeyondScheduleLimit', () => {
       isBeyondScheduleLimit({
         endDate: null,
         occurrenceLimit: 3,
-        generatedCount: 3,
+        generatedCount: 2,
         candidateDate: '2026-10-01',
       }),
     ).toBe(true);
@@ -95,12 +95,13 @@ describe('isBeyondScheduleLimit', () => {
       isBeyondScheduleLimit({
         endDate: null,
         occurrenceLimit: 3,
-        generatedCount: 2,
+        generatedCount: 1,
         candidateDate: '2026-10-01',
       }),
     ).toBe(false);
   });
 });
+
 
 const validScheduleInput: RecurringScheduleInput = {
   displayName: 'YouTube Premium',
