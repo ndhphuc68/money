@@ -4,6 +4,9 @@ export type { DropdownOption, DropdownProps } from './Dropdown';
 export { Card } from './Card';
 export type { CardProps } from './Card';
 
+export { ChartEmptyState } from './ChartEmptyState';
+export type { ChartEmptyStateProps } from './ChartEmptyState';
+
 export { IconButton } from './IconButton';
 export type { IconButtonProps } from './IconButton';
 

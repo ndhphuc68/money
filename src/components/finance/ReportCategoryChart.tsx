@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 
+import { ChartEmptyState } from '@/components/base';
 import { colors, spacing, typography } from '@/theme';
 
 import { CategoryIcon } from './icons';
@@ -21,11 +22,7 @@ export type ReportCategoryChartProps = {
 
 export function ReportCategoryChart({ slices, emptyLabel }: ReportCategoryChartProps) {
   if (slices.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>{emptyLabel}</Text>
-      </View>
-    );
+    return <ChartEmptyState message={emptyLabel} />;
   }
 
   const pieData = slices.map((slice) => ({ value: slice.value, color: slice.color }));
@@ -57,17 +54,6 @@ const styles = StyleSheet.create({
   },
   container: {
     gap: spacing[4],
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing[7],
-  },
-  emptyText: {
-    color: colors.content.secondary,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.medium,
-    textAlign: 'center',
   },
   legend: {
     gap: spacing[1],

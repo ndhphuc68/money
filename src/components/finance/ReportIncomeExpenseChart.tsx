@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 
+import { ChartEmptyState } from '@/components/base';
 import { formatVnd } from '@/core/domain/finance/money';
 import { colors, radius, spacing, typography } from '@/theme';
 
@@ -20,11 +21,7 @@ export function ReportIncomeExpenseChart({
   emptyLabel,
 }: ReportIncomeExpenseChartProps) {
   if (income === 0 && expense === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>{emptyLabel}</Text>
-      </View>
-    );
+    return <ChartEmptyState message={emptyLabel} />;
   }
 
   const total = income + expense;
@@ -99,17 +96,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     height: 10,
     width: 10,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing[7],
-  },
-  emptyText: {
-    color: colors.content.secondary,
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.medium,
-    textAlign: 'center',
   },
   legend: {
     gap: spacing[1],
