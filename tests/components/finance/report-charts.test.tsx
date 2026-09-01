@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react-native';
 
-import { ReportCategoryChart, ReportTrendChart } from '@/components/finance';
+import { ReportCategoryChart, ReportIncomeExpenseChart } from '@/components/finance';
 
 describe('ReportCategoryChart', () => {
   it('renders a legend row per slice with label and percent', () => {
@@ -35,36 +35,37 @@ describe('ReportCategoryChart', () => {
   });
 });
 
-describe('ReportTrendChart', () => {
-  it('renders income/expense legend labels when there are points', () => {
+describe('ReportIncomeExpenseChart', () => {
+  it('renders income/expense legend rows with percent and amount when there is data', () => {
     const screen = render(
-      <ReportTrendChart
+      <ReportIncomeExpenseChart
         emptyLabel="Chưa có dữ liệu"
-        expenseLegendLabel="Chi tiêu"
-        incomeLegendLabel="Thu nhập"
-        points={[
-          { key: '2026-06', label: '06', income: 1000000, expense: 400000 },
-          { key: '2026-07', label: '07', income: 1200000, expense: 500000 },
-        ]}
+        expense={400000}
+        expenseLabel="Chi tiêu"
+        income={1000000}
+        incomeLabel="Thu nhập"
       />,
     );
 
     expect(screen.getByText('Thu nhập')).toBeTruthy();
     expect(screen.getByText('Chi tiêu')).toBeTruthy();
-    expect(screen.getByTestId('mock-line-chart')).toBeTruthy();
+    expect(screen.getByText('71%')).toBeTruthy(); // round(1,000,000 / 1,400,000 * 100)
+    expect(screen.getByText('29%')).toBeTruthy(); // 100 - 71
+    expect(screen.getByTestId('mock-pie-chart')).toBeTruthy();
   });
 
-  it('shows the empty label and no chart when there are no points', () => {
+  it('shows the empty label and no chart when income and expense are both zero', () => {
     const screen = render(
-      <ReportTrendChart
+      <ReportIncomeExpenseChart
         emptyLabel="Chưa có dữ liệu"
-        expenseLegendLabel="Chi tiêu"
-        incomeLegendLabel="Thu nhập"
-        points={[]}
+        expense={0}
+        expenseLabel="Chi tiêu"
+        income={0}
+        incomeLabel="Thu nhập"
       />,
     );
 
     expect(screen.getByText('Chưa có dữ liệu')).toBeTruthy();
-    expect(screen.queryByTestId('mock-line-chart')).toBeNull();
+    expect(screen.queryByTestId('mock-pie-chart')).toBeNull();
   });
 });
