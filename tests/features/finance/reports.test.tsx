@@ -15,7 +15,6 @@ import {
   WriteContext,
 } from '@/core/application/ports/finance-repositories';
 import { GetReport } from '@/core/application/finance/get-report';
-import { GetReportTrend } from '@/core/application/finance/get-report-trend';
 import { Account } from '@/core/domain/finance/account';
 import { Category } from '@/core/domain/finance/category';
 import { formatVnd } from '@/core/domain/finance/money';
@@ -295,7 +294,6 @@ function makeDependencies(repos: Repos) {
   return {
     ...repos,
     getReport: new GetReport(repos),
-    getReportTrend: new GetReportTrend(repos),
   };
 }
 
