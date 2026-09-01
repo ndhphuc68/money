@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react-native';
 
 import { Card, PrimaryButton, Sheet } from '@/components/base';
-import { colors, radius, spacing, typography } from '@/theme';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
 
 import { DateField } from './DateField';
 
@@ -69,7 +69,7 @@ export function PeriodSelector({
 
   return (
     <Card style={styles.container}>
-      <View style={styles.kindRow}>
+      <View style={styles.kindTrack}>
         {KIND_ORDER.map((option) => {
           const active = option === kind;
           return (
@@ -84,7 +84,9 @@ export function PeriodSelector({
                 active && styles.kindChipActive,
                 pressed && !active && styles.kindChipPressed,
               ]}>
-              <Text style={[styles.kindChipText, active && styles.kindChipTextActive]}>
+              <Text
+                numberOfLines={1}
+                style={[styles.kindChipText, active && styles.kindChipTextActive]}>
                 {kindLabels[option]}
               </Text>
             </Pressable>
@@ -92,13 +94,15 @@ export function PeriodSelector({
         })}
       </View>
 
+      <View style={styles.divider} />
+
       {kind === 'custom' ? (
         <Pressable
           accessibilityLabel={rangeLabel}
           accessibilityRole="button"
           onPress={() => setSheetOpen(true)}
-          style={styles.rangeRow}>
-          <Calendar color={colors.content.secondary} size={18} />
+          style={({ pressed }) => [styles.rangeRow, pressed && styles.rangeRowPressed]}>
+          <Calendar color={colors.brand.primary} size={18} />
           <Text style={styles.rangeLabel}>{rangeLabel}</Text>
         </Pressable>
       ) : (
@@ -156,18 +160,24 @@ const styles = StyleSheet.create({
   container: {
     gap: spacing[3],
   },
+  divider: {
+    backgroundColor: colors.divider,
+    height: 1,
+  },
   kindChip: {
-    backgroundColor: colors.surface.muted,
+    alignItems: 'center',
     borderRadius: radius.pill,
+    flex: 1,
     justifyContent: 'center',
-    minHeight: 36,
-    paddingHorizontal: spacing[3],
+    minHeight: 34,
+    paddingHorizontal: spacing[1],
   },
   kindChipActive: {
-    backgroundColor: colors.content.primary,
+    backgroundColor: colors.surface.primary,
+    ...shadows.card,
   },
   kindChipPressed: {
-    backgroundColor: colors.border.subtle,
+    backgroundColor: 'rgba(16, 24, 40, 0.04)',
   },
   kindChipText: {
     color: colors.content.secondary,
@@ -175,13 +185,15 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.semibold,
   },
   kindChipTextActive: {
-    color: colors.content.inverse,
+    color: colors.content.primary,
     fontWeight: typography.weights.bold,
   },
-  kindRow: {
+  kindTrack: {
+    backgroundColor: colors.surface.muted,
+    borderRadius: radius.pill,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing[2],
+    gap: spacing[1],
+    padding: spacing[1],
   },
   navButton: {
     alignItems: 'center',
@@ -201,8 +213,13 @@ const styles = StyleSheet.create({
   },
   rangeRow: {
     alignItems: 'center',
+    borderRadius: radius.md,
     flexDirection: 'row',
     gap: spacing[2],
     justifyContent: 'center',
+    paddingVertical: spacing[1],
+  },
+  rangeRowPressed: {
+    backgroundColor: colors.surface.muted,
   },
 });
