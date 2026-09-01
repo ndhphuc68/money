@@ -395,8 +395,10 @@ describe('reports screen + view model', () => {
     const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
-    await waitFor(() => expect(screen.getByText(formatVnd(5_000_000))).toBeTruthy());
-    expect(screen.getByText(formatVnd(200_000))).toBeTruthy();
+    // Income/expense amounts now render twice: once in the summary card, once in the new
+    // income-vs-expense pie chart's legend (reports-screen.tsx's income/expense section).
+    await waitFor(() => expect(screen.getAllByText(formatVnd(5_000_000))).toHaveLength(2));
+    expect(screen.getAllByText(formatVnd(200_000))).toHaveLength(2);
     expect(screen.getByText(formatVnd(5_000_000 - 200_000))).toBeTruthy();
     expect(screen.getByText('An uong')).toBeTruthy();
     expect(screen.getByText('100%')).toBeTruthy(); // only expense category -> 100% of the donut
@@ -440,17 +442,17 @@ describe('reports screen + view model', () => {
     const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
-    await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText(formatVnd(300_000))).toHaveLength(2));
     expect(screen.queryByText(formatVnd(100_000))).toBeNull();
 
     fireEvent.press(screen.getByLabelText(t('reportsPreviousPeriod')));
 
-    await waitFor(() => expect(screen.getByText(formatVnd(100_000))).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText(formatVnd(100_000))).toHaveLength(2));
     expect(screen.queryByText(formatVnd(300_000))).toBeNull();
 
     fireEvent.press(screen.getByLabelText(t('reportsNextPeriod')));
 
-    await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText(formatVnd(300_000))).toHaveLength(2));
   });
 
   it('switches to weekly view and shows the current-vs-previous-period comparison', async () => {
@@ -490,7 +492,7 @@ describe('reports screen + view model', () => {
 
     fireEvent.press(screen.getByLabelText(t('reportsPeriodWeek')));
 
-    await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText(formatVnd(300_000))).toHaveLength(2));
     const expenseChange = screen.getByText('+200%');
     expect(expenseChange).toBeTruthy();
     // An expense increase is bad news for a finance app, so it must read in the "negative"
@@ -569,13 +571,13 @@ describe('reports screen + view model', () => {
     const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
-    await waitFor(() => expect(screen.getByText(formatVnd(300_000))).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText(formatVnd(300_000))).toHaveLength(2));
 
     fireEvent.press(screen.getByLabelText(t('filterAdvanced')));
     fireEvent.press(screen.getByLabelText(transportCategory.name));
     fireEvent.press(screen.getByLabelText(billsCategory.name));
 
-    await waitFor(() => expect(screen.getByText(formatVnd(240_000))).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText(formatVnd(240_000))).toHaveLength(2));
     expect(screen.queryByText(formatVnd(300_000))).toBeNull();
     expect(screen.queryByText(formatVnd(60_000))).toBeNull();
   });
@@ -586,10 +588,11 @@ describe('reports screen + view model', () => {
     const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
-    await waitFor(() => expect(screen.getByText(t('reportsCategoryEmpty'))).toBeTruthy());
-    // Account section suppresses its own empty text when there are no category slices either
-    // (reports-screen.tsx: showEmpty={props.categoryChartSlices.length > 0}), so with zero
-    // slices AND zero account totals, only the category-empty text renders — not a second copy.
-    expect(screen.getAllByText(t('reportsCategoryEmpty'))).toHaveLength(1);
+    // Both the category donut and the new income/expense pie chart show the same empty-state
+    // copy when they have nothing to render (categoryChartSlices empty, income=expense=0) — the
+    // account section suppresses its own empty text in that case too
+    // (reports-screen.tsx: showEmpty={props.categoryChartSlices.length > 0}), so exactly 2
+    // copies render (category chart + income/expense chart), not 3.
+    await waitFor(() => expect(screen.getAllByText(t('reportsCategoryEmpty'))).toHaveLength(2));
   });
 });

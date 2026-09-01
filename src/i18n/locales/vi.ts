@@ -153,7 +153,7 @@ export const vi = {
   reportsPeriodYearLabel: '{year}',
   reportsPeriodCustomLabel: '{from} - {to}',
   reportsComparisonTitle: 'So với kỳ trước',
-  reportsTrendTitle: 'Xu hướng thu chi',
+  reportsTrendTitle: 'Tỷ trọng thu chi',
   settingsTitle: 'Cá nhân',
   settingsBack: 'Quay lại',
   settingsDisplayNameLabel: 'Tên hiển thị',

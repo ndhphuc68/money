@@ -8,7 +8,7 @@ import {
   FilterBar,
   PeriodSelector,
   ReportCategoryChart,
-  ReportTrendChart,
+  ReportIncomeExpenseChart,
 } from '@/components/finance';
 import type { ChangeTone, ReportsViewModel } from '@/features/finance/view-models/use-reports';
 import type { Translate } from '@/i18n/translations';
@@ -110,17 +110,16 @@ export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate
             />
           </Card>
 
-          {props.showTrend ? (
-            <Card style={styles.sectionCard}>
-              <Text style={styles.heading}>{t('reportsTrendTitle')}</Text>
-              <ReportTrendChart
-                emptyLabel={t('reportsCategoryEmpty')}
-                expenseLegendLabel={t('reportsExpenseLabel')}
-                incomeLegendLabel={t('reportsIncomeLabel')}
-                points={props.trendPoints}
-              />
-            </Card>
-          ) : null}
+          <Card style={styles.sectionCard}>
+            <Text style={styles.heading}>{t('reportsTrendTitle')}</Text>
+            <ReportIncomeExpenseChart
+              emptyLabel={t('reportsCategoryEmpty')}
+              expense={props.incomeExpenseChart.expense}
+              expenseLabel={t('reportsExpenseLabel')}
+              income={props.incomeExpenseChart.income}
+              incomeLabel={t('reportsIncomeLabel')}
+            />
+          </Card>
 
           <Card style={styles.sectionCard}>
             <Text style={styles.heading}>{t('reportsCategoryTitle')}</Text>
