@@ -10,11 +10,13 @@
     "newArchEnabled": true,
     "platforms": ["ios", "android", "web"],
     "ios": {
+      "bundleIdentifier": "com.ndhphuc.vimo",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "Vimo cần quyền thông báo để nhắc bạn trước khi đến hạn chi tiêu định kỳ."
       }
     },
     "android": {
+      "package": "com.ndhphuc.vimo",
       "adaptiveIcon": {
         "foregroundImage": "./assets/branding/vimo-icon.png",
         "backgroundColor": "#006A70"
