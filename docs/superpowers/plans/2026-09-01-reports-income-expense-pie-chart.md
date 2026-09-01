@@ -662,8 +662,8 @@ Expected: only the 4 files this task touches (the two to delete, `finance-depend
 - [ ] **Step 4: Delete the use case and its dedicated test**
 
 ```bash
-rm src/core/application/finance/get-report-trend.ts
-rm tests/core/finance/get-report-trend.test.ts
+git rm src/core/application/finance/get-report-trend.ts
+git rm tests/core/finance/get-report-trend.test.ts
 ```
 
 - [ ] **Step 5: Run the full suite and the type checker**
@@ -673,8 +673,12 @@ Expected: All tests PASS, no type errors, no reference to `GetReportTrend` remai
 
 - [ ] **Step 6: Commit**
 
+Stage only the files this task touched — there is an unrelated pre-existing
+uncommitted change to `src/components/finance/PeriodSelector.tsx` in the
+working tree that must NOT be swept into this commit:
+
 ```bash
-git add -A
+git add src/features/finance/finance-dependencies.ts tests/features/finance/reports.test.tsx
 git commit -m "chore: remove unused GetReportTrend use case and its wiring"
 ```
 
