@@ -5,7 +5,6 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { Card } from '@/components/base';
 import {
   CategoryIcon,
-  FilterBar,
   PeriodSelector,
   ReportCategoryChart,
   ReportIncomeExpenseChart,
@@ -44,41 +43,6 @@ export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate
         onNext={props.onNextPeriod}
         onPrevious={props.onPreviousPeriod}
         rangeLabel={props.periodLabel}
-      />
-
-      <FilterBar
-        accountId={props.accountId}
-        accounts={props.accounts}
-        categories={props.categories}
-        categoryId={props.categoryId}
-        categoryIds={props.categoryIds}
-        compact
-        // `month`/`onMonthChange` are unused here (PeriodSelector owns period
-        // navigation) but required by FilterBarProps; showMonthNav={false}
-        // hides FilterBar's own month row so the two don't duplicate.
-        month=""
-        showMonthNav={false}
-        onAccountChange={props.onAccountChange}
-        onCategoryChange={props.onCategoryChange}
-        onMonthChange={() => {}}
-        onSearchChange={props.onSearchChange}
-        onTypeChange={props.onTypeChange}
-        search={props.search}
-        type={props.type}
-        labels={{
-          account: t('filterAccount'),
-          advanced: t('filterAdvanced'),
-          all: t('filterAll'),
-          category: t('filterCategory'),
-          expense: t('filterExpense'),
-          income: t('filterIncome'),
-          month: t('filterMonth'),
-          nextMonth: t('filterNextMonth'),
-          previousMonth: t('filterPreviousMonth'),
-          searchLabel: t('filterSearchLabel'),
-          searchPlaceholder: t('filterSearchPlaceholder'),
-          transfer: t('filterTransfer'),
-        }}
       />
 
       {props.loading ? (
