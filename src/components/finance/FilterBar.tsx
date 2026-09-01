@@ -24,6 +24,8 @@ const TYPE_OPTIONS: readonly TransactionTypeFilter[] = ['all', 'income', 'expens
 
 type FilterBarProps = {
   compact?: boolean;
+  /** Compact mode only: show the month prev/next navigator. Defaults to true. */
+  showMonthNav?: boolean;
   month: string;
   onMonthChange: (month: string) => void;
   type: TransactionTypeFilter;
@@ -80,6 +82,7 @@ export function FilterBar({
   onSearchChange,
   labels,
   compact = false,
+  showMonthNav = true,
 }: FilterBarProps) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
@@ -187,6 +190,27 @@ export function FilterBar({
 
   return (
     <View style={styles.compactContainer}>
+      {/* Month navigator */}
+      {showMonthNav ? (
+        <View style={styles.monthRow}>
+          <Pressable
+            accessibilityLabel={labels.previousMonth}
+            accessibilityRole="button"
+            onPress={() => onMonthChange(shiftMonth(month, -1))}
+            style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}>
+            <ChevronLeft color={colors.content.primary} size={20} />
+          </Pressable>
+          <Text style={styles.monthLabel}>{formatMonth(month, labels.month)}</Text>
+          <Pressable
+            accessibilityLabel={labels.nextMonth}
+            accessibilityRole="button"
+            onPress={() => onMonthChange(shiftMonth(month, 1))}
+            style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}>
+            <ChevronRight color={colors.content.primary} size={20} />
+          </Pressable>
+        </View>
+      ) : null}
+
       {/* Segmented Control - Type Row */}
       <View style={styles.compactTypeRow}>
         {visibleOptions.map((option) => {

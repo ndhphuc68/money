@@ -591,6 +591,42 @@ describe('transactions list + view model', () => {
     expect(screen.getByText('Mua sam')).toBeTruthy();
   });
 
+  it('navigates to the previous and next month via the compact FilterBar', async () => {
+    const repos = makeRepos();
+    const { account, expenseCategory } = await seedAccountAndCategories(repos);
+
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 100_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-07-15',
+      name: 'Chi thang 7',
+    });
+    await repos.createTransaction.execute({
+      type: 'expense',
+      amount: 300_000,
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      date: '2026-08-15',
+      name: 'Chi thang 8',
+    });
+
+    const screen = render(<ListHarness dependencies={repos} />);
+
+    await waitFor(() => expect(screen.getByText('Chi thang 8')).toBeTruthy());
+    expect(screen.queryByText('Chi thang 7')).toBeNull();
+
+    fireEvent.press(screen.getByLabelText(t('filterPreviousMonth')));
+
+    await waitFor(() => expect(screen.getByText('Chi thang 7')).toBeTruthy());
+    expect(screen.queryByText('Chi thang 8')).toBeNull();
+
+    fireEvent.press(screen.getByLabelText(t('filterNextMonth')));
+
+    await waitFor(() => expect(screen.getByText('Chi thang 8')).toBeTruthy());
+  });
+
   it('supports selecting multiple categories in the filter sheet', async () => {
     const repos = makeRepos();
     const { account, expenseCategory, incomeCategory } = await seedAccountAndCategories(repos);

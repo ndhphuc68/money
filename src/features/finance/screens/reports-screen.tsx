@@ -53,9 +53,11 @@ export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate
         categoryId={props.categoryId}
         categoryIds={props.categoryIds}
         compact
-        // `month`/`onMonthChange` are unused in compact mode (PeriodSelector
-        // owns period navigation here) but required by FilterBarProps.
+        // `month`/`onMonthChange` are unused here (PeriodSelector owns period
+        // navigation) but required by FilterBarProps; showMonthNav={false}
+        // hides FilterBar's own month row so the two don't duplicate.
         month=""
+        showMonthNav={false}
         onAccountChange={props.onAccountChange}
         onCategoryChange={props.onCategoryChange}
         onMonthChange={() => {}}
