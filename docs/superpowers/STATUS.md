@@ -21,4 +21,4 @@ Bảng tổng hợp: spec nào đã có plan coding, plan nào đã được cod
 - Trạng thái: ✅ Done / ⚠️ Gần done (ghi rõ phần thiếu) / ❌ Chưa code / 🚧 Đang làm.
 - Nếu phát hiện bảng sai lệch với code thực tế, sửa lại ngay và ghi chú ngày kiểm tra gần nhất.
 
-_Kiểm tra lần cuối: 2026-08-31 (audit toàn bộ 6 cặp spec/plan)._
+_Kiểm tra lần cuối: 2026-09-01 (audit toàn bộ 7 cặp spec/plan)._
