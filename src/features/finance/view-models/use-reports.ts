@@ -6,11 +6,6 @@ import type {
 } from '@/core/application/ports/finance-repositories';
 import { resolveMonthRange, shiftMonth } from '@/core/application/finance/get-dashboard';
 import type { GetReport, ReportFilters } from '@/core/application/finance/get-report';
-import type {
-  GetReportTrend,
-  ReportTrendKind,
-  ReportTrendPoint,
-} from '@/core/application/finance/get-report-trend';
 import {
   previousPeriodOfSameLength,
   quarterOf,
@@ -33,7 +28,6 @@ import { currentMonth, todayIsoDate } from './transaction-presentation';
 /** The subset of `FinanceDependencies` this view model drives. */
 export type ReportsDependencies = {
   getReport: GetReport;
-  getReportTrend: GetReportTrend;
   categoryRepository: CategoryRepository;
   accountRepository: AccountRepository;
 };
@@ -53,13 +47,6 @@ export type ReportCategoryChartSlice = {
   color: string;
   percentLabel: string;
   icon?: string;
-};
-
-export type ReportTrendChartPoint = {
-  key: string;
-  label: string;
-  income: number;
-  expense: number;
 };
 
 export type ChangeTone = 'positive' | 'negative' | 'neutral';
@@ -108,8 +95,7 @@ export type ReportsViewModel = {
   categoryChartSlices: ReportCategoryChartSlice[];
   accountTotals: ReportTotalItem[];
 
-  showTrend: boolean;
-  trendPoints: ReportTrendChartPoint[];
+  incomeExpenseChart: { income: number; expense: number };
 
   refresh(): Promise<void>;
 };
@@ -148,7 +134,7 @@ type ReportState = {
   categoryTotals: ReportTotalItem[];
   categoryChartSlices: ReportCategoryChartSlice[];
   accountTotals: ReportTotalItem[];
-  trendPoints: ReportTrendChartPoint[];
+  incomeExpenseChart: { income: number; expense: number };
 };
 
 const EMPTY_STATE: ReportState = {
@@ -160,14 +146,7 @@ const EMPTY_STATE: ReportState = {
   categoryTotals: [],
   categoryChartSlices: [],
   accountTotals: [],
-  trendPoints: [],
-};
-
-const TREND_KIND_BY_PERIOD_KIND: Partial<Record<PeriodKind, ReportTrendKind>> = {
-  week: 'week',
-  month: 'month',
-  quarter: 'quarter',
-  year: 'year',
+  incomeExpenseChart: { income: 0, expense: 0 },
 };
 
 function initialPeriodState(now: Date): PeriodState {
@@ -215,22 +194,6 @@ function shiftPeriod(state: PeriodState, delta: number): PeriodState {
   }
 }
 
-/** Anchor key to pass to `GetReportTrend`; unused/unreachable for 'custom' (no trend shown then). */
-function periodAnchorKey(state: PeriodState): string {
-  switch (state.kind) {
-    case 'week':
-      return state.weekStart;
-    case 'month':
-      return state.month;
-    case 'quarter':
-      return state.quarter;
-    case 'year':
-      return state.year;
-    case 'custom':
-      return state.month;
-  }
-}
-
 function formatFullDate(iso: string): string {
   const [year, month, day] = iso.split('-');
   return `${day}/${month}/${year}`;
@@ -265,19 +228,6 @@ function formatPeriodLabel(state: PeriodState, t: Translate): string {
   }
 }
 
-function trendPointLabel(kind: ReportTrendKind, point: ReportTrendPoint): string {
-  switch (kind) {
-    case 'week':
-      return formatShortDate(point.from);
-    case 'month':
-      return point.key.split('-')[1];
-    case 'quarter':
-      return `Q${point.key.split('-Q')[1]}`;
-    case 'year':
-      return point.key;
-  }
-}
-
 /**
  * `previous === 0` is treated as "no baseline": 0->0 is a flat 0%, any
  * nonzero current value is reported as a full +100%/-100% swing rather than
@@ -307,13 +257,12 @@ function invertTone(tone: ChangeTone): ChangeTone {
 }
 
 /**
- * Drives Reports v2: a period selector (week/month/quarter/year/custom, Task
- * 5), a category donut + income/expense trend line (Tasks 6-7), and a
- * current-vs-previous-period comparison — all on top of the existing
- * `GetReport` (extended in Task 2) and the new `GetReportTrend` (Task 3).
- * Every period-kind change or filter change re-fetches fresh data; there is
- * no client-side caching of other periods (same policy as the original
- * month-only view model).
+ * Drives Reports v2: a period selector (week/month/quarter/year/custom), a
+ * category donut + income/expense pie chart, and a current-vs-previous-period
+ * comparison — all on top of the existing `GetReport`. Every period-kind
+ * change or filter change re-fetches fresh data; there is no client-side
+ * caching of other periods (same policy as the original month-only view
+ * model).
  */
 export function useReports({ dependencies, t, now }: UseReportsOptions): ReportsViewModel {
   const [period, setPeriod] = useState<PeriodState>(() =>
@@ -347,22 +296,14 @@ export function useReports({ dependencies, t, now }: UseReportsOptions): Reports
     setLoading(true);
     try {
       const range = resolveCurrentRange(period);
-      const trendKind = TREND_KIND_BY_PERIOD_KIND[period.kind];
 
-      const [expenseCategories, incomeCategories, activeAccounts, report, previousReport, trend] =
+      const [expenseCategories, incomeCategories, activeAccounts, report, previousReport] =
         await Promise.all([
           dependencies.categoryRepository.listActiveByType('expense'),
           dependencies.categoryRepository.listActiveByType('income'),
           dependencies.accountRepository.listActive(),
           dependencies.getReport.execute(range, reportFilters),
           dependencies.getReport.execute(previousPeriodOfSameLength(range), reportFilters),
-          trendKind
-            ? dependencies.getReportTrend.execute({
-                kind: trendKind,
-                anchor: periodAnchorKey(period),
-                filters: reportFilters,
-              })
-            : Promise.resolve<ReportTrendPoint[]>([]),
         ]);
 
       const allCategories = [...incomeCategories, ...expenseCategories];
@@ -413,14 +354,7 @@ export function useReports({ dependencies, t, now }: UseReportsOptions): Reports
         }),
       );
 
-      const trendPoints: ReportTrendChartPoint[] = trendKind
-        ? trend.map((point) => ({
-            key: point.key,
-            label: trendPointLabel(trendKind, point),
-            income: point.income,
-            expense: point.expense,
-          }))
-        : [];
+      const incomeExpenseChart = { income: report.income, expense: report.expense };
 
       const income = percentChange(report.income, previousReport.income);
       const expense = percentChange(report.expense, previousReport.expense);
@@ -442,7 +376,7 @@ export function useReports({ dependencies, t, now }: UseReportsOptions): Reports
         categoryTotals,
         categoryChartSlices,
         accountTotals,
-        trendPoints,
+        incomeExpenseChart,
       });
     } finally {
       setLoading(false);
@@ -488,8 +422,6 @@ export function useReports({ dependencies, t, now }: UseReportsOptions): Reports
     onSearchChange: (search) => setFilters((current) => ({ ...current, search })),
 
     ...state,
-
-    showTrend: TREND_KIND_BY_PERIOD_KIND[period.kind] !== undefined,
 
     refresh: load,
   };
