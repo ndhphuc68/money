@@ -154,6 +154,7 @@ export const vi = {
   reportsPeriodCustomLabel: '{from} - {to}',
   reportsComparisonTitle: 'So với kỳ trước',
   reportsTrendTitle: 'Tỷ trọng thu chi',
+  reportsIncomeExpenseEmpty: 'Chưa có thu chi trong kỳ này',
   settingsTitle: 'Cá nhân',
   settingsBack: 'Quay lại',
   settingsDisplayNameLabel: 'Tên hiển thị',

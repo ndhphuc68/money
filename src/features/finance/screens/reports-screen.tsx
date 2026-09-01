@@ -113,7 +113,7 @@ export function ReportsScreen({ t, ...props }: ReportsViewModel & { t: Translate
           <Card style={styles.sectionCard}>
             <Text style={styles.heading}>{t('reportsTrendTitle')}</Text>
             <ReportIncomeExpenseChart
-              emptyLabel={t('reportsCategoryEmpty')}
+              emptyLabel={t('reportsIncomeExpenseEmpty')}
               expense={props.incomeExpenseChart.expense}
               expenseLabel={t('reportsExpenseLabel')}
               income={props.incomeExpenseChart.income}

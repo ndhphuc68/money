@@ -28,6 +28,7 @@ const componentKeys = [
   'reportsPeriodCustomLabel',
   'reportsComparisonTitle',
   'reportsTrendTitle',
+  'reportsIncomeExpenseEmpty',
 ] as const;
 
 describe('reports component translations', () => {

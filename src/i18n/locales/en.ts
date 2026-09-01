@@ -159,6 +159,7 @@ export const en = {
   reportsPeriodCustomLabel: '{from} - {to}',
   reportsComparisonTitle: 'Compared to previous period',
   reportsTrendTitle: 'Income vs expense',
+  reportsIncomeExpenseEmpty: 'No income or expense in this period',
   settingsTitle: 'Settings',
   settingsBack: 'Back',
   settingsDisplayNameLabel: 'Display name',

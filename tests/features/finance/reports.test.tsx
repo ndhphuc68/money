@@ -586,11 +586,11 @@ describe('reports screen + view model', () => {
     const dependencies = makeDependencies(repos);
     const screen = render(<Harness dependencies={dependencies} />);
 
-    // Both the category donut and the new income/expense pie chart show the same empty-state
-    // copy when they have nothing to render (categoryChartSlices empty, income=expense=0) — the
+    // The category donut and the income/expense pie chart each show their own empty-state copy
+    // when they have nothing to render (categoryChartSlices empty, income=expense=0) — the
     // account section suppresses its own empty text in that case too
-    // (reports-screen.tsx: showEmpty={props.categoryChartSlices.length > 0}), so exactly 2
-    // copies render (category chart + income/expense chart), not 3.
-    await waitFor(() => expect(screen.getAllByText(t('reportsCategoryEmpty'))).toHaveLength(2));
+    // (reports-screen.tsx: showEmpty={props.categoryChartSlices.length > 0}).
+    await waitFor(() => expect(screen.getByText(t('reportsCategoryEmpty'))).toBeTruthy());
+    expect(screen.getByText(t('reportsIncomeExpenseEmpty'))).toBeTruthy();
   });
 });
